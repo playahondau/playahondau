@@ -154,9 +154,9 @@
   // PASO 4: Reemplazá GID_RESULTADOS y GID_FIXTURE con los IDs de cada hoja
   //         (visible en la URL al hacer click en cada pestaña: ...#gid=NÚMERO)
 
-  const SHEET_ID        = "1_t2TDjrx4er3rOChRZWZulVYiFdb4ZiiezGNVt1BvNQ";
-  const GID_RESULTADOS  = "849523333";          // gid de la hoja "resultados"
-  const GID_FIXTURE     = "904775213";  // gid de la hoja "fixture"
+  const SHEET_ID        = "TU_SHEET_ID_AQUI";
+  const GID_RESULTADOS  = "0";          // gid de la hoja "resultados"
+  const GID_FIXTURE     = "123456789";  // gid de la hoja "fixture"
 
   const URL_RESULTADOS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_RESULTADOS}`;
   const URL_FIXTURE    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_FIXTURE}`;
@@ -358,10 +358,11 @@ async function loadData() {
     loadFallback();
     return;
   }
+  const PROXY = 'https://corsproxy.io/?';
   try {
     const [resCSV, fixCSV] = await Promise.all([
-      fetch(URL_RESULTADOS).then(r => r.text()),
-      fetch(URL_FIXTURE).then(r => r.text())
+      fetch(PROXY + encodeURIComponent(URL_RESULTADOS)).then(r => r.text()),
+      fetch(PROXY + encodeURIComponent(URL_FIXTURE)).then(r => r.text())
     ]);
     const resultados = parseCSV(resCSV);
     const fixture    = parseCSV(fixCSV);
