@@ -355,25 +355,25 @@ function loadFallback() {
 
 // ─── Carga desde Google Sheets ─────────────────────────────────
 async function loadData() {
-  // Si no configuraron la sheet todavía, mostramos los datos de ejemplo
-  if (SHEET_ID === 'TU_SHEET_ID_AQUI') {
-    loadFallback();
-    return;
-  }
-  const PROXY = 'https://api.allorigins.win/raw?url=';
+  const API = 'https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec';
   try {
-    const [resCSV, fixCSV] = await Promise.all([
-      fetch(PROXY + encodeURIComponent(URL_RESULTADOS)).then(r => r.text()),
-      fetch(PROXY + encodeURIComponent(URL_FIXTURE)).then(r => r.text())
-    ]);
-    const resultados = parseCSV(resCSV);
-    const fixture    = parseCSV(fixCSV);
-    buildTicker(resultados);
-    buildResultados(resultados);
+    const res = await fetch(API);
+    const data = await res.json();
+    const resultados = data.resultados || [];
+    const fixture = data.fixture || [];
+    if (resultados.length) {
+      buildTicker(resultados);
+      buildResultados(resultados);
+    } else {
+      buildTicker([]);
+      document.getElementById('resultados-grid').innerHTML = '<div class="loading">Sin resultados cargados</div>';
+    }
     buildFixture(fixture);
   } catch(e) {
-    console.warn('No se pudo cargar Google Sheets, usando datos de ejemplo.', e);
+    console.warn('Error cargando datos:', e);
     loadFallback();
+  }
+}
   }
 }
 
