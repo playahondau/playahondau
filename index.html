@@ -169,6 +169,205 @@
   <div class="gold-line"></div>
   <div class="fixtures-list" id="fixtures-list"><div class="msg">Cargando...</div></div>
 </section>
+  <section id="partidos">
+  <p class="section-label">Temporada 2026</p>
+  <h2 class="section-title">Partidos por Categoría</h2>
+  <div class="gold-line"></div>
+
+  <div class="tabs tabs-partidos">
+    <button class="tab-p active" onclick="showPartidos('may')">Mayores</button>
+    <button class="tab-p" onclick="showPartidos('res')">Reserva</button>
+    <button class="tab-p" onclick="showPartidos('pre')">Pre Senior</button>
+    <button class="tab-p" onclick="showPartidos('s20')">Sub 20</button>
+    <button class="tab-p" onclick="showPartidos('s18')">Sub 18</button>
+  </div>
+
+  <!-- MAYORES -->
+  <div id="part-may" class="part-content active">
+    <p class="tabla-titulo">Mayores Divisional A — Copa Pilsen</p>
+    <div class="part-grid">
+      <div class="part-col">
+        <p class="part-subtitulo">Resultados</p>
+        <div class="part-list">
+          <div class="part-row jugado loss"><span class="part-fecha">Dom 12 abr.</span><span class="part-equipos">Playa Honda <b>0 – 2</b> Club Seminario</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado loss"><span class="part-fecha">Dom 19 abr.</span><span class="part-equipos">Tenis El Pinar <b>2 – 0</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado win"><span class="part-fecha">Dom 26 abr.</span><span class="part-equipos">Playa Honda <b>1 – 0</b> Old Christians Club</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado draw"><span class="part-fecha">Dom 17 may.</span><span class="part-equipos">Playa Honda <b>1 – 1</b> TAPE</span><span class="part-loc">Local</span></div>
+        </div>
+      </div>
+      <div class="part-col">
+        <p class="part-subtitulo">Próximos partidos</p>
+        <div class="part-list">
+          <div class="part-row proximo"><span class="part-fecha">Dom 24 may.</span><span class="part-equipos">Santa Elena Lagomar vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 31 may.</span><span class="part-equipos">Playa Honda vs Nacional Universitario</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 7 jun.</span><span class="part-equipos">Juan XXIII vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 14 jun.</span><span class="part-equipos">Playa Honda vs Hebraica Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 21 jun.</span><span class="part-equipos">Old Boys Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 28 jun.</span><span class="part-equipos">Playa Honda vs Old Ivy</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 26 jul.</span><span class="part-equipos">Urunday Univ. vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 2 ago.</span><span class="part-equipos">Playa Honda vs E.L.F.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 9 ago.</span><span class="part-equipos">Carrasco Polo Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 16 ago.</span><span class="part-equipos">Playa Honda vs Carrasco Lawn Tennis</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 30 ago.</span><span class="part-equipos">Old Woodlands Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESERVA -->
+  <div id="part-res" class="part-content">
+    <p class="tabla-titulo">Reserva Divisional A — Copa Antel</p>
+    <div class="part-grid">
+      <div class="part-col">
+        <p class="part-subtitulo">Resultados</p>
+        <div class="part-list">
+          <div class="part-row jugado win"><span class="part-fecha">Sáb 11 abr.</span><span class="part-equipos">Old Boys Club <b>0 – 1</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado draw"><span class="part-fecha">Sáb 18 abr.</span><span class="part-equipos">Playa Honda <b>1 – 1</b> TAPE (falta confirmar)</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado draw"><span class="part-fecha">Sáb 25 abr.</span><span class="part-equipos">OBC Azulgrana <b>1 – 1</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado loss"><span class="part-fecha">Sáb 16 may.</span><span class="part-equipos">Carrasco Lawn Tennis <b>4 – 0</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+        </div>
+      </div>
+      <div class="part-col">
+        <p class="part-subtitulo">Próximos partidos</p>
+        <div class="part-list">
+          <div class="part-row proximo"><span class="part-fecha">Sáb 23 may.</span><span class="part-equipos">Playa Honda vs Nacional Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 30 may.</span><span class="part-equipos">Club Seminario vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 6 jun.</span><span class="part-equipos">Playa Honda vs Sagrada Familia Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 13 jun.</span><span class="part-equipos">Ceibos Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 20 jun.</span><span class="part-equipos">Playa Honda vs Aleman Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 27 jun.</span><span class="part-equipos">Old Christians Azul vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 25 jul.</span><span class="part-equipos">Playa Honda vs Universitario Verones</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 1 ago.</span><span class="part-equipos">Elbio Fernandez vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 8 ago.</span><span class="part-equipos">Playa Honda vs Old Ivy</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 15 ago.</span><span class="part-equipos">Nacional Univ. vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 29 ago.</span><span class="part-equipos">Playa Honda vs Old Christians Club</span><span class="part-loc">Local</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESENIOR -->
+  <div id="part-pre" class="part-content">
+    <p class="tabla-titulo">Pre Senior Divisional A — Copa Summum</p>
+    <div class="part-grid">
+      <div class="part-col">
+        <p class="part-subtitulo">Resultados</p>
+        <div class="part-list">
+          <div class="part-row jugado win"><span class="part-fecha">Sáb 11 abr.</span><span class="part-equipos">Playa Honda <b>2 – 1</b> Hebraica Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado loss"><span class="part-fecha">Sáb 18 abr.</span><span class="part-equipos">Madrugada F.C <b>1 – 4</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado loss"><span class="part-fecha">Sáb 25 abr.</span><span class="part-equipos">Playa Honda <b>1 – 3</b> Nautico Carrasco y PG</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado win"><span class="part-fecha">Sáb 16 may.</span><span class="part-equipos">Playa Honda <b>2 – 1</b> Tenis El Pinar</span><span class="part-loc">Local</span></div>
+        </div>
+      </div>
+      <div class="part-col">
+        <p class="part-subtitulo">Próximos partidos</p>
+        <div class="part-list">
+          <div class="part-row proximo"><span class="part-fecha">Sáb 23 may.</span><span class="part-equipos">Independiente vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 30 may.</span><span class="part-equipos">Playa Honda vs Old Christians Club</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 6 jun.</span><span class="part-equipos">Juan XXIII vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 13 jun.</span><span class="part-equipos">Playa Honda vs Old Boys Club</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 20 jun.</span><span class="part-equipos">La Blanqueada vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 27 jun.</span><span class="part-equipos">Playa Honda vs Universitario Verones</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 25 jul.</span><span class="part-fecha">Elbio Fernandez vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 1 ago.</span><span class="part-equipos">Playa Honda vs Old Ivy</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 8 ago.</span><span class="part-equipos">Nacional Univ. vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 15 ago.</span><span class="part-equipos">Club Jesus Maria vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 29 ago.</span><span class="part-equipos">Urunday Univ. vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB 20 -->
+  <div id="part-s20" class="part-content">
+    <p class="tabla-titulo">Sub 20 Divisional A</p>
+    <div class="part-grid">
+      <div class="part-col">
+        <p class="part-subtitulo">Resultados</p>
+        <div class="part-list">
+          <div class="part-row jugado loss"><span class="part-fecha">Sáb 11 abr.</span><span class="part-equipos">Old Boys Club <b>1 – 0</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado draw"><span class="part-fecha">Sáb 18 abr.</span><span class="part-equipos">Playa Honda <b>1 – 1</b> Old Brendans Club</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado win"><span class="part-fecha">Sáb 25 abr.</span><span class="part-equipos">San Juan Bautista <b>3 – 4</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado loss"><span class="part-fecha">Sáb 16 may.</span><span class="part-equipos">Carrasco Lawn Tennis <b>2 – 1</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+        </div>
+      </div>
+      <div class="part-col">
+        <p class="part-subtitulo">Próximos partidos</p>
+        <div class="part-list">
+          <div class="part-row proximo"><span class="part-fecha">Sáb 23 may.</span><span class="part-equipos">Playa Honda vs Nacional Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 30 may.</span><span class="part-equipos">Club Seminario vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 6 jun.</span><span class="part-equipos">Playa Honda vs Maturana Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 13 jun.</span><span class="part-equipos">Ceibos Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 20 jun.</span><span class="part-equipos">Playa Honda vs San Pablo Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 27 jun.</span><span class="part-equipos">Old Christians Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 25 jul.</span><span class="part-equipos">Playa Honda vs Tenis El Pinar</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 1 ago.</span><span class="part-equipos">Old Woodlands Club vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 8 ago.</span><span class="part-equipos">Playa Honda vs E.L.F.</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 15 ago.</span><span class="part-equipos">Playa Honda vs J.M.L.M</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Sáb 29 ago.</span><span class="part-equipos">Playa Honda vs Nautico Carrasco y PG</span><span class="part-loc">Local</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB 18 -->
+  <div id="part-s18" class="part-content">
+    <p class="tabla-titulo">Sub 18 Serie 5 — Copa Perifar</p>
+    <div class="part-grid">
+      <div class="part-col">
+        <p class="part-subtitulo">Resultados</p>
+        <div class="part-list">
+          <div class="part-row jugado win"><span class="part-fecha">Dom 19 abr.</span><span class="part-equipos">Playa Honda <b>1 – 0</b> Anglo School Univ.</span><span class="part-loc">Local</span></div>
+          <div class="part-row jugado draw"><span class="part-fecha">Dom 26 abr.</span><span class="part-equipos">Ceibos Club <b>1 – 1</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row jugado win"><span class="part-fecha">Dom 17 may.</span><span class="part-equipos">Club Social Piedras Blancas <b>1 – 2</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
+        </div>
+      </div>
+      <div class="part-col">
+        <p class="part-subtitulo">Próximos partidos</p>
+        <div class="part-list">
+          <div class="part-row proximo"><span class="part-fecha">Dom 24 may.</span><span class="part-equipos">Playa Honda vs Colegio y Liceo Inglés</span><span class="part-loc">Local</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 31 may.</span><span class="part-equipos">Elbio Fernandez vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 7 jun.</span><span class="part-fecha">HCA Universitario vs Playa Honda</span><span class="part-loc">Visitante</span></div>
+          <div class="part-row proximo"><span class="part-fecha">Dom 14 jun.</span><span class="part-equipos">Playa Honda vs Juan XXIII</span><span class="part-loc">Local</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.tabs-partidos{margin-bottom:1.5rem;}
+.tab-p{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;background:#0d1220;color:var(--gris);border:1px solid rgba(255,255,255,.08);padding:.5rem 1.2rem;cursor:pointer;transition:all .2s;border-radius:2px;margin-bottom:4px;}
+.tab-p.active,.tab-p:hover{background:var(--dorado);color:var(--blanco);border-color:var(--dorado);}
+.part-content{display:none;}
+.part-content.active{display:block;}
+.part-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+.part-subtitulo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dorado);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid rgba(200,151,43,.2);}
+.part-list{display:flex;flex-direction:column;gap:2px;}
+.part-row{display:grid;grid-template-columns:90px 1fr 70px;align-items:center;gap:.8rem;padding:.6rem .8rem;background:#0d1220;border-left:3px solid transparent;font-size:.82rem;}
+.part-row.jugado.win{border-left-color:#4ade80;}
+.part-row.jugado.draw{border-left-color:#fbbf24;}
+.part-row.jugado.loss{border-left-color:#f87171;}
+.part-row.proximo{border-left-color:rgba(255,255,255,.1);opacity:.75;}
+.part-fecha{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--gris);white-space:nowrap;}
+.part-equipos{color:var(--blanco);font-size:.82rem;}
+.part-equipos b{color:var(--dorado);}
+.part-loc{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);text-align:right;}
+@media(max-width:768px){
+  .part-grid{grid-template-columns:1fr;}
+  .part-row{grid-template-columns:80px 1fr;}
+  .part-loc{display:none;}
+}
+</style>
+
+<script>
+function showPartidos(name) {
+  document.querySelectorAll('.part-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-p').forEach(el => el.classList.remove('active'));
+  document.getElementById('part-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
 <section id="posiciones">
   <p class="section-label">Temporada 2026</p>
   <h2 class="section-title">Tabla de Posiciones</h2>
