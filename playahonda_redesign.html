@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playa Honda Universitario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --azul: #002D62; --azul-med: #003f8a;
+      --dorado: #C8972B; --dorado-light: #e8b040;
+      --blanco: #F5F5F0; --gris: #9aa0ac;
+      --negro: #0a0c10; --fondo: #080c14;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Barlow',sans-serif; background:var(--fondo); color:var(--blanco); overflow-x:hidden; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 2.5rem; height:64px; background:rgba(8,12,20,0.92); backdrop-filter:blur(12px); border-bottom:1px solid rgba(200,151,43,0.15); }
+    .nav-logo { display:flex; align-items:center; gap:0.75rem; text-decoration:none; }
+    .nav-logo .escudo { width:38px; height:38px; background:var(--dorado); clip-path:polygon(50% 0%,100% 15%,100% 70%,50% 100%,0% 70%,0% 15%); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--azul); }
+    .nav-logo span { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--blanco); letter-spacing:0.08em; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gris); text-decoration:none; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--dorado); }
+    .nav-ig { display:flex; align-items:center; gap:0.4rem; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:0.1em; color:var(--dorado); text-decoration:none; border:1px solid var(--dorado); padding:0.35rem 0.8rem; border-radius:2px; transition:background 0.2s,color 0.2s; }
+    .nav-ig:hover { background:var(--dorado); color:var(--negro); }
+
+    /* HERO */
+    .hero { min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end; padding:0 4rem 5rem; position:relative; overflow:hidden; }
+    .hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 80% 60% at 70% 40%,rgba(0,45,98,0.55) 0%,transparent 65%), radial-gradient(ellipse 50% 50% at 20% 80%,rgba(200,151,43,0.12) 0%,transparent 60%), linear-gradient(160deg,#080c14 0%,#020610 100%); }
+    .hero-pitch { position:absolute; inset:0; opacity:0.04; background-image:repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,0.8) 79px,rgba(255,255,255,0.8) 80px); }
+    .hero-circle { position:absolute; right:8%; top:50%; transform:translateY(-50%); width:420px; height:420px; border-radius:50%; border:1px solid rgba(200,151,43,0.08); box-shadow:0 0 80px rgba(0,45,98,0.4),inset 0 0 80px rgba(0,45,98,0.2); animation:pulse 4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 80px rgba(0,45,98,0.4),inset 0 0 80px rgba(0,45,98,0.2)} 50%{box-shadow:0 0 120px rgba(0,63,138,0.5),inset 0 0 100px rgba(0,63,138,0.3)} }
+    .hero-year { position:absolute; right:12%; top:30%; font-family:'Bebas Neue',sans-serif; font-size:10rem; color:rgba(200,151,43,0.05); user-select:none; animation:fadeIn 1.5s ease forwards; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .hero-eyebrow { position:relative; font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.8rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--dorado); margin-bottom:1rem; animation:fadeIn 0.8s ease forwards; }
+    .hero-title { position:relative; font-family:'Bebas Neue',sans-serif; font-size:clamp(4rem,9vw,8rem); line-height:0.92; color:var(--blanco); margin-bottom:1.5rem; animation:fadeIn 1s ease 0.15s both; }
+    .hero-title span { color:var(--dorado); }
+    .hero-sub { position:relative; font-size:1rem; color:var(--gris); letter-spacing:0.05em; margin-bottom:2.5rem; animation:fadeIn 1s ease 0.3s both; }
+    .hero-actions { position:relative; display:flex; gap:1rem; animation:fadeIn 1s ease 0.45s both; }
+    .btn-primary { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:0.15em; text-transform:uppercase; background:var(--dorado); color:var(--negro); padding:0.8rem 2rem; border:none; cursor:pointer; text-decoration:none; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%); transition:background 0.2s,transform 0.2s; }
+    .btn-primary:hover { background:var(--dorado-light); transform:translateY(-2px); }
+    .btn-outline { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:0.15em; text-transform:uppercase; background:transparent; color:var(--blanco); padding:0.8rem 2rem; border:1px solid rgba(255,255,255,0.2); cursor:pointer; text-decoration:none; transition:border-color 0.2s,transform 0.2s; }
+    .btn-outline:hover { border-color:var(--dorado); color:var(--dorado); transform:translateY(-2px); }
+
+    /* TICKER */
+    .ticker { background:var(--dorado); overflow:hidden; padding:0.6rem 0; white-space:nowrap; }
+    .ticker-inner { display:inline-block; animation:ticker 35s linear infinite; }
+    .ticker-inner span { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--negro); padding:0 3rem; }
+    .ticker-inner span.sep { opacity:0.4; }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* SECTIONS */
+    section { padding:5rem 4rem; }
+    .section-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:2.5rem; }
+    .section-label { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.75rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--dorado); margin-bottom:0.4rem; }
+    .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.5rem,5vw,4rem); line-height:1; color:var(--blanco); }
+    .gold-line { width:60px; height:3px; background:var(--dorado); margin-bottom:1.5rem; }
+
+    /* STATS */
+    .stats-row { display:flex; border-top:1px solid rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.04); margin-bottom:4rem; }
+    .stat-item { flex:1; padding:1.5rem 2rem; border-right:1px solid rgba(255,255,255,0.04); }
+    .stat-item:last-child { border-right:none; }
+    .stat-num { font-family:'Bebas Neue',sans-serif; font-size:3rem; color:var(--dorado); line-height:1; }
+    .stat-label { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gris); margin-top:0.2rem; }
+
+    /* RESULTADOS */
+    .resultados-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1px; background:rgba(255,255,255,0.04); }
+    .resultado-card { background:#0d1220; padding:1.5rem; position:relative; overflow:hidden; transition:background 0.25s; }
+    .resultado-card:hover { background:#111827; }
+    .resultado-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--dorado); transform:scaleX(0); transform-origin:left; transition:transform 0.3s; }
+    .resultado-card:hover::before { transform:scaleX(1); }
+    .res-categoria { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gris); margin-bottom:0.8rem; }
+    .res-equipos { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:0.6rem; }
+    .res-equipo { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; color:var(--blanco); flex:1; }
+    .res-equipo.away { text-align:right; color:var(--gris); }
+    .res-score { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--blanco); background:rgba(200,151,43,0.1); padding:0.2rem 0.8rem; border-radius:2px; }
+    .res-resultado { position:absolute; top:1.2rem; right:1.2rem; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.65rem; letter-spacing:0.1em; padding:0.2rem 0.5rem; border-radius:1px; }
+    .win { background:rgba(34,197,94,0.15); color:#4ade80; }
+    .draw { background:rgba(251,191,36,0.15); color:#fbbf24; }
+    .loss { background:rgba(239,68,68,0.15); color:#f87171; }
+
+    /* FIXTURES */
+    .proximos { background:#0b0f1a; }
+    .fixtures-list { display:flex; flex-direction:column; gap:1px; }
+    .fixture { display:grid; grid-template-columns:120px 1fr auto 1fr 160px; align-items:center; gap:1rem; background:#0d1220; padding:1.2rem 1.8rem; transition:background 0.2s; }
+    .fixture:hover { background:#111827; }
+    .fix-cat { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--dorado); }
+    .fix-home { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; color:var(--blanco); text-align:right; }
+    .fix-vs { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:var(--gris); text-align:center; padding:0 0.5rem; }
+    .fix-away { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; color:var(--gris); }
+    .fix-info { text-align:right; }
+    .fix-fecha { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.85rem; color:var(--blanco); }
+    .fix-lugar { font-size:0.72rem; color:var(--gris); margin-top:0.15rem; }
+
+    /* DIVISIONES */
+    .divisiones-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.5rem; }
+    .division-card { position:relative; background:#0d1220; border:1px solid rgba(255,255,255,0.05); padding:2rem 1.5rem; text-align:center; cursor:pointer; transition:transform 0.25s,border-color 0.25s; overflow:hidden; text-decoration:none; }
+    .division-card:hover { transform:translateY(-6px); border-color:var(--dorado); }
+    .division-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--azul),var(--dorado)); }
+    .div-nombre { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--blanco); margin-top:0.5rem; }
+    .div-icon { font-size:2rem; margin-bottom:0.5rem; }
+    .div-desc { font-size:0.78rem; color:var(--gris); margin-top:0.4rem; }
+
+    /* LOADING */
+    .loading { text-align:center; padding:3rem; color:var(--gris); font-family:'Barlow Condensed',sans-serif; font-size:1rem; letter-spacing:0.15em; }
+    .loading::after { content:''; animation:dots 1.5s infinite; }
+    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+    /* SETUP BANNER */
+    .setup-banner { background:rgba(200,151,43,0.1); border:1px solid rgba(200,151,43,0.3); border-radius:4px; padding:1.5rem 2rem; margin-bottom:2rem; }
+    .setup-banner h3 { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; letter-spacing:0.1em; color:var(--dorado); margin-bottom:0.5rem; }
+    .setup-banner p { font-size:0.85rem; color:var(--gris); line-height:1.6; }
+    .setup-banner code { background:rgba(255,255,255,0.08); padding:0.1rem 0.4rem; border-radius:2px; font-size:0.8rem; color:var(--blanco); }
+
+    /* FOOTER */
+    footer { background:#050810; border-top:1px solid rgba(200,151,43,0.12); padding:3rem 4rem; display:flex; align-items:center; justify-content:space-between; }
+    .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--blanco); }
+    .footer-brand span { color:var(--dorado); }
+    .footer-meta { font-size:0.75rem; color:var(--gris); margin-top:0.3rem; }
+    .footer-links { display:flex; gap:2rem; list-style:none; }
+    .footer-links a { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.8rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gris); text-decoration:none; transition:color 0.2s; }
+    .footer-links a:hover { color:var(--dorado); }
+
+    @media(max-width:768px) {
+      nav .nav-links { display:none; }
+      .hero { padding:0 1.5rem 4rem; }
+      section { padding:3rem 1.5rem; }
+      footer { flex-direction:column; gap:1.5rem; text-align:center; }
+      .fixture { grid-template-columns:1fr; gap:0.4rem; padding:1rem; }
+      .fix-home,.fix-away,.fix-info { text-align:left; }
+      .stats-row { flex-wrap:wrap; }
+      .stat-item { flex:50%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     CONFIGURACIÓN - Solo cambiá estas URLs
+     ══════════════════════════════════════ -->
+<script>
+  // PASO 1: Creá una Google Sheet pública con dos hojas:
+  //   Hoja "resultados" → columnas: categoria | local | goles_local | goles_visitante | visitante | fecha | resultado
+  //   Hoja "fixture"    → columnas: categoria | local | visitante | dia_hora | lugar
+  //
+  // PASO 2: Publicá la hoja: Archivo → Compartir → Publicar en la web → CSV
+  //
+  // PASO 3: Reemplazá SHEET_ID con el ID de tu hoja (está en la URL de Google Sheets)
+  //         Ejemplo URL: docs.google.com/spreadsheets/d/AQUI_VA_EL_ID/edit
+  //
+  // PASO 4: Reemplazá GID_RESULTADOS y GID_FIXTURE con los IDs de cada hoja
+  //         (visible en la URL al hacer click en cada pestaña: ...#gid=NÚMERO)
+
+  const SHEET_ID        = "TU_SHEET_ID_AQUI";
+  const GID_RESULTADOS  = "0";          // gid de la hoja "resultados"
+  const GID_FIXTURE     = "123456789";  // gid de la hoja "fixture"
+
+  const URL_RESULTADOS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_RESULTADOS}`;
+  const URL_FIXTURE    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_FIXTURE}`;
+</script>
+<!-- ══════════════════════════════════════ -->
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="escudo">PH</div>
+    <span>Playa Honda U.</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Inicio</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#proximos">Fixture</a></li>
+    <li><a href="#divisiones">Divisiones</a></li>
+  </ul>
+  <a class="nav-ig" href="https://www.instagram.com/playahondau/" target="_blank">◎ @playahondau</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pitch"></div>
+  <div class="hero-circle"></div>
+  <div class="hero-year">1964</div>
+  <p class="hero-eyebrow">Liga Universitaria Uruguay · Desde 1964</p>
+  <h1 class="hero-title">Playa<br><span>Honda</span><br>Universitario</h1>
+  <p class="hero-sub">El Glorioso · Liga Universitaria · Pocitos</p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="#proximos">Ver Fixture</a>
+    <a class="btn-outline" href="#resultados">Resultados</a>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker-content">
+    <span>⚽ Cargando resultados...</span>
+    <span>⚽ Cargando resultados...</span>
+  </div>
+</div>
+
+<!-- STATS + RESULTADOS -->
+<section id="resultados">
+  <div class="stats-row">
+    <div class="stat-item"><div class="stat-num">61</div><div class="stat-label">Años de historia</div></div>
+    <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Categorías activas</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-jugados">—</div><div class="stat-label">Fechas jugadas</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-victorias">—</div><div class="stat-label">Victorias recientes</div></div>
+  </div>
+
+  <div class="section-header">
+    <div>
+      <p class="section-label">Temporada 2026</p>
+      <h2 class="section-title">Últimos Resultados</h2>
+    </div>
+  </div>
+  <div class="gold-line"></div>
+  <div class="resultados-grid" id="resultados-grid">
+    <div class="loading">Cargando desde Google Sheets</div>
+  </div>
+</section>
+
+<!-- FIXTURE -->
+<section class="proximos" id="proximos">
+  <div class="section-header">
+    <div>
+      <p class="section-label">Próxima fecha</p>
+      <h2 class="section-title">Fixture</h2>
+    </div>
+  </div>
+  <div class="gold-line"></div>
+  <div class="fixtures-list" id="fixtures-list">
+    <div class="loading">Cargando fixture</div>
+  </div>
+</section>
+
+<!-- DIVISIONES -->
+<section id="divisiones">
+  <div class="section-header">
+    <div>
+      <p class="section-label">El club</p>
+      <h2 class="section-title">Divisiones</h2>
+    </div>
+  </div>
+  <div class="gold-line"></div>
+  <div class="divisiones-grid">
+    <a class="division-card" href="#"><div class="div-icon">🥇</div><div class="div-nombre">Mayores</div><div class="div-desc">Primera División</div></a>
+    <a class="division-card" href="#"><div class="div-icon">⚽</div><div class="div-nombre">Reserva</div><div class="div-desc">Desarrollo de jugadores</div></a>
+    <a class="division-card" href="#"><div class="div-icon">🎯</div><div class="div-nombre">Pre Senior</div><div class="div-desc">Transición al plantel mayor</div></a>
+    <a class="division-card" href="#"><div class="div-icon">🌟</div><div class="div-nombre">Sub 20</div><div class="div-desc">Formativas superiores</div></a>
+    <a class="division-card" href="#"><div class="div-icon">⚡</div><div class="div-nombre">Sub 18</div><div class="div-desc">Formativas</div></a>
+    <a class="division-card" href="#"><div class="div-icon">🏆</div><div class="div-nombre">+50</div><div class="div-desc">Veteranos del glorioso</div></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">Playa <span>Honda</span> U.</div>
+    <div class="footer-meta">Fundado en 1964 · Liga Universitaria Uruguay · @playahondau</div>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#">Inicio</a></li>
+    <li><a href="#proximos">Fixture</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="https://www.instagram.com/playahondau/" target="_blank">Instagram</a></li>
+  </ul>
+</footer>
+
+<script>
+// ─── Parsear CSV ───────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+// ─── Ticker ────────────────────────────────────────────────────
+function buildTicker(resultados) {
+  const items = resultados.map(r =>
+    `<span>⚽ ${r.categoria}: ${r.resultado} ${r.goles_local}-${r.goles_visitante} vs ${r.visitante} · ${r.fecha}</span><span class="sep">◆</span>`
+  ).join('');
+  // duplicar para loop infinito
+  document.getElementById('ticker-content').innerHTML = items + items;
+}
+
+// ─── Resultados ────────────────────────────────────────────────
+function buildResultados(resultados) {
+  const grid = document.getElementById('resultados-grid');
+
+  const victorias = resultados.filter(r => r.resultado?.toLowerCase() === 'victoria').length;
+  document.getElementById('stat-victorias').textContent = victorias;
+  document.getElementById('stat-jugados').textContent = Math.max(...resultados.map(r => parseInt(r.fecha?.replace(/\D/g,'')) || 0)) || resultados.length;
+
+  grid.innerHTML = resultados.map(r => {
+    const res = r.resultado?.toLowerCase();
+    const cls = res === 'victoria' ? 'win' : res === 'empate' ? 'draw' : 'loss';
+    return `
+      <div class="resultado-card">
+        <span class="res-resultado ${cls}">${r.resultado}</span>
+        <p class="res-categoria">${r.categoria} · ${r.fecha}</p>
+        <div class="res-equipos">
+          <span class="res-equipo">${r.local}</span>
+          <span class="res-score">${r.goles_local} – ${r.goles_visitante}</span>
+          <span class="res-equipo away">${r.visitante}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Fixture ───────────────────────────────────────────────────
+function buildFixture(fixture) {
+  document.getElementById('fixtures-list').innerHTML = fixture.map(f => `
+    <div class="fixture">
+      <span class="fix-cat">${f.categoria}</span>
+      <span class="fix-home">${f.local}</span>
+      <span class="fix-vs">VS</span>
+      <span class="fix-away">${f.visitante}</span>
+      <div class="fix-info">
+        <p class="fix-fecha">${f.dia_hora}</p>
+        <p class="fix-lugar">${f.lugar}</p>
+      </div>
+    </div>`).join('');
+}
+
+// ─── Fallback con datos del sitio actual ───────────────────────
+function loadFallback() {
+  const resultados = [
+    {categoria:'Mayores',local:'Playa Honda',goles_local:'1',goles_visitante:'0',visitante:'Occ',fecha:'Fecha 3',resultado:'Victoria'},
+    {categoria:'Reserva',local:'Playa Honda',goles_local:'1',goles_visitante:'1',visitante:'Obc',fecha:'Fecha 3',resultado:'Empate'},
+    {categoria:'Pre Senior',local:'Playa Honda',goles_local:'1',goles_visitante:'3',visitante:'Náutico',fecha:'Fecha 3',resultado:'Derrota'},
+    {categoria:'Sub 20',local:'Playa Honda',goles_local:'4',goles_visitante:'3',visitante:'SJB',fecha:'Fecha 3',resultado:'Victoria'},
+    {categoria:'Sub 18',local:'Playa Honda',goles_local:'1',goles_visitante:'1',visitante:'Ceibos',fecha:'Fecha 2',resultado:'Empate'},
+  ];
+  const fixture = [
+    {categoria:'Mayores',local:'Playa Honda',visitante:'OWC',dia_hora:'Dom 9/5 · 11:15',lugar:'OWC'},
+    {categoria:'Reserva',local:'Playa Honda',visitante:'Náutico',dia_hora:'Sáb 8/5 · 11:15',lugar:'Cupra'},
+    {categoria:'Pre Senior',local:'Playa Honda',visitante:'Urunday',dia_hora:'Dom 9/5 · 11:15',lugar:'Urunday'},
+    {categoria:'Sub 20',local:'Playa Honda',visitante:'Náutico',dia_hora:'Sáb 8/5 · 13:30',lugar:'Cupra'},
+    {categoria:'Sub 18',local:'Playa Honda',visitante:'Juan XXIII',dia_hora:'Dom 9/5 · 15:30',lugar:'Cupra'},
+  ];
+  buildTicker(resultados);
+  buildResultados(resultados);
+  buildFixture(fixture);
+}
+
+// ─── Carga desde Google Sheets ─────────────────────────────────
+async function loadData() {
+  // Si no configuraron la sheet todavía, mostramos los datos de ejemplo
+  if (SHEET_ID === 'TU_SHEET_ID_AQUI') {
+    loadFallback();
+    return;
+  }
+  try {
+    const [resCSV, fixCSV] = await Promise.all([
+      fetch(URL_RESULTADOS).then(r => r.text()),
+      fetch(URL_FIXTURE).then(r => r.text())
+    ]);
+    const resultados = parseCSV(resCSV);
+    const fixture    = parseCSV(fixCSV);
+    buildTicker(resultados);
+    buildResultados(resultados);
+    buildFixture(fixture);
+  } catch(e) {
+    console.warn('No se pudo cargar Google Sheets, usando datos de ejemplo.', e);
+    loadFallback();
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
