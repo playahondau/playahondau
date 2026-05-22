@@ -357,7 +357,7 @@ function loadFallback() {
 async function loadData() {
   const API = 'https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec';
   try {
-    const res = await fetch(API);
+    const res = await fetch(API, {redirect: 'follow'});
     const data = await res.json();
     const resultados = data.resultados || [];
     const fixture = data.fixture || [];
