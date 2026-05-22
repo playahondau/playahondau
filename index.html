@@ -356,11 +356,11 @@ function loadFallback() {
 // ─── Carga desde Google Sheets ─────────────────────────────────
 async function loadData() {
   // Si no configuraron la sheet todavía, mostramos los datos de ejemplo
-  if (SHEET_ID === 'TU_SHEET_ID_AQUI') {
+  if (SHEET_ID === '1_t2TDjrx4er3rOChRZWZulVYiFdb4ZiiezGNVt1BvNQ') {
     loadFallback();
     return;
   }
-  const PROXY = 'https://corsproxy.io/?';
+  const PROXY = 'https://api.allorigins.win/raw?url=';
   try {
     const [resCSV, fixCSV] = await Promise.all([
       fetch(PROXY + encodeURIComponent(URL_RESULTADOS)).then(r => r.text()),
