@@ -250,10 +250,25 @@
     <p class="newsletter-label">Playa Honda Universitario</p>
     <h2 class="newsletter-title">RECIBÍ LOS ÚLTIMOS RESULTADOS</h2>
     <p class="newsletter-desc">Enterate de resultados, fixture y novedades del club directamente en tu correo.</p>
-    <form class="newsletter-form">
-      <input type="email" class="newsletter-input" placeholder="Tu correo electrónico" required />
-      <button type="submit" class="newsletter-btn">SUSCRIBIRME</button>
-    </form>
+  <form 
+  class="newsletter-form"
+  action="https://formspree.io/f/xzdwabke"
+  method="POST"
+>
+
+  <input
+    type="email"
+    name="email"
+    class="newsletter-input"
+    placeholder="Tu correo electrónico"
+    required
+  >
+
+  <button type="submit" class="newsletter-btn">
+    SUSCRIBIRME
+  </button>
+
+</form>
     <p class="newsletter-mini">Sin spam. Solo información oficial del club.</p>
   </div>
 </div>
