@@ -35,11 +35,12 @@
     .btn-primary:hover{background:var(--dorado-light);transform:translateY(-3px);box-shadow:0 8px 24px rgba(27,58,107,.5);}
     .btn-outline{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.15em;text-transform:uppercase;background:transparent;color:var(--blanco);padding:.8rem 2rem;border:1px solid rgba(255,255,255,.2);cursor:pointer;text-decoration:none;transition:border-color .2s,transform .2s;}
     .btn-outline:hover{border-color:var(--dorado);color:var(--dorado);transform:translateY(-2px);}
-    .novedades-bar{display:flex;gap:.6rem;padding:.55rem 2rem;background:rgba(8,12,20,.95);border-bottom:1px solid rgba(27,58,107,.3);flex-wrap:wrap;}
-    .novedad-chip{display:flex;align-items:center;gap:.45rem;background:rgba(27,58,107,.18);border:1px solid rgba(27,58,107,.4);border-radius:20px;padding:.3rem .85rem .3rem .6rem;}
-    .nov-icon{font-size:.85rem;line-height:1;}
-    .nov-cat{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dorado);}
-    .nov-txt{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:rgba(245,245,240,.65);margin-left:.1rem;}
+    .novedades-bar{display:flex;align-items:center;gap:.75rem;padding:.5rem 2rem;background:rgba(8,12,20,.95);border-bottom:1px solid rgba(27,58,107,.3);flex-wrap:wrap;}
+    .nov-label{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;color:rgba(245,245,240,.3);white-space:nowrap;padding-right:.5rem;border-right:1px solid rgba(27,58,107,.4);}
+    .novedad-chip{display:flex;align-items:center;gap:.45rem;background:rgba(27,58,107,.18);border:1px solid rgba(27,58,107,.4);border-radius:20px;padding:.28rem .9rem .28rem .6rem;}
+    .nov-icon{font-size:.8rem;line-height:1;}
+    .nov-cat{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--dorado);}
+    .nov-txt{font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:500;color:rgba(245,245,240,.6);margin-left:.15rem;}
     .ticker{background:linear-gradient(90deg,var(--dorado) 0%,var(--dorado-light) 50%,var(--dorado) 100%);overflow:hidden;padding:.65rem 0;white-space:nowrap;}
     .ticker-inner{display:inline-block;animation:ticker 35s linear infinite;}
     .ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--negro);padding:0 3rem;}
@@ -322,8 +323,9 @@
 </section>
 
 <div class="novedades-bar">
-  <div class="novedad-chip"><span class="nov-icon">⭐</span><span class="nov-cat">SUB 18</span><span class="nov-txt">Puntera e invicta en su serie</span></div>
-  <div class="novedad-chip"><span class="nov-icon">⚡</span><span class="nov-cat">MAYOR</span><span class="nov-txt">Ganó en la hora</span></div>
+  <span class="nov-label">Novedades de la fecha</span>
+  <div class="novedad-chip"><span class="nov-icon">⭐</span><span class="nov-cat">Sub 18</span><span class="nov-txt">Puntera e invicta en su serie</span></div>
+  <div class="novedad-chip"><span class="nov-icon">⚡</span><span class="nov-cat">Mayor</span><span class="nov-txt">Victoria en la hora frente a Santa Elena</span></div>
 </div>
 <div class="ticker">
   <div class="ticker-inner" id="ticker-inner">
