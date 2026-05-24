@@ -1,123 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resultados Playa Honda</title>
-</head>
-
-<body style="
-margin:0;
-padding:0;
-background:#07111f;
-font-family:Arial,Helvetica,sans-serif;
-">
-
-<table width="100%" cellpadding="0" cellspacing="0" style="
-background:#07111f;
-padding:40px 0;
-">
-
-<tr>
-<td align="center">
-
-<!-- CONTENEDOR PRINCIPAL -->
-<table width="650" cellpadding="0" cellspacing="0" style="
-background:linear-gradient(180deg,#0c1728,#0b1320);
-border-radius:24px;
-padding:40px;
-border:1px solid rgba(255,255,255,.05);
-box-shadow:0 10px 40px rgba(0,0,0,.45);
-">
-
-<!-- HEADER -->
-<tr>
-<td align="center">
-
-<p style="
-margin:0 0 12px 0;
-color:#8ea4c7;
-font-size:12px;
-letter-spacing:.35em;
-text-transform:uppercase;
-">
-Playa Honda Universitario
-</p>
-
-<h1 style="
-margin:0;
-font-size:54px;
-line-height:1;
-color:white;
-font-weight:900;
-letter-spacing:-2px;
-">
-RESULTADOS
-</h1>
-
-<div style="
-width:90px;
-height:4px;
-background:#d4af37;
-border-radius:999px;
-margin:22px auto 0 auto;
-"></div>
-
-</td>
-</tr>
-
-<!-- ESPACIO -->
-<tr>
-<td height="35"></td>
-</tr>
-
-<!-- RESULTADOS DINÁMICOS -->
-<tr>
-<td>
-
-<div id="resultados"></div>
-
-</td>
-</tr>
-
-<!-- FOOTER -->
-<tr>
-<td align="center" style="padding-top:40px;">
-
-<p style="
-margin:0;
-color:#7d8ea8;
-font-size:13px;
-">
-Liga Universitaria del Uruguay · Desde 1964
-</p>
-
-<p style="
-margin:10px 0 0 0;
-color:#d4af37;
-font-size:14px;
-font-weight:bold;
-letter-spacing:.15em;
-text-transform:uppercase;
-">
-#SomosPlaya
-</p>
-
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-</table>
-
-<!-- SCRIPT -->
 <script>
 
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv")
+
 .then(response => response.text())
+
 .then(data => {
 
   const rows = data.split("\n").slice(1);
@@ -130,19 +16,23 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
 
     const cols = row.split(",");
 
-    const categoria = cols[0];
-    const rival = cols[1];
-    const resultado = cols[2];
-    const estado = cols[3];
-    const cancha = cols[4];
-    const dia = cols[5];
-    const hora = cols[6];
+    const categoria = cols[0] || "";
+    const rival = cols[1] || "";
+    const resultado = cols[2] || "";
+    const estado = cols[3] || "";
+    const localia = cols[4] || "";
+    const fecha = cols[5] || "";
 
-    let color = "#d0d0d0";
+    let color = "#cfcfcf";
 
-    if (estado === "Victoria") color = "#41d17d";
-    if (estado === "Derrota") color = "#ff6b6b";
-    if (estado === "Empate") color = "#cfcfcf";
+    if (estado.toLowerCase() === "victoria")
+      color = "#41d17d";
+
+    if (estado.toLowerCase() === "derrota")
+      color = "#ff6b6b";
+
+    if (estado.toLowerCase() === "empate")
+      color = "#d0d0d0";
 
     html += `
 
@@ -182,6 +72,7 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     color:${color};
     font-weight:bold;
     font-size:15px;
+    text-transform:capitalize;
     ">
     ● ${estado}
     </p>
@@ -192,7 +83,7 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     color:#9fb0ca;
     font-size:14px;
     ">
-    📍 ${cancha} · ${dia} · ${hora}
+    📅 ${fecha} · ${localia}
     </p>
 
     </td>
@@ -208,6 +99,3 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
 });
 
 </script>
-
-</body>
-</html>
