@@ -130,19 +130,23 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
 
     const cols = row.split(",");
 
-    const categoria = cols[0];
-    const rival = cols[1];
-    const resultado = cols[2];
-    const estado = cols[3];
-    const cancha = cols[4];
-    const dia = cols[5];
-    const hora = cols[6];
+   const categoria = cols[0] || "";
+const rival = cols[1] || "";
+const resultado = cols[2] || "";
+const estado = cols[3] || "";
+const localia = cols[4] || "";
+const fecha = cols[5] || "";
 
-    let color = "#d0d0d0";
+let color = "#d0d0d0";
 
-    if (estado === "Victoria") color = "#41d17d";
-    if (estado === "Derrota") color = "#ff6b6b";
-    if (estado === "Empate") color = "#cfcfcf";
+if (estado.toLowerCase() === "victoria")
+  color = "#41d17d";
+
+if (estado.toLowerCase() === "derrota")
+  color = "#ff6b6b";
+
+if (estado.toLowerCase() === "empate")
+  color = "#cfcfcf";
 
     html += `
 
@@ -192,7 +196,7 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     color:#9fb0ca;
     font-size:14px;
     ">
-    📍 ${cancha} · ${dia} · ${hora}
+📅 ${fecha} · ${localia}
     </p>
 
     </td>
