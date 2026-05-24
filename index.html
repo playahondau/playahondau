@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Playa Honda Universitario</title>
-  <link rel="icon" type="image/jpg" href="escudo del playa.jpg">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root{--azul:#002D62;--dorado:#1B3A6B;--dorado-light:#2048a0;--blanco:#F5F5F0;--gris:#9aa0ac;--negro:#0a0c10;--fondo:#080c14;}
@@ -105,9 +104,160 @@
       .stat-item{flex:50%;}
       .hero-escudo-bg,.hero-escudo-glow{width:280px;height:280px;right:2%;}
     }
-  </style>
+  
+    /* Newsletter popup */
+    .newsletter-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(2,6,16,.82);
+      backdrop-filter:blur(8px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      opacity:0;
+      visibility:hidden;
+      transition:all .35s ease;
+      padding:1.5rem;
+    }
+    .newsletter-overlay.active{
+      opacity:1;
+      visibility:visible;
+    }
+    .newsletter-modal{
+      width:100%;
+      max-width:480px;
+      background:linear-gradient(180deg,#0b1220 0%,#070b12 100%);
+      border:1px solid rgba(27,58,107,.45);
+      border-radius:18px;
+      padding:2.5rem;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 25px 80px rgba(0,0,0,.45);
+    }
+    .newsletter-modal::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top right, rgba(0,45,98,.35), transparent 40%);
+      pointer-events:none;
+    }
+    .newsletter-close{
+      position:absolute;
+      top:14px;
+      right:16px;
+      background:none;
+      border:none;
+      color:var(--gris);
+      font-size:1.4rem;
+      cursor:pointer;
+      transition:.2s;
+      z-index:1;
+    }
+    .newsletter-close:hover{
+      color:var(--dorado);
+      transform:scale(1.1);
+    }
+    .newsletter-label{
+      position:relative;
+      font-family:'Barlow Condensed',sans-serif;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--dorado);
+      font-size:.72rem;
+      margin-bottom:.8rem;
+      z-index:1;
+    }
+    .newsletter-title{
+      position:relative;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:3rem;
+      line-height:.95;
+      color:var(--blanco);
+      margin-bottom:1rem;
+      z-index:1;
+    }
+    .newsletter-desc{
+      position:relative;
+      color:var(--gris);
+      line-height:1.6;
+      margin-bottom:1.8rem;
+      font-size:.95rem;
+      z-index:1;
+    }
+    .newsletter-form{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:.9rem;
+      z-index:1;
+    }
+    .newsletter-input{
+      width:100%;
+      background:#0f1724;
+      border:1px solid rgba(255,255,255,.08);
+      height:54px;
+      padding:0 1rem;
+      color:var(--blanco);
+      border-radius:10px;
+      font-size:.95rem;
+      outline:none;
+      transition:.25s;
+    }
+    .newsletter-input:focus{
+      border-color:var(--dorado);
+      box-shadow:0 0 0 3px rgba(27,58,107,.25);
+    }
+    .newsletter-btn{
+      height:54px;
+      border:none;
+      border-radius:10px;
+      background:var(--dorado);
+      color:var(--blanco);
+      font-family:'Barlow Condensed',sans-serif;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:.25s;
+    }
+    .newsletter-btn:hover{
+      background:var(--dorado-light);
+      transform:translateY(-2px);
+    }
+    .newsletter-mini{
+      position:relative;
+      margin-top:1rem;
+      font-size:.78rem;
+      color:#70798a;
+      text-align:center;
+      z-index:1;
+    }
+    @media(max-width:768px){
+      .newsletter-modal{
+        padding:2rem 1.4rem;
+      }
+      .newsletter-title{
+        font-size:2.2rem;
+      }
+    }
+</style>
 </head>
 <body>
+<div class="newsletter-overlay" id="newsletter">
+  <div class="newsletter-modal">
+    <button class="newsletter-close" id="close-newsletter" aria-label="Cerrar newsletter">✕</button>
+    <p class="newsletter-label">Playa Honda Universitario</p>
+    <h2 class="newsletter-title">RECIBÍ LOS ÚLTIMOS RESULTADOS</h2>
+    <p class="newsletter-desc">Enterate de resultados, fixture y novedades del club directamente en tu correo.</p>
+    <form class="newsletter-form">
+      <input type="email" class="newsletter-input" placeholder="Tu correo electrónico" required />
+      <button type="submit" class="newsletter-btn">SUSCRIBIRME</button>
+    </form>
+    <p class="newsletter-mini">Sin spam. Solo información oficial del club.</p>
+  </div>
+</div>
+
 
 <nav>
   <a class="nav-logo" href="#">
@@ -1192,5 +1342,37 @@ window.addEventListener('resize', updateNavIG);
 /* ── Run ── */
 init();
 </script>
+
+<script>
+/* Newsletter */
+const newsletter = document.getElementById('newsletter');
+const closeNewsletter = document.getElementById('close-newsletter');
+
+window.addEventListener('load', () => {
+  if (!localStorage.getItem('newsletterClosed')) {
+    setTimeout(() => {
+      newsletter.classList.add('active');
+    }, 1200);
+  }
+});
+
+closeNewsletter.addEventListener('click', () => {
+  newsletter.classList.remove('active');
+  localStorage.setItem('newsletterClosed', 'true');
+});
+
+document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button');
+  btn.innerHTML = '✓ SUSCRITO';
+  localStorage.setItem('newsletterClosed', 'true');
+  setTimeout(() => {
+    newsletter.classList.remove('active');
+  }, 1200);
+});
+</script>
+
 </body>
 </html>
+
+
