@@ -380,6 +380,10 @@
           <div class="part-row jugado draw"><span class="part-fecha">Dom 17 may.</span><span class="part-equipos">Playa Honda <b>1 &ndash; 1</b> TAPE</span><span class="part-loc">Local</span></div>
           <div class="part-row jugado win"><span class="part-fecha">Dom 24 may.</span><span class="part-equipos">Santa Elena Lagomar <b>1 &ndash; 2</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
         </div>
+        <div class="foto-victoria-wrap">
+          <img src="img/foto-mayor-f5.jpg" alt="Mayores - Victoria vs Santa Elena" class="foto-victoria">
+          <p class="foto-caption">Mayores &mdash; Victoria en la hora frente a Santa Elena Lagomar</p>
+        </div>
       </div>
       <div class="part-col">
         <p class="part-subtitulo">Pr&oacute;ximos partidos</p>
@@ -411,6 +415,10 @@
           <div class="part-row jugado draw"><span class="part-fecha">S&aacute;b 25 abr.</span><span class="part-equipos">OBC Azulgrana <b>1 &ndash; 1</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
           <div class="part-row jugado loss"><span class="part-fecha">S&aacute;b 16 may.</span><span class="part-equipos">Carrasco Lawn Tennis <b>4 &ndash; 0</b> Playa Honda</span><span class="part-loc">Visitante</span></div>
           <div class="part-row jugado win"><span class="part-fecha">S&aacute;b 23 may.</span><span class="part-equipos">Playa Honda <b>3 &ndash; 0</b> Nacional Univ.</span><span class="part-loc">Local</span></div>
+        </div>
+        <div class="foto-victoria-wrap">
+          <img src="img/foto-reserva-f5.jpg" alt="Reserva - Victoria vs Nacional" class="foto-victoria">
+          <p class="foto-caption">Reserva &mdash; Goleada 3&ndash;0 ante Nacional Universitario</p>
         </div>
       </div>
       <div class="part-col">
@@ -568,10 +576,14 @@
 .part-equipos{color:var(--blanco);font-size:.82rem;}
 .part-equipos b{color:var(--dorado);}
 .part-loc{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);text-align:right;}
+.foto-victoria-wrap{margin-top:1rem;border-radius:4px;overflow:hidden;border:1px solid rgba(27,58,107,.3);}
+.foto-victoria{width:100%;display:block;object-fit:cover;max-height:220px;}
+.foto-caption{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);background:#0a0e1a;padding:.45rem .8rem;}
 @media(max-width:768px){
   .part-grid{grid-template-columns:1fr;}
   .part-row{grid-template-columns:80px 1fr;}
   .part-loc{display:none;}
+  .foto-victoria{max-height:180px;}
 }
 </style>
 <script>
