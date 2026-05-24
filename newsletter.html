@@ -84,7 +84,8 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     const resultado = cols[2] || "";
     const estado    = cols[3] || "";
     const localia   = cols[4] || "";
-    const fecha     = cols[5] || "";
+    const dia       = cols[5] || "";
+    const fecha     = cols[6] || "";
 
     let color = "#cfcfcf";
     if (estado.toLowerCase() === "victoria") color = "#41d17d";
@@ -107,8 +108,8 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
         &#9679; ${estado}
       </p>
 
-      <p style="margin:10px 0 0 0;font-family:'Barlow',Helvetica,sans-serif;font-size:13px;color:#9fb0ca;">
-        &#128197; ${fecha} &nbsp;&middot;&nbsp; ${localia}
+      <p style="margin:10px 0 0 0;font-family:'Barlow',Helvetica,sans-serif;font-size:13px;color:#9fb0ca;text-transform:capitalize;">
+        &#128197; ${fecha} &nbsp;&middot;&nbsp; ${dia} &nbsp;&middot;&nbsp; ${localia}
       </p>
 
     </td></tr>
