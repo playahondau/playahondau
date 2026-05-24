@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resultados Playa Honda</title>
 </head>
 
@@ -12,16 +13,20 @@ background:#07111f;
 font-family:Arial,Helvetica,sans-serif;
 ">
 
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;background:#07111f;">
+<table width="100%" cellpadding="0" cellspacing="0" style="
+background:#07111f;
+padding:40px 0;
+">
+
 <tr>
 <td align="center">
 
-<!-- CONTENEDOR -->
+<!-- CONTENEDOR PRINCIPAL -->
 <table width="650" cellpadding="0" cellspacing="0" style="
 background:linear-gradient(180deg,#0c1728,#0b1320);
-border:1px solid rgba(255,255,255,.06);
 border-radius:24px;
 padding:40px;
+border:1px solid rgba(255,255,255,.05);
 box-shadow:0 10px 40px rgba(0,0,0,.45);
 ">
 
@@ -30,20 +35,20 @@ box-shadow:0 10px 40px rgba(0,0,0,.45);
 <td align="center">
 
 <p style="
-color:#b6bfd0;
+margin:0 0 12px 0;
+color:#8ea4c7;
 font-size:12px;
 letter-spacing:.35em;
 text-transform:uppercase;
-margin:0 0 12px 0;
 ">
 Playa Honda Universitario
 </p>
 
 <h1 style="
 margin:0;
-font-size:52px;
-line-height:.95;
-color:#ffffff;
+font-size:54px;
+line-height:1;
+color:white;
 font-weight:900;
 letter-spacing:-2px;
 ">
@@ -66,209 +71,11 @@ margin:22px auto 0 auto;
 <td height="35"></td>
 </tr>
 
-<!-- SUB 20 -->
+<!-- RESULTADOS DINÁMICOS -->
 <tr>
 <td>
 
-<table width="100%" cellpadding="0" cellspacing="0" style="
-background:rgba(19,39,68,.95);
-border-radius:18px;
-padding:24px;
-border-left:5px solid #41d17d;
-margin-bottom:18px;
-">
-
-<tr>
-<td>
-
-<p style="
-margin:0;
-font-size:13px;
-letter-spacing:.2em;
-text-transform:uppercase;
-color:#8ea4c7;
-font-weight:bold;
-">
-Sub 20
-</p>
-
-<h2 style="
-margin:10px 0 8px 0;
-font-size:34px;
-color:#ffffff;
-line-height:1.1;
-">
-Playa Honda 1-0 Nacional U
-</h2>
-
-<p style="
-margin:0;
-color:#41d17d;
-font-weight:bold;
-font-size:15px;
-">
-● Victoria
-</p>
-
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-<!-- PRESENIOR -->
-<tr>
-<td>
-
-<table width="100%" cellpadding="0" cellspacing="0" style="
-background:rgba(19,39,68,.95);
-border-radius:18px;
-padding:24px;
-border-left:5px solid #ff6b6b;
-margin-bottom:18px;
-">
-
-<tr>
-<td>
-
-<p style="
-margin:0;
-font-size:13px;
-letter-spacing:.2em;
-text-transform:uppercase;
-color:#8ea4c7;
-font-weight:bold;
-">
-Presenior
-</p>
-
-<h2 style="
-margin:10px 0 8px 0;
-font-size:34px;
-color:#ffffff;
-line-height:1.1;
-">
-Independiente 3-0 Playa Honda
-</h2>
-
-<p style="
-margin:0;
-color:#ff6b6b;
-font-weight:bold;
-font-size:15px;
-">
-● Derrota
-</p>
-
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-<!-- MASTER -->
-<tr>
-<td>
-
-<table width="100%" cellpadding="0" cellspacing="0" style="
-background:rgba(19,39,68,.95);
-border-radius:18px;
-padding:24px;
-border-left:5px solid #c8c8c8;
-margin-bottom:18px;
-">
-
-<tr>
-<td>
-
-<p style="
-margin:0;
-font-size:13px;
-letter-spacing:.2em;
-text-transform:uppercase;
-color:#8ea4c7;
-font-weight:bold;
-">
-Master
-</p>
-
-<h2 style="
-margin:10px 0 8px 0;
-font-size:34px;
-color:#ffffff;
-line-height:1.1;
-">
-Playa Honda 2-2 City Park U
-</h2>
-
-<p style="
-margin:0;
-color:#d0d0d0;
-font-weight:bold;
-font-size:15px;
-">
-● Empate
-</p>
-
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-<!-- RESERVA -->
-<tr>
-<td>
-
-<table width="100%" cellpadding="0" cellspacing="0" style="
-background:rgba(19,39,68,.95);
-border-radius:18px;
-padding:24px;
-border-left:5px solid #41d17d;
-">
-
-<tr>
-<td>
-
-<p style="
-margin:0;
-font-size:13px;
-letter-spacing:.2em;
-text-transform:uppercase;
-color:#8ea4c7;
-font-weight:bold;
-">
-Reserva
-</p>
-
-<h2 style="
-margin:10px 0 8px 0;
-font-size:34px;
-color:#ffffff;
-line-height:1.1;
-">
-Playa Honda 3-0 Nacional U
-</h2>
-
-<p style="
-margin:0;
-color:#41d17d;
-font-weight:bold;
-font-size:15px;
-">
-● Victoria
-</p>
-
-</td>
-</tr>
-
-</table>
+<div id="resultados"></div>
 
 </td>
 </tr>
@@ -278,9 +85,9 @@ font-size:15px;
 <td align="center" style="padding-top:40px;">
 
 <p style="
+margin:0;
 color:#7d8ea8;
 font-size:13px;
-margin:0;
 ">
 Liga Universitaria del Uruguay · Desde 1964
 </p>
@@ -303,7 +110,104 @@ text-transform:uppercase;
 
 </td>
 </tr>
+
 </table>
+
+<!-- SCRIPT -->
+<script>
+
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv")
+.then(response => response.text())
+.then(data => {
+
+  const rows = data.split("\n").slice(1);
+
+  let html = "";
+
+  rows.forEach(row => {
+
+    if(row.trim() === "") return;
+
+    const cols = row.split(",");
+
+    const categoria = cols[0];
+    const rival = cols[1];
+    const resultado = cols[2];
+    const estado = cols[3];
+    const cancha = cols[4];
+    const dia = cols[5];
+    const hora = cols[6];
+
+    let color = "#d0d0d0";
+
+    if (estado === "Victoria") color = "#41d17d";
+    if (estado === "Derrota") color = "#ff6b6b";
+    if (estado === "Empate") color = "#cfcfcf";
+
+    html += `
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="
+    background:rgba(19,39,68,.95);
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:18px;
+    border-left:5px solid ${color};
+    ">
+
+    <tr>
+    <td>
+
+    <p style="
+    margin:0;
+    font-size:13px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:#8ea4c7;
+    font-weight:bold;
+    ">
+    ${categoria}
+    </p>
+
+    <h2 style="
+    margin:10px 0 8px 0;
+    font-size:34px;
+    color:#ffffff;
+    line-height:1.1;
+    ">
+    Playa Honda ${resultado} ${rival}
+    </h2>
+
+    <p style="
+    margin:0;
+    color:${color};
+    font-weight:bold;
+    font-size:15px;
+    ">
+    ● ${estado}
+    </p>
+
+    <p style="
+    margin-top:12px;
+    margin-bottom:0;
+    color:#9fb0ca;
+    font-size:14px;
+    ">
+    📍 ${cancha} · ${dia} · ${hora}
+    </p>
+
+    </td>
+    </tr>
+
+    </table>
+
+    `;
+  });
+
+  document.getElementById("resultados").innerHTML = html;
+
+});
+
+</script>
 
 </body>
 </html>
