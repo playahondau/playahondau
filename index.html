@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -306,7 +306,7 @@
     <li><a href="#proximos">Fixture</a></li>
     <li><a href="#posiciones">Posiciones</a></li>
     <li><a href="#planteles">Planteles</a></li>
-    <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#divisiones">Divisiones</a></li>
+    <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li>
   </ul>
   <a class="nav-ig" href="https://www.instagram.com/playahondau/" target="_blank" style="display:none;" id="nav-ig-desktop"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:.3rem"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> @playahondau</a>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -322,6 +322,7 @@
   <a href="#planteles" onclick="closeMobileNav()">Planteles</a>
   <a href="#goleadores" onclick="closeMobileNav()">Goleadores</a>
   <a href="#historial" onclick="closeMobileNav()">Historial</a>
+  <a href="#estadisticas" onclick="closeMobileNav()">Estad&iacute;sticas</a>
   <a href="#divisiones" onclick="closeMobileNav()">Divisiones</a>
   <a href="https://www.instagram.com/playahondau/" target="_blank" style="color:var(--dorado-light)">@playahondau</a>
 </div>
@@ -1147,8 +1148,164 @@ function showGol(name) {
 }
 </script>
 
-<!-- ===== HISTORIAL / ESTADÍSTICAS ===== -->
-<section id="historial">
+<style>
+.hvse-wrap{overflow-x:auto;max-height:72vh;overflow-y:auto;border:1px solid rgba(27,58,107,.35);border-radius:4px;}
+.hvse{width:100%;border-collapse:collapse;font-family:'Barlow Condensed',sans-serif;}
+.hvse thead{position:sticky;top:0;z-index:2;}
+.hvse thead tr{background:var(--dorado);}
+.hvse th{color:#fff;font-weight:700;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;padding:.65rem 1rem;text-align:center;}
+.hvse th:first-child{text-align:left;min-width:220px;}
+.hvse tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;}
+.hvse tbody tr:hover{background:rgba(27,58,107,.25);}
+.hvse tbody tr:nth-child(even){background:rgba(255,255,255,.025);}
+.hvse td{padding:.45rem 1rem;font-size:.85rem;color:var(--blanco);text-align:center;}
+.hvse td:first-child{text-align:left;font-weight:600;}
+.hvse-sub{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;color:var(--gris);letter-spacing:.1em;margin-bottom:2rem;}
+</style>
+<!-- ===== HISTORIAL VS EQUIPOS ===== -->
+<section id="historial" style="background:#0b0f1a;">
+  <p class="section-label reveal">Playa Honda Universitario</p>
+  <h2 class="section-title reveal">Historial vs Equipos</h2>
+  <div class="gold-line reveal"></div>
+  <p class="hvse-sub reveal">Desde el a&ntilde;o 2005</p>
+  <div class="hvse-wrap reveal">
+    <table class="hvse">
+      <thead><tr><th>EQUIPO</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th></tr></thead>
+      <tbody>
+        <tr><td>Nacional Universitario</td><td>54</td><td>20</td><td>11</td><td>23</td><td>81</td><td>80</td></tr>
+        <tr><td>Urunday Universitario</td><td>46</td><td>20</td><td>11</td><td>15</td><td>80</td><td>76</td></tr>
+        <tr><td>C&iacute;rculo de Tenis Montevideo</td><td>45</td><td>22</td><td>12</td><td>11</td><td>66</td><td>49</td></tr>
+        <tr><td>Tenis El Pinar</td><td>44</td><td>17</td><td>10</td><td>17</td><td>62</td><td>58</td></tr>
+        <tr><td>N&aacute;utico Carrasco y Punta Gorda</td><td>41</td><td>14</td><td>13</td><td>14</td><td>77</td><td>75</td></tr>
+        <tr><td>Old Boys Club</td><td>40</td><td>17</td><td>8</td><td>15</td><td>67</td><td>59</td></tr>
+        <tr><td>Independiente</td><td>35</td><td>11</td><td>6</td><td>18</td><td>53</td><td>77</td></tr>
+        <tr><td>Old Christians Club</td><td>35</td><td>14</td><td>6</td><td>15</td><td>50</td><td>61</td></tr>
+        <tr><td>Carrasco Lawn Tennis</td><td>33</td><td>19</td><td>6</td><td>8</td><td>71</td><td>40</td></tr>
+        <tr><td>J.M.L.M</td><td>30</td><td>16</td><td>8</td><td>6</td><td>56</td><td>35</td></tr>
+        <tr><td>Old Ivy</td><td>29</td><td>16</td><td>5</td><td>8</td><td>50</td><td>34</td></tr>
+        <tr><td>Juan XXIII</td><td>29</td><td>13</td><td>3</td><td>13</td><td>43</td><td>51</td></tr>
+        <tr><td>La Blanqueada</td><td>28</td><td>20</td><td>5</td><td>3</td><td>62</td><td>33</td></tr>
+        <tr><td>Crandon Universitario</td><td>26</td><td>11</td><td>6</td><td>9</td><td>47</td><td>43</td></tr>
+        <tr><td>San Juan Bautista</td><td>25</td><td>11</td><td>4</td><td>10</td><td>35</td><td>34</td></tr>
+        <tr><td>Ceibos Club</td><td>24</td><td>12</td><td>7</td><td>5</td><td>54</td><td>31</td></tr>
+        <tr><td>Pe&ntilde;arol Universitario</td><td>24</td><td>10</td><td>7</td><td>7</td><td>40</td><td>35</td></tr>
+        <tr><td>Centro Crist&oacute;bal Col&oacute;n</td><td>23</td><td>12</td><td>7</td><td>4</td><td>40</td><td>25</td></tr>
+        <tr><td>Elbio Fern&aacute;ndez</td><td>22</td><td>14</td><td>5</td><td>3</td><td>45</td><td>24</td></tr>
+        <tr><td>Club Atl&eacute;tico Limburgo</td><td>21</td><td>8</td><td>5</td><td>8</td><td>41</td><td>26</td></tr>
+        <tr><td>A.E.B.U</td><td>20</td><td>9</td><td>6</td><td>5</td><td>44</td><td>38</td></tr>
+        <tr><td>Carrasco Polo Club</td><td>19</td><td>10</td><td>4</td><td>5</td><td>35</td><td>28</td></tr>
+        <tr><td>Club Universidad Cat&oacute;lica</td><td>19</td><td>11</td><td>3</td><td>5</td><td>42</td><td>22</td></tr>
+        <tr><td>Club Jes&uacute;s Mar&iacute;a</td><td>16</td><td>9</td><td>3</td><td>4</td><td>34</td><td>23</td></tr>
+        <tr><td>TAPE</td><td>15</td><td>5</td><td>5</td><td>5</td><td>26</td><td>19</td></tr>
+        <tr><td>Hebraica Universitario</td><td>15</td><td>9</td><td>4</td><td>2</td><td>37</td><td>18</td></tr>
+        <tr><td>Old Brendans Club</td><td>15</td><td>3</td><td>5</td><td>7</td><td>22</td><td>28</td></tr>
+        <tr><td>San Isidro Lomas Universitario</td><td>15</td><td>2</td><td>5</td><td>8</td><td>20</td><td>26</td></tr>
+        <tr><td>Olimar</td><td>15</td><td>8</td><td>1</td><td>6</td><td>27</td><td>26</td></tr>
+        <tr><td>Montevideo Cricket Club</td><td>15</td><td>7</td><td>3</td><td>5</td><td>35</td><td>22</td></tr>
+        <tr><td>Defensor Sporting</td><td>15</td><td>6</td><td>4</td><td>5</td><td>22</td><td>18</td></tr>
+        <tr><td>Santa Elena Lagomar</td><td>14</td><td>8</td><td>3</td><td>3</td><td>29</td><td>17</td></tr>
+        <tr><td>Club Seminario</td><td>13</td><td>3</td><td>4</td><td>6</td><td>12</td><td>18</td></tr>
+        <tr><td>Universitario Verones</td><td>13</td><td>5</td><td>1</td><td>7</td><td>24</td><td>26</td></tr>
+        <tr><td>E.L.F.</td><td>13</td><td>7</td><td>3</td><td>3</td><td>28</td><td>21</td></tr>
+        <tr><td>Salesianos de las Piedras</td><td>13</td><td>6</td><td>3</td><td>4</td><td>18</td><td>26</td></tr>
+        <tr><td>Argos</td><td>12</td><td>7</td><td>3</td><td>2</td><td>19</td><td>11</td></tr>
+        <tr><td>Poco Sitio Playa Verde</td><td>12</td><td>2</td><td>1</td><td>9</td><td>15</td><td>42</td></tr>
+        <tr><td>Old Woodlands Club</td><td>11</td><td>5</td><td>1</td><td>5</td><td>14</td><td>9</td></tr>
+        <tr><td>Colegio Santa Elena</td><td>11</td><td>6</td><td>3</td><td>2</td><td>19</td><td>12</td></tr>
+        <tr><td>Alem&aacute;n Universitario</td><td>11</td><td>5</td><td>2</td><td>4</td><td>15</td><td>15</td></tr>
+        <tr><td>Deportivo Mor&oacute;n</td><td>11</td><td>8</td><td>1</td><td>2</td><td>27</td><td>11</td></tr>
+        <tr><td>Rentistas Universitario</td><td>11</td><td>4</td><td>2</td><td>5</td><td>15</td><td>29</td></tr>
+        <tr><td>C.A.L.I.</td><td>11</td><td>6</td><td>2</td><td>3</td><td>18</td><td>12</td></tr>
+        <tr><td>Malv&iacute;n 59</td><td>10</td><td>2</td><td>2</td><td>6</td><td>12</td><td>18</td></tr>
+        <tr><td>Rangers</td><td>10</td><td>5</td><td>3</td><td>2</td><td>18</td><td>10</td></tr>
+        <tr><td>Madrugada F.C</td><td>9</td><td>1</td><td>2</td><td>6</td><td>11</td><td>23</td></tr>
+        <tr><td>Scuola Palermo</td><td>9</td><td>7</td><td>1</td><td>1</td><td>27</td><td>9</td></tr>
+        <tr><td>UT Serviam</td><td>9</td><td>4</td><td>2</td><td>3</td><td>13</td><td>10</td></tr>
+        <tr><td>Old Sanca</td><td>9</td><td>5</td><td>2</td><td>2</td><td>21</td><td>11</td></tr>
+        <tr><td>Gomensoro</td><td>8</td><td>4</td><td>1</td><td>3</td><td>16</td><td>12</td></tr>
+        <tr><td>San Agust&iacute;n</td><td>8</td><td>5</td><td>1</td><td>2</td><td>20</td><td>12</td></tr>
+        <tr><td>Wanderers</td><td>8</td><td>2</td><td>4</td><td>2</td><td>9</td><td>9</td></tr>
+        <tr><td>Yaguari</td><td>8</td><td>1</td><td>3</td><td>4</td><td>13</td><td>15</td></tr>
+        <tr><td>Sudam&eacute;rica Universitario</td><td>8</td><td>3</td><td>2</td><td>3</td><td>16</td><td>17</td></tr>
+        <tr><td>Asmedia</td><td>8</td><td>2</td><td>2</td><td>4</td><td>11</td><td>15</td></tr>
+        <tr><td>Club Estudiantes Ingenier&iacute;a</td><td>8</td><td>4</td><td>1</td><td>3</td><td>15</td><td>16</td></tr>
+        <tr><td>Juventud de las Piedras</td><td>8</td><td>4</td><td>1</td><td>3</td><td>11</td><td>11</td></tr>
+        <tr><td>Centro Gallego</td><td>7</td><td>3</td><td>2</td><td>2</td><td>11</td><td>8</td></tr>
+        <tr><td>Sindicato M&eacute;dico del Uruguay</td><td>7</td><td>2</td><td>2</td><td>3</td><td>13</td><td>8</td></tr>
+        <tr><td>X-13 Universitario</td><td>7</td><td>2</td><td>3</td><td>2</td><td>12</td><td>13</td></tr>
+        <tr><td>Perry Sexta Jrs.</td><td>7</td><td>5</td><td>0</td><td>2</td><td>20</td><td>7</td></tr>
+        <tr><td>Champagnat</td><td>7</td><td>2</td><td>2</td><td>3</td><td>9</td><td>13</td></tr>
+        <tr><td>City Park</td><td>6</td><td>2</td><td>0</td><td>4</td><td>5</td><td>9</td></tr>
+        <tr><td>Pelota al Medio Universitario</td><td>6</td><td>3</td><td>1</td><td>2</td><td>12</td><td>15</td></tr>
+        <tr><td>Esparta Universitario</td><td>6</td><td>1</td><td>1</td><td>4</td><td>12</td><td>17</td></tr>
+        <tr><td>Paysand&uacute; Universitario</td><td>6</td><td>2</td><td>3</td><td>1</td><td>10</td><td>7</td></tr>
+        <tr><td>Trouville Universitario</td><td>6</td><td>4</td><td>0</td><td>2</td><td>15</td><td>8</td></tr>
+        <tr><td>Old Christians Azul</td><td>5</td><td>2</td><td>0</td><td>3</td><td>5</td><td>9</td></tr>
+        <tr><td>Deportivo LS Universitario</td><td>5</td><td>1</td><td>0</td><td>4</td><td>7</td><td>14</td></tr>
+        <tr><td>Maturana Universitario</td><td>5</td><td>2</td><td>1</td><td>2</td><td>8</td><td>7</td></tr>
+        <tr><td>Club N&aacute;utico</td><td>5</td><td>4</td><td>0</td><td>1</td><td>9</td><td>4</td></tr>
+        <tr><td>Matecha</td><td>5</td><td>3</td><td>0</td><td>2</td><td>11</td><td>6</td></tr>
+        <tr><td>Liverpool Universitario</td><td>5</td><td>2</td><td>2</td><td>1</td><td>7</td><td>3</td></tr>
+        <tr><td>La 12 Universitaria</td><td>5</td><td>3</td><td>1</td><td>1</td><td>15</td><td>8</td></tr>
+        <tr><td>Body Factory</td><td>5</td><td>4</td><td>0</td><td>1</td><td>10</td><td>7</td></tr>
+        <tr><td>Arquitectura Jrs.</td><td>5</td><td>4</td><td>0</td><td>1</td><td>12</td><td>7</td></tr>
+        <tr><td>Numa Turcatti</td><td>5</td><td>3</td><td>1</td><td>1</td><td>14</td><td>6</td></tr>
+        <tr><td>Perry Sexta Universitario</td><td>5</td><td>2</td><td>3</td><td>0</td><td>8</td><td>5</td></tr>
+        <tr><td>Pampero</td><td>5</td><td>3</td><td>1</td><td>1</td><td>12</td><td>10</td></tr>
+        <tr><td>Hache de F&uacute;tbol</td><td>5</td><td>3</td><td>2</td><td>0</td><td>14</td><td>8</td></tr>
+        <tr><td>Latino F&uacute;tbol Club</td><td>4</td><td>3</td><td>1</td><td>0</td><td>12</td><td>1</td></tr>
+        <tr><td>San Pablo Universitario</td><td>4</td><td>3</td><td>1</td><td>0</td><td>9</td><td>4</td></tr>
+        <tr><td>The British School</td><td>4</td><td>2</td><td>1</td><td>1</td><td>7</td><td>6</td></tr>
+        <tr><td>San Eugenio</td><td>4</td><td>1</td><td>1</td><td>2</td><td>5</td><td>5</td></tr>
+        <tr><td>Wolframio</td><td>4</td><td>3</td><td>0</td><td>1</td><td>9</td><td>6</td></tr>
+        <tr><td>SA.FE.MA</td><td>4</td><td>2</td><td>1</td><td>1</td><td>9</td><td>8</td></tr>
+        <tr><td>Club de Golf</td><td>4</td><td>2</td><td>1</td><td>1</td><td>9</td><td>9</td></tr>
+        <tr><td>O.C.C Jrs.</td><td>4</td><td>2</td><td>1</td><td>1</td><td>3</td><td>1</td></tr>
+        <tr><td>Sagrada Familia Universitario</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>Dep. de la C. Areteia Bimbully</td><td>3</td><td>3</td><td>0</td><td>0</td><td>9</td><td>4</td></tr>
+        <tr><td>Old Christians Blanco</td><td>3</td><td>2</td><td>0</td><td>1</td><td>4</td><td>1</td></tr>
+        <tr><td>Racing Universitario</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td><td>5</td></tr>
+        <tr><td>Familiar Universitario</td><td>3</td><td>1</td><td>1</td><td>1</td><td>5</td><td>5</td></tr>
+        <tr><td>Flores Universitario</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td><td>4</td></tr>
+        <tr><td>La Escapada Universitario</td><td>3</td><td>0</td><td>2</td><td>1</td><td>4</td><td>5</td></tr>
+        <tr><td>Tacuaremb&oacute; Universitario</td><td>3</td><td>1</td><td>1</td><td>1</td><td>5</td><td>6</td></tr>
+        <tr><td>Urunday Univ. Verde</td><td>3</td><td>0</td><td>2</td><td>1</td><td>2</td><td>4</td></tr>
+        <tr><td>Club Fuerza A&eacute;rea</td><td>3</td><td>1</td><td>1</td><td>1</td><td>7</td><td>3</td></tr>
+        <tr><td>DFC</td><td>2</td><td>2</td><td>0</td><td>0</td><td>4</td><td>0</td></tr>
+        <tr><td>Old Sampa Club</td><td>2</td><td>2</td><td>0</td><td>0</td><td>8</td><td>2</td></tr>
+        <tr><td>OBC Azulgrana</td><td>2</td><td>2</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+        <tr><td>Old Christians Verde</td><td>2</td><td>2</td><td>0</td><td>0</td><td>7</td><td>0</td></tr>
+        <tr><td>Club Atl&eacute;tico Brazo Oriental</td><td>2</td><td>1</td><td>0</td><td>1</td><td>2</td><td>4</td></tr>
+        <tr><td>Seminario Universitario</td><td>2</td><td>2</td><td>0</td><td>0</td><td>5</td><td>1</td></tr>
+        <tr><td>Danubio F&uacute;tbol Club</td><td>2</td><td>1</td><td>0</td><td>1</td><td>4</td><td>6</td></tr>
+        <tr><td>USAR Nro Inst 343</td><td>2</td><td>2</td><td>0</td><td>0</td><td>8</td><td>1</td></tr>
+        <tr><td>Academia FRM</td><td>2</td><td>2</td><td>0</td><td>0</td><td>12</td><td>1</td></tr>
+        <tr><td>Hurac&aacute;n Football Club</td><td>2</td><td>2</td><td>0</td><td>0</td><td>11</td><td>3</td></tr>
+        <tr><td>F&eacute;nix Universitario</td><td>2</td><td>1</td><td>0</td><td>1</td><td>3</td><td>4</td></tr>
+        <tr><td>Kennedy Universitario</td><td>2</td><td>1</td><td>1</td><td>0</td><td>6</td><td>4</td></tr>
+        <tr><td>Colegio y Liceo Ingl&eacute;s</td><td>1</td><td>1</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+        <tr><td>OBC Azulgrana</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+        <tr><td>Anglo School Universitario</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+        <tr><td>La Escalinata</td><td>1</td><td>1</td><td>0</td><td>0</td><td>6</td><td>2</td></tr>
+        <tr><td>Crandon Azul Universitario</td><td>1</td><td>1</td><td>0</td><td>0</td><td>9</td><td>1</td></tr>
+        <tr><td>San Miguel City</td><td>1</td><td>1</td><td>0</td><td>0</td><td>8</td><td>2</td></tr>
+        <tr><td>Uni&oacute;n S.R.S.</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>4</td></tr>
+        <tr><td>La Picada F.C.</td><td>1</td><td>1</td><td>0</td><td>0</td><td>4</td><td>1</td></tr>
+        <tr><td>CTM Sub18</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td></tr>
+        <tr><td>Deportivo Matadero</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>2</td></tr>
+        <tr><td>Paralamas Universitario</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+        <tr><td>Escuela Four Seasons</td><td>1</td><td>0</td><td>0</td><td>1</td><td>2</td><td>6</td></tr>
+        <tr><td>Uni&oacute;n Armenia</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>5</td></tr>
+        <tr><td>La Chacra</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>2</td></tr>
+        <tr><td>Estudiantil Salte&ntilde;o</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td><td>2</td></tr>
+        <tr><td>Club Social Piedras Blancas</td><td>1</td><td>1</td><td>0</td><td>0</td><td>2</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== ESTADÍSTICAS ===== -->
+<section id="estadisticas">
   <p class="section-label reveal">Playa Honda Universitario</p>
   <h2 class="section-title reveal">Estad&iacute;sticas Hist&oacute;ricas</h2>
   <div class="gold-line reveal"></div>
