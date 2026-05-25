@@ -89,23 +89,15 @@
       a:hover ~ #cursor-dot, button:hover ~ #cursor-dot{background:var(--blanco);}
     }
     /* ── Escudo hero vivo ── */
-    .hero-escudo-bg{opacity:.18;animation:escudoVivo 4.5s cubic-bezier(.36,.07,.19,.97) infinite;}
+    .hero-escudo-bg{opacity:.16;animation:escudoVivo 6s ease-in-out infinite;}
     @keyframes escudoVivo{
-      0%      {transform:translateY(-50%) translateY(0px)   scale(1,1);     filter:grayscale(20%);}
-      35%     {transform:translateY(-50%) translateY(-45px) scale(1.05,1.05);filter:grayscale(0%);}
-      52%     {transform:translateY(-50%) translateY(8px)   scale(1.08,.93);}
-      63%     {transform:translateY(-50%) translateY(-18px) scale(.97,1.04);}
-      74%     {transform:translateY(-50%) translateY(3px)   scale(1.03,.98);}
-      82%     {transform:translateY(-50%) translateY(-7px)  scale(1,1);}
-      90%     {transform:translateY(-50%) translateY(1px)   scale(1,1);}
-      100%    {transform:translateY(-50%) translateY(0px)   scale(1,1);     filter:grayscale(20%);}
+      0%,100%{transform:translateY(-50%) translateY(0px) scale(1);filter:grayscale(20%);}
+      50%    {transform:translateY(-50%) translateY(-22px) scale(1.05);filter:grayscale(0%);}
     }
-    .hero-escudo-glow{animation:escudoGlowVivo 4.5s cubic-bezier(.36,.07,.19,.97) infinite;}
+    .hero-escudo-glow{animation:escudoGlowVivo 6s ease-in-out infinite;}
     @keyframes escudoGlowVivo{
       0%,100%{transform:translateY(-50%) translateY(0px); box-shadow:0 0 80px rgba(0,45,98,.5),0 0 160px rgba(0,45,98,.2);}
-      35%    {transform:translateY(-50%) translateY(-45px);box-shadow:0 0 200px rgba(0,63,138,.9),0 0 380px rgba(0,63,138,.35);}
-      52%    {transform:translateY(-50%) translateY(8px);  box-shadow:0 0 100px rgba(0,45,98,.6),0 0 200px rgba(0,45,98,.2);}
-      63%    {transform:translateY(-50%) translateY(-18px);box-shadow:0 0 140px rgba(0,63,138,.7),0 0 260px rgba(0,63,138,.25);}
+      50%    {transform:translateY(-50%) translateY(-22px);box-shadow:0 0 180px rgba(0,63,138,.85),0 0 340px rgba(0,63,138,.3);}
     }
     .hero-escudo-glow::before,.hero-escudo-glow::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(96,165,250,.35);animation:radarRing 3.5s ease-out infinite;}
     .hero-escudo-glow::after{animation-delay:1.75s;border-color:rgba(96,165,250,.2);}
