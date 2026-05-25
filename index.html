@@ -76,6 +76,13 @@
     .reveal-stagger.visible > *:nth-child(4){opacity:1;transform:translateY(0);transition-delay:.44s;}
     .reveal-stagger.visible > *:nth-child(5){opacity:1;transform:translateY(0);transition-delay:.56s;}
     .reveal-stagger.visible > *:nth-child(n+6){opacity:1;transform:translateY(0);transition-delay:.65s;}
+    #page-loader{position:fixed;inset:0;background:var(--fondo);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;z-index:9999;transition:opacity .6s ease,visibility .6s ease;}
+    #page-loader.oculto{opacity:0;visibility:hidden;pointer-events:none;}
+    .loader-escudo{width:110px;height:110px;object-fit:contain;animation:loaderLatido 1s ease-in-out infinite alternate;}
+    .loader-barra-wrap{width:140px;height:3px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+    .loader-barra{height:100%;width:0;background:var(--dorado-light);border-radius:4px;animation:loaderFill 1.4s ease forwards;}
+    @keyframes loaderLatido{from{transform:scale(1);opacity:.75;}to{transform:scale(1.1);opacity:1;}}
+    @keyframes loaderFill{from{width:0;}to{width:100%;}}
     @media(max-width:480px){
       .novedades-bar{gap:.35rem;padding:.4rem .9rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;}
       .novedades-bar::-webkit-scrollbar{display:none;}
@@ -303,6 +310,10 @@
 </style>
 </head>
 <body>
+<div id="page-loader">
+  <img src="favicon.jpg" alt="Playa Honda Universitario" class="loader-escudo">
+  <div class="loader-barra-wrap"><div class="loader-barra"></div></div>
+</div>
 <div class="newsletter-overlay" id="newsletter">
   <div class="newsletter-modal">
     <button class="newsletter-close" id="close-newsletter" aria-label="Cerrar newsletter">✕</button>
@@ -1699,6 +1710,15 @@ document.querySelector('.newsletter-form')
 
 });
 
+</script>
+
+<script>
+/* ── Loader ── */
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    document.getElementById('page-loader').classList.add('oculto');
+  }, 1500);
+});
 </script>
 </body>
 </html>
