@@ -88,6 +88,26 @@
       #cursor-ring{position:fixed;width:34px;height:34px;border:2px solid rgba(32,72,160,.7);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .2s ease,height .2s ease,border-color .2s ease;}
       a:hover ~ #cursor-dot, button:hover ~ #cursor-dot{background:var(--blanco);}
     }
+    /* ── Navbar glassmorphism al scrollear ── */
+    nav{transition:background .4s ease,border-bottom-color .4s ease;}
+    nav.scrolled{background:rgba(8,12,20,.6)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom-color:rgba(96,165,250,.18)!important;}
+    /* ── Líneas que crecen (blancas a azul) ── */
+    .gold-line.reveal{background:linear-gradient(90deg,#ffffff,#3b82f6);transform:scaleX(0)!important;transform-origin:left;transition:opacity .4s ease,transform .9s cubic-bezier(.22,.61,.36,1)!important;}
+    .gold-line.reveal.visible{transform:scaleX(1)!important;opacity:1!important;}
+    /* ── Barras de progreso en Goleadores ── */
+    .gol-row{position:relative;overflow:hidden;}
+    .gol-row::after{content:'';position:absolute;left:0;top:0;height:100%;width:var(--bar,0%);background:linear-gradient(90deg,rgba(96,165,250,.16) 0%,transparent 100%);pointer-events:none;transform-origin:left;transform:scaleX(0);animation:barGrow 1.1s cubic-bezier(.22,.61,.36,1) forwards;}
+    .gol-row:nth-child(1)::after{animation-delay:.08s;}
+    .gol-row:nth-child(2)::after{animation-delay:.18s;}
+    .gol-row:nth-child(3)::after{animation-delay:.28s;}
+    .gol-row:nth-child(4)::after{animation-delay:.38s;}
+    .gol-row:nth-child(n+5)::after{animation-delay:.48s;}
+    @keyframes barGrow{to{transform:scaleX(1);}}
+    /* ── Pulso fila Playa Honda ── */
+    .tabla tbody tr.playa{animation:playaPulse 3s ease-in-out infinite;}
+    @keyframes playaPulse{0%,100%{background:rgba(27,58,107,.3);border-left-color:var(--dorado);}50%{background:rgba(27,58,107,.52);border-left-color:#60a5fa;box-shadow:inset 4px 0 18px rgba(96,165,250,.13);}}
+    /* ── Cards 3D tilt ── */
+    .resultado-card,.division-card{will-change:transform;}
     /* ── Gradient títulos con shimmer ── */
     .section-title{background:linear-gradient(90deg,#ffffff 0%,#1d4ed8 45%,#ffffff 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:titleShimmer 4s ease-in-out infinite alternate;}
     @keyframes titleShimmer{from{background-position:0% center;}to{background-position:100% center;}}
@@ -1751,6 +1771,50 @@ document.querySelector('.newsletter-form')
 </script>
 
 <script>
+/* ── Navbar glassmorphism ── */
+(function(){
+  var nav=document.querySelector('nav');
+  window.addEventListener('scroll',function(){
+    nav.classList.toggle('scrolled',window.scrollY>60);
+  },{passive:true});
+})();
+
+/* ── Cards 3D tilt ── */
+(function(){
+  function addTilt(el){
+    el.addEventListener('mousemove',function(e){
+      var r=el.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width-.5;
+      var y=(e.clientY-r.top)/r.height-.5;
+      el.style.transition='box-shadow .3s';
+      el.style.transform='perspective(700px) rotateY('+(x*12)+'deg) rotateX('+(-y*12)+'deg) translateY(-5px)';
+    });
+    el.addEventListener('mouseleave',function(){
+      el.style.transition='transform .5s ease,box-shadow .3s';
+      el.style.transform='';
+    });
+  }
+  document.querySelectorAll('.division-card').forEach(addTilt);
+  var grid=document.getElementById('resultados-grid');
+  if(grid){
+    grid.addEventListener('mousemove',function(e){
+      var card=e.target.closest('.resultado-card');
+      if(!card)return;
+      var r=card.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width-.5;
+      var y=(e.clientY-r.top)/r.height-.5;
+      card.style.transition='box-shadow .3s';
+      card.style.transform='perspective(700px) rotateY('+(x*12)+'deg) rotateX('+(-y*12)+'deg) translateY(-5px)';
+    });
+    grid.addEventListener('mouseleave',function(){
+      grid.querySelectorAll('.resultado-card').forEach(function(c){
+        c.style.transition='transform .5s ease,box-shadow .3s';
+        c.style.transform='';
+      });
+    });
+  }
+})();
+
 /* ── Ripple en botones ── */
 document.querySelectorAll('.btn-primary,.btn-outline,.tab-p,.tab,.tab-pl,.tab-g').forEach(function(btn){
   btn.classList.add('ripple-host');
