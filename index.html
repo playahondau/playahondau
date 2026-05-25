@@ -662,6 +662,13 @@
 .part-row.jugado.draw{border-left-color:#fbbf24;}
 .part-row.jugado.loss{border-left-color:#f87171;}
 .part-row.proximo{border-left-color:rgba(255,255,255,.1);opacity:.75;}
+.forma-wrap{display:flex;align-items:center;gap:.6rem;margin:.5rem 0 .9rem;}
+.forma-label{font-size:.68rem;color:var(--gris);font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+.forma-badges{display:flex;gap:.28rem;}
+.forma-badge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+.forma-badge.w{background:#16a34a;color:#fff;}
+.forma-badge.d{background:#ca8a04;color:#fff;}
+.forma-badge.l{background:#dc2626;color:#fff;}
 .part-fecha{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--gris);white-space:nowrap;}
 .part-equipos{color:var(--blanco);font-size:.82rem;}
 .part-equipos b{color:var(--dorado);}
@@ -1727,6 +1734,23 @@ document.querySelector('.newsletter-form')
 </script>
 
 <script>
+/* ── Forma reciente (badges Sofascore-style) ── */
+document.querySelectorAll('.part-content').forEach(function(tab){
+  var rows = tab.querySelectorAll('.part-row.jugado');
+  if(!rows.length) return;
+  var last5 = Array.from(rows).slice(-5);
+  var badges = last5.map(function(row){
+    var cls = row.classList.contains('win') ? 'w' : row.classList.contains('draw') ? 'd' : 'l';
+    var lbl = cls==='w' ? 'V' : cls==='d' ? 'E' : 'D';
+    return '<span class="forma-badge '+cls+'">'+lbl+'</span>';
+  }).join('');
+  var wrap = document.createElement('div');
+  wrap.className = 'forma-wrap';
+  wrap.innerHTML = '<span class="forma-label">Forma</span><div class="forma-badges">'+badges+'</div>';
+  var titulo = tab.querySelector('.tabla-titulo');
+  if(titulo) titulo.after(wrap);
+});
+
 /* ── Cursor personalizado ── */
 (function(){
   var dot = document.getElementById('cursor-dot');
