@@ -82,6 +82,12 @@
     .reveal-stagger.visible > *:nth-child(4){opacity:1;transform:translateY(0);transition-delay:.44s;}
     .reveal-stagger.visible > *:nth-child(5){opacity:1;transform:translateY(0);transition-delay:.56s;}
     .reveal-stagger.visible > *:nth-child(n+6){opacity:1;transform:translateY(0);transition-delay:.65s;}
+    @media(pointer:fine){
+      *{cursor:none!important;}
+      #cursor-dot{position:fixed;width:8px;height:8px;background:var(--dorado-light);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .15s ease,background .2s ease;}
+      #cursor-ring{position:fixed;width:34px;height:34px;border:2px solid rgba(32,72,160,.7);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .2s ease,height .2s ease,border-color .2s ease;}
+      a:hover ~ #cursor-dot, button:hover ~ #cursor-dot{background:var(--blanco);}
+    }
     #page-loader{position:fixed;inset:0;background:var(--fondo);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;z-index:9999;transition:opacity .6s ease,visibility .6s ease;}
     #page-loader.oculto{opacity:0;visibility:hidden;pointer-events:none;}
     .loader-escudo{width:100px;height:100px;object-fit:cover;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;}
@@ -316,6 +322,8 @@
 </style>
 </head>
 <body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
 <div id="page-loader">
   <img src="favicon.jpg" alt="Playa Honda Universitario" class="loader-escudo">
   <div class="loader-barra-wrap"><div class="loader-barra"></div></div>
@@ -1719,6 +1727,39 @@ document.querySelector('.newsletter-form')
 </script>
 
 <script>
+/* ── Cursor personalizado ── */
+(function(){
+  var dot = document.getElementById('cursor-dot');
+  var ring = document.getElementById('cursor-ring');
+  if(!dot || !ring || !matchMedia('(pointer:fine)').matches) return;
+  var rx = 0, ry = 0;
+  document.addEventListener('mousemove', function(e){
+    dot.style.left = e.clientX + 'px';
+    dot.style.top  = e.clientY + 'px';
+    rx += (e.clientX - rx) * 0.18;
+    ry += (e.clientY - ry) * 0.18;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+  });
+  document.addEventListener('mousedown', function(){
+    dot.style.transform  = 'translate(-50%,-50%) scale(1.8)';
+    ring.style.width  = '22px'; ring.style.height = '22px';
+    ring.style.borderColor = 'rgba(32,72,160,1)';
+  });
+  document.addEventListener('mouseup', function(){
+    dot.style.transform  = 'translate(-50%,-50%) scale(1)';
+    ring.style.width  = '34px'; ring.style.height = '34px';
+    ring.style.borderColor = 'rgba(32,72,160,.7)';
+  });
+  requestAnimationFrame(function loop(){
+    rx += (parseFloat(dot.style.left||0) - rx) * 0.18;
+    ry += (parseFloat(dot.style.top||0)  - ry) * 0.18;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(loop);
+  });
+})();
+
 /* ── Loader ── */
 window.addEventListener('load', function(){
   setTimeout(function(){
