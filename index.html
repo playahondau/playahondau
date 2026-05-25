@@ -42,7 +42,8 @@
     .nov-cat{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--dorado);}
     .nov-txt{font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:500;color:rgba(245,245,240,.6);margin-left:.15rem;}
     @media(max-width:480px){
-      .novedades-bar{gap:.35rem;padding:.4rem .9rem;}
+      .novedades-bar{gap:.35rem;padding:.4rem .9rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;}
+      .novedades-bar::-webkit-scrollbar{display:none;}
       .nov-label{font-size:.6rem;letter-spacing:.04em;padding-right:.35rem;}
       .novedad-chip{padding:.18rem .5rem .18rem .4rem;gap:.2rem;}
       .nov-cat{font-size:.65rem;}
@@ -602,6 +603,14 @@
   .part-row{grid-template-columns:80px 1fr;}
   .part-loc{display:none;}
   .foto-victoria{max-height:180px;}
+  /* Tablas responsive: ocultar columna # y compactar */
+  section#posiciones{padding-left:.4rem;padding-right:.4rem;}
+  .tabla thead th:first-child,.tabla tbody td:first-child{display:none;}
+  .tabla{font-size:.68rem;}
+  .tabla thead th{padding:.45rem .22rem;font-size:.58rem;letter-spacing:0;white-space:nowrap;}
+  .tabla tbody td{padding:.45rem .22rem;}
+  .tabla tbody td:nth-child(2){max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tabla tbody td.pts{font-size:.9rem;}
 }
 </style>
 <script>
