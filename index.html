@@ -1304,6 +1304,16 @@ function showGol(name) {
   </div>
 </section>
 
+<script>
+document.querySelectorAll('.hvse tbody tr').forEach(function(row){
+  var cells = row.querySelectorAll('td');
+  if(cells.length < 5) return;
+  var pg = parseInt(cells[2].textContent);
+  var pp = parseInt(cells[4].textContent);
+  if(pg > pp) cells[0].style.color = '#86efac';
+  else if(pg < pp) cells[0].style.color = '#fca5a5';
+});
+</script>
 <!-- ===== ESTADÍSTICAS ===== -->
 <section id="estadisticas">
   <p class="section-label reveal">Playa Honda Universitario</p>
