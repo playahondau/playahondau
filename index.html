@@ -1387,6 +1387,27 @@ document.querySelectorAll('.hvse tbody tr').forEach(function(row){
   </div>
 </section>
 
+<!-- ===== COMENTARIOS ===== -->
+<section id="comentarios" style="background:#080c14;border-top:1px solid rgba(27,58,107,.3);">
+  <p class="section-label reveal">Comunidad</p>
+  <h2 class="section-title reveal">Comentarios</h2>
+  <div class="gold-line reveal"></div>
+  <div id="disqus_thread" style="margin-top:1.5rem;"></div>
+  <script>
+    var disqus_config = function(){
+      this.page.url = 'https://playahondau.github.io/';
+      this.page.identifier = 'playahondau-home';
+    };
+    (function(){
+      var d = document, s = d.createElement('script');
+      s.src = 'https://playahondau.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Activ&aacute; JavaScript para ver los comentarios.</noscript>
+</section>
+
 <footer>
   <div>
     <div class="footer-brand">Playa <span>Honda</span> U.</div>
