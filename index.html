@@ -1315,9 +1315,20 @@ function showGol(name) {
   <h2 class="section-title reveal">Historial vs Equipos</h2>
   <div class="gold-line reveal"></div>
   <p class="hvse-sub reveal">Desde el a&ntilde;o 2005</p>
+  <div class="hvse-search-wrap reveal">
+    <input type="text" id="hvse-search" class="hvse-search" placeholder="Buscar equipo..." oninput="filterHistorial(this.value)">
+  </div>
   <div class="hvse-wrap reveal">
     <table class="hvse">
-      <thead><tr><th>EQUIPO</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th></tr></thead>
+      <thead><tr>
+        <th onclick="sortHistorial(0)" class="hvse-sortable">EQUIPO <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(1)" class="hvse-sortable">PJ <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(2)" class="hvse-sortable">PG <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(3)" class="hvse-sortable">PE <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(4)" class="hvse-sortable">PP <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(5)" class="hvse-sortable">GF <span class="sort-icon">⇅</span></th>
+        <th onclick="sortHistorial(6)" class="hvse-sortable">GC <span class="sort-icon">⇅</span></th>
+      </tr></thead>
       <tbody>
         <tr><td>Nacional Universitario</td><td>54</td><td>20</td><td>11</td><td>23</td><td>81</td><td>80</td></tr>
         <tr><td>Urunday Universitario</td><td>46</td><td>20</td><td>11</td><td>15</td><td>80</td><td>76</td></tr>
@@ -1607,7 +1618,12 @@ function renderResultados(rows) {
         '<span class="res-equipo">' + r.local + '</span>' +
         '<span class="res-score">' + mkFlip(r.goles_local) + '<span style="opacity:.4;margin:0 .2em">&ndash;</span>' + mkFlip(r.goles_visitante) + '</span>' +
         '<span class="res-equipo away">' + r.visitante + '</span>' +
-      '</div></div>';
+      '</div>' +
+      '<button class="share-btn ripple-host" onclick="compartirResultado(this)" ' +
+        'data-local="' + r.local + '" data-visitante="' + r.visitante + '" ' +
+        'data-gl="' + r.goles_local + '" data-gv="' + r.goles_visitante + '" ' +
+        'data-cat="' + r.categoria + '" data-fecha="' + r.fecha + '">&#8679; Compartir</button>' +
+      '</div>';
   }).join('');
   initFlipObserver();
 }
@@ -1996,6 +2012,222 @@ window.addEventListener('load', function(){
   }, 1500);
 });
 </script>
+
+<!-- ===== FEATURES: COMPARTIR, HISTORIAL ORDENABLE/BUSCABLE, POSICIONES CLICKABLE ===== -->
+<style>
+/* Share button */
+.share-btn{
+  display:block;width:100%;margin-top:.9rem;
+  background:rgba(27,58,107,.25);border:1px solid rgba(96,165,250,.2);
+  color:rgba(245,245,240,.7);font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.45rem;border-radius:3px;cursor:pointer;
+  transition:background .2s,border-color .2s,color .2s;
+}
+.share-btn:hover{background:rgba(27,58,107,.5);border-color:rgba(96,165,250,.5);color:#fff;}
+
+/* Historial search */
+.hvse-search-wrap{margin-bottom:1rem;}
+.hvse-search{
+  width:100%;max-width:380px;height:42px;
+  background:#0d1220;border:1px solid rgba(255,255,255,.08);
+  border-radius:6px;padding:0 1rem 0 2.4rem;
+  color:var(--blanco);font-size:.9rem;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239aa0ac' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:.75rem center;
+  transition:border-color .2s,box-shadow .2s;
+}
+.hvse-search:focus{border-color:var(--dorado);box-shadow:0 0 0 3px rgba(27,58,107,.25);}
+.hvse-search::placeholder{color:rgba(154,160,172,.5);}
+
+/* Sortable headers */
+.hvse-sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+.hvse-sortable:hover{background:rgba(255,255,255,.08);}
+.sort-icon{font-size:.7rem;opacity:.5;margin-left:.2rem;}
+.hvse-sortable.sort-asc .sort-icon::after{content:'↑';opacity:1;}
+.hvse-sortable.sort-desc .sort-icon::after{content:'↓';opacity:1;}
+.hvse-sortable.sort-asc .sort-icon,.hvse-sortable.sort-desc .sort-icon{opacity:1;color:#60a5fa;}
+.hvse-sortable.sort-asc span,.hvse-sortable.sort-desc span{display:none;}
+
+/* Posiciones team name clickable */
+.tabla-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;transition:color .2s;}
+.tabla-link:hover{color:#60a5fa!important;}
+
+/* Historial highlight */
+.hvse-highlight{background:rgba(27,58,107,.45)!important;border-left:3px solid #60a5fa;transition:background .4s;}
+</style>
+
+<script>
+/* ── Feature 2: Compartir resultado ── */
+function compartirResultado(btn) {
+  const local     = btn.dataset.local;
+  const visitante = btn.dataset.visitante;
+  const gl        = btn.dataset.gl;
+  const gv        = btn.dataset.gv;
+  const cat       = btn.dataset.cat;
+  const fecha     = btn.dataset.fecha;
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = 1080;
+  canvas.height = 1080;
+  const ctx = canvas.getContext('2d');
+
+  /* fondo */
+  const grad = ctx.createLinearGradient(0, 0, 0, 1080);
+  grad.addColorStop(0, '#080c14');
+  grad.addColorStop(1, '#0d1628');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  /* bordes */
+  ctx.fillStyle = '#1B3A6B';
+  ctx.fillRect(0, 0, 1080, 7);
+  ctx.fillRect(0, 1073, 1080, 7);
+  ctx.fillRect(0, 0, 7, 1080);
+  ctx.fillRect(1073, 0, 7, 1080);
+
+  /* categoría */
+  ctx.textAlign  = 'center';
+  ctx.font       = '700 38px "Barlow Condensed", Arial Narrow, sans-serif';
+  ctx.fillStyle  = '#2048a0';
+  ctx.fillText(cat.toUpperCase(), 540, 110);
+
+  /* fecha */
+  ctx.font      = '28px Arial, sans-serif';
+  ctx.fillStyle = '#9aa0ac';
+  ctx.fillText(fecha, 540, 155);
+
+  /* línea divisora */
+  ctx.strokeStyle = 'rgba(27,58,107,.6)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.moveTo(120, 185); ctx.lineTo(960, 185); ctx.stroke();
+
+  /* local */
+  ctx.font      = '700 68px Arial Narrow, sans-serif';
+  ctx.fillStyle = '#F5F5F0';
+  ctx.textAlign = 'right';
+  const localLines = wrapText(local, 380);
+  localLines.forEach((l, i) => ctx.fillText(l, 450, 500 + i * 75));
+
+  /* visitante */
+  ctx.fillStyle = '#9aa0ac';
+  ctx.textAlign = 'left';
+  const awayLines = wrapText(visitante, 380);
+  awayLines.forEach((l, i) => ctx.fillText(l, 630, 500 + i * 75));
+
+  /* marcador */
+  ctx.textAlign = 'center';
+  ctx.font      = '700 148px Arial Black, sans-serif';
+  ctx.fillStyle = '#F5F5F0';
+  ctx.fillText(gl + '-' + gv, 540, 560);
+
+  /* branding */
+  ctx.font      = '26px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(96,165,250,.5)';
+  ctx.fillText('Playa Honda Universitario · playahondau.github.io', 540, 990);
+
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'resultado.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: local + ' ' + gl + '-' + gv + ' ' + visitante }); }
+      catch(e) { downloadCanvas(blob); }
+    } else {
+      downloadCanvas(blob);
+    }
+  }, 'image/png');
+}
+
+function downloadCanvas(blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'resultado-playahonda.png';
+  a.click();
+}
+
+function wrapText(text, maxW) {
+  if (!text) return [''];
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(w => {
+    const test = cur ? cur + ' ' + w : w;
+    if (test.length > 12 && cur) { lines.push(cur); cur = w; }
+    else cur = test;
+  });
+  if (cur) lines.push(cur);
+  return lines.slice(0, 2);
+}
+
+/* ── Feature 3 & 4: Historial ordenable + buscable ── */
+let _hvSortCol = -1, _hvSortAsc = true;
+
+function sortHistorial(colIdx) {
+  const tbody = document.querySelector('.hvse tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  if (_hvSortCol === colIdx) _hvSortAsc = !_hvSortAsc;
+  else { _hvSortCol = colIdx; _hvSortAsc = colIdx === 0; }
+
+  rows.sort((a, b) => {
+    const av = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+    const bv = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return _hvSortAsc ? an - bn : bn - an;
+    return _hvSortAsc ? av.localeCompare(bv, 'es') : bv.localeCompare(av, 'es');
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+
+  document.querySelectorAll('.hvse-sortable').forEach((th, i) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (i === colIdx) th.classList.add(_hvSortAsc ? 'sort-asc' : 'sort-desc');
+  });
+}
+
+function filterHistorial(q) {
+  const query = q.toLowerCase().trim();
+  document.querySelectorAll('.hvse tbody tr').forEach(row => {
+    const name = row.cells[0] ? row.cells[0].textContent.toLowerCase() : '';
+    row.style.display = name.includes(query) ? '' : 'none';
+  });
+}
+
+/* ── Feature 5: Click equipo en posiciones → historial ── */
+function scrollToHistorial(teamName) {
+  /* filtrar historial */
+  const input = document.getElementById('hvse-search');
+  if (input) { input.value = teamName; filterHistorial(teamName); }
+
+  /* ir a la sección */
+  const section = document.getElementById('historial');
+  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  /* highlight fila */
+  setTimeout(() => {
+    document.querySelectorAll('.hvse tbody tr').forEach(row => row.classList.remove('hvse-highlight'));
+    document.querySelectorAll('.hvse tbody tr').forEach(row => {
+      if (row.style.display !== 'none' && row.cells[0]) {
+        row.classList.add('hvse-highlight');
+        setTimeout(() => row.classList.remove('hvse-highlight'), 2500);
+      }
+    });
+  }, 600);
+}
+
+/* Hacer clickeables los nombres de equipos en tablas de posiciones */
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.tabla tbody tr').forEach(row => {
+    const td = row.cells[1];
+    if (!td) return;
+    const raw = td.textContent.replace(/⭐/g, '').trim();
+    td.classList.add('tabla-link');
+    td.title = 'Ver historial vs ' + raw;
+    td.addEventListener('click', () => scrollToHistorial(raw));
+  });
+});
+</script>
+
 </body>
 </html>
 
