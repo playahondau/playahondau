@@ -104,12 +104,12 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     if (categoria.toLowerCase().includes("sub 18")) ribbonText = "PUNTEROS";
 
     const ribbonHtml = ribbonText
-      ? `<div style="position:absolute;bottom:22px;right:-26px;width:110px;background:#e53e3e;color:#fff;
-                     font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;
-                     letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:5px 0;
-                     transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.4);">
+      ? `<span style="display:inline-block;background:#e53e3e;color:#fff;
+                      font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;
+                      letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px;
+                      margin-left:8px;vertical-align:middle;">
            ${ribbonText}
-         </div>`
+         </span>`
       : "";
 
     html += `
@@ -117,7 +117,7 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
     <div style="padding:14px 18px;">
 
       <p style="margin:0 0 4px 0;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#8ea4c7;">
-        ${categoria}
+        ${categoria} ${ribbonHtml}
       </p>
 
       <p style="margin:0 0 3px 0;font-family:'Bebas Neue',Impact,sans-serif;font-size:30px;line-height:1;color:#ffffff;letter-spacing:.04em;">
@@ -135,7 +135,6 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhH
       ${golesHtml}
 
     </div>
-    ${ribbonHtml}
     </div>`;
   });
 
