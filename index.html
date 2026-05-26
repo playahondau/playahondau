@@ -1608,28 +1608,54 @@ function renderResultados(rows) {
   initFlipObserver();
 }
 
+function esEnVivo(diaHora) {
+  var m = (diaHora || '').trim().match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
+  if (!m) return false;
+  var now   = new Date();
+  var start = new Date(now.getFullYear(), +m[2]-1, +m[1], +m[3], +m[4], 0);
+  var end   = new Date(start.getTime() + 110*60*1000);
+  return now >= start && now <= end;
+}
+
+function checkLive() {
+  var hayVivo = false;
+  document.querySelectorAll('.fixture[data-dh]').forEach(function(el) {
+    var dh = el.getAttribute('data-dh');
+    var vivo = esEnVivo(dh);
+    el.classList.toggle('en-vivo', vivo);
+    var info = el.querySelector('.fix-info');
+    if (!info) return;
+    if (vivo) {
+      hayVivo = true;
+      if (!info.querySelector('.fix-live-badge')) {
+        el.setAttribute('data-orig', info.innerHTML);
+        info.innerHTML = '<span class="fix-live-badge"><span class="live-dot"></span>En Vivo</span>';
+      }
+    } else {
+      var orig = el.getAttribute('data-orig');
+      if (orig && info.querySelector('.fix-live-badge')) info.innerHTML = orig;
+    }
+  });
+  var nav = document.getElementById('nav-live');
+  if (nav) nav.classList.toggle('visible', hayVivo);
+}
+
 function renderFixture(rows) {
   if (!rows.length) {
     document.getElementById('fixtures-list').innerHTML = '<div class="msg">Sin fixture cargado aún</div>';
     return;
   }
-  var hayEnVivo = false;
-  document.getElementById('fixtures-list').innerHTML = rows.map(r => {
-    var esVivo = (r.estado || '').toLowerCase().trim() === 'en vivo';
-    if (esVivo) hayEnVivo = true;
-    var claseExtra = esVivo ? ' en-vivo' : '';
-    var infoHtml = esVivo
-      ? '<div class="fix-info"><span class="fix-live-badge"><span class="live-dot"></span>En Vivo</span></div>'
-      : '<div class="fix-info"><p class="fix-fecha">' + r.dia_hora + '</p><p class="fix-lugar">' + r.lugar + '</p></div>';
-    return '<div class="fixture' + claseExtra + '">' +
-      '<span class="fix-cat">' + r.categoria + '</span>' +
-      '<span class="fix-home">' + r.local + '</span>' +
-      '<span class="fix-vs">VS</span>' +
-      '<span class="fix-away">' + r.visitante + '</span>' +
-      infoHtml +
-      '</div>';
-  }).join('');
-  if (hayEnVivo) document.getElementById('nav-live').classList.add('visible');
+  document.getElementById('fixtures-list').innerHTML = rows.map(r =>
+    '<div class="fixture" data-dh="' + (r.dia_hora || '') + '">' +
+    '<span class="fix-cat">' + r.categoria + '</span>' +
+    '<span class="fix-home">' + r.local + '</span>' +
+    '<span class="fix-vs">VS</span>' +
+    '<span class="fix-away">' + r.visitante + '</span>' +
+    '<div class="fix-info"><p class="fix-fecha">' + r.dia_hora + '</p><p class="fix-lugar">' + r.lugar + '</p></div>' +
+    '</div>'
+  ).join('');
+  checkLive();
+  setInterval(checkLive, 60000);
 }
 
 async function init() {
