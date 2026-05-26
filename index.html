@@ -1751,10 +1751,12 @@ document.querySelector('.newsletter-form')
   const formData =
   new FormData(form);
 
+  formData.append('access_key','7d1dde08-c8c6-48f9-a0a0-c93fa78f1388');
+
   try{
 
     const response = await fetch(
-      'https://formspree.io/f/xzdwabke',
+      'https://api.web3forms.com/submit',
       {
         method:'POST',
         body:formData,
