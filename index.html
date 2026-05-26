@@ -370,6 +370,15 @@
         font-size:2.2rem;
       }
     }
+    /* ── Typewriter ── */
+    .hero-sub{opacity:0;}
+    @keyframes twBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+    .tw-cursor{display:inline-block;width:2px;height:.85em;background:var(--dorado);margin-left:3px;vertical-align:middle;animation:twBlink .7s step-end infinite;}
+    /* ── Scoreboard flip ── */
+    .flip-char{display:inline-block;perspective:300px;}
+    .flip-digit{display:inline-block;opacity:0;}
+    .flip-active .flip-digit{animation:flipIn .45s cubic-bezier(.455,.03,.515,.955) both;}
+    @keyframes flipIn{from{transform:rotateX(-90deg);opacity:0;}to{transform:rotateX(0deg);opacity:1;}}
 </style>
 </head>
 <body>
@@ -1583,10 +1592,11 @@ function renderResultados(rows) {
       '<p class="res-cat">' + r.categoria + ' &middot; ' + r.fecha + '</p>' +
       '<div class="res-equipos">' +
         '<span class="res-equipo">' + r.local + '</span>' +
-        '<span class="res-score">' + r.goles_local + ' &ndash; ' + r.goles_visitante + '</span>' +
+        '<span class="res-score">' + mkFlip(r.goles_local) + '<span style="opacity:.4;margin:0 .2em">&ndash;</span>' + mkFlip(r.goles_visitante) + '</span>' +
         '<span class="res-equipo away">' + r.visitante + '</span>' +
       '</div></div>';
   }).join('');
+  initFlipObserver();
 }
 
 function renderFixture(rows) {
@@ -1896,9 +1906,46 @@ document.querySelectorAll('.part-content').forEach(function(tab){
 })();
 
 /* ── Loader ── */
+function mkFlip(n) {
+  return String(n).split('').map(function(c, i) {
+    return '<span class="flip-char"><span class="flip-digit" style="animation-delay:' + (i * 0.13) + 's">' + c + '</span></span>';
+  }).join('');
+}
+
+function initFlipObserver() {
+  var cards = document.querySelectorAll('.resultado-card');
+  if (!cards.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('flip-active'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  cards.forEach(function(c) { obs.observe(c); });
+}
+
+function startTypewriter() {
+  var el = document.querySelector('.hero-sub');
+  if (!el) return;
+  var text = el.textContent.trim();
+  el.textContent = '';
+  el.style.opacity = '1';
+  var cursor = document.createElement('span');
+  cursor.className = 'tw-cursor';
+  el.appendChild(cursor);
+  var i = 0;
+  var iv = setInterval(function() {
+    cursor.insertAdjacentText('beforebegin', text[i++]);
+    if (i >= text.length) {
+      clearInterval(iv);
+      setTimeout(function() { cursor.style.animation = 'none'; cursor.style.opacity = '0'; }, 2500);
+    }
+  }, 50);
+}
+
 window.addEventListener('load', function(){
   setTimeout(function(){
     document.getElementById('page-loader').classList.add('oculto');
+    startTypewriter();
   }, 1500);
 });
 </script>
