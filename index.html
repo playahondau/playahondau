@@ -19,8 +19,21 @@
         notifyButton: { enable: false },
         welcomeNotification: {
           title: "Playa Honda Universitario",
-          message: "¡Gracias por suscribirte! Te avisaremos con los resultados.",
+          message: "¡Suscrito! Te avisamos con cada resultado.",
         },
+        promptOptions: {
+          slidedown: {
+            prompts: [{
+              type: "push",
+              autoPrompt: false,
+              text: {
+                actionMessage: "Recibí los resultados de Playa Honda en tu celular o PC.",
+                acceptButton: "Activar",
+                cancelButton: "Ahora no",
+              }
+            }]
+          }
+        }
       });
     });
   </script>
@@ -2237,8 +2250,10 @@ function toggleNotif() {
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     try {
-      await OneSignal.Notifications.requestPermission();
-    } catch(e) {}
+      await OneSignal.Slidedown.promptPush();
+    } catch(e) {
+      try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
+    }
     const btn = document.getElementById('btn-notif');
     if (!btn) return;
     const on = OneSignal.Notifications.permission;
