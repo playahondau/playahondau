@@ -1609,12 +1609,7 @@ function renderResultados(rows) {
 }
 
 function esEnVivo(diaHora) {
-  var m = (diaHora || '').trim().match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
-  if (!m) return false;
-  var now   = new Date();
-  var start = new Date(now.getFullYear(), +m[2]-1, +m[1], +m[3], +m[4], 0);
-  var end   = new Date(start.getTime() + 110*60*1000);
-  return now >= start && now <= end;
+  return true; // PREVIEW TEMPORAL
 }
 
 function checkLive() {
