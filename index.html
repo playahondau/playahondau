@@ -370,6 +370,14 @@
         font-size:2.2rem;
       }
     }
+    /* ── EN VIVO ── */
+    @keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.85);}}
+    @keyframes liveGlow{0%,100%{box-shadow:inset 3px 0 10px rgba(239,68,68,.08);}50%{box-shadow:inset 3px 0 22px rgba(239,68,68,.28);}}
+    .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;animation:livePulse .9s ease-in-out infinite;flex-shrink:0;}
+    .fixture.en-vivo{border-left-color:#ef4444!important;background:rgba(239,68,68,.05)!important;animation:liveGlow 2s ease-in-out infinite;}
+    .fix-live-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .7rem;border-radius:2px;}
+    .nav-live{display:none;align-items:center;gap:.45rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;color:#ef4444;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(239,68,68,.35);padding:.3rem .7rem;border-radius:2px;background:rgba(239,68,68,.08);}
+    .nav-live.visible{display:flex;}
     /* ── Typewriter ── */
     .hero-sub{opacity:0;}
     @keyframes twBlink{0%,100%{opacity:1;}50%{opacity:0;}}
@@ -428,6 +436,7 @@
     <li><a href="#planteles">Planteles</a></li>
     <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li>
   </ul>
+  <div class="nav-live" id="nav-live"><span class="live-dot"></span>En Vivo</div>
   <a class="nav-ig" href="https://www.instagram.com/playahondau/" target="_blank" style="display:none;" id="nav-ig-desktop"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:.3rem"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> @playahondau</a>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -1604,15 +1613,23 @@ function renderFixture(rows) {
     document.getElementById('fixtures-list').innerHTML = '<div class="msg">Sin fixture cargado aún</div>';
     return;
   }
-  document.getElementById('fixtures-list').innerHTML = rows.map(r =>
-    '<div class="fixture">' +
-    '<span class="fix-cat">' + r.categoria + '</span>' +
-    '<span class="fix-home">' + r.local + '</span>' +
-    '<span class="fix-vs">VS</span>' +
-    '<span class="fix-away">' + r.visitante + '</span>' +
-    '<div class="fix-info"><p class="fix-fecha">' + r.dia_hora + '</p><p class="fix-lugar">' + r.lugar + '</p></div>' +
-    '</div>'
-  ).join('');
+  var hayEnVivo = false;
+  document.getElementById('fixtures-list').innerHTML = rows.map(r => {
+    var esVivo = (r.estado || '').toLowerCase().trim() === 'en vivo';
+    if (esVivo) hayEnVivo = true;
+    var claseExtra = esVivo ? ' en-vivo' : '';
+    var infoHtml = esVivo
+      ? '<div class="fix-info"><span class="fix-live-badge"><span class="live-dot"></span>En Vivo</span></div>'
+      : '<div class="fix-info"><p class="fix-fecha">' + r.dia_hora + '</p><p class="fix-lugar">' + r.lugar + '</p></div>';
+    return '<div class="fixture' + claseExtra + '">' +
+      '<span class="fix-cat">' + r.categoria + '</span>' +
+      '<span class="fix-home">' + r.local + '</span>' +
+      '<span class="fix-vs">VS</span>' +
+      '<span class="fix-away">' + r.visitante + '</span>' +
+      infoHtml +
+      '</div>';
+  }).join('');
+  if (hayEnVivo) document.getElementById('nav-live').classList.add('visible');
 }
 
 async function init() {
