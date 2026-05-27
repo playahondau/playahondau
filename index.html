@@ -2248,37 +2248,31 @@ function scrollToHistorial(teamName) {
 }
 
 /* ── Feature 7: Botón notificaciones ── */
-async function toggleNotif() {
+function toggleNotif() {
   const btn = document.getElementById('btn-notif');
   if (!('Notification' in window)) return;
 
   if (Notification.permission === 'denied') {
-    if (btn) { btn.textContent = '🔕 Bloqueado'; btn.title = 'Habilitá las notificaciones en ajustes del navegador'; }
+    if (btn) btn.title = 'Notificaciones bloqueadas — habilitálas en ajustes del navegador';
     return;
   }
 
   if (Notification.permission === 'granted') {
-    if (btn) { btn.textContent = '🔔 Activado'; btn.style.borderColor = 'rgba(74,222,128,.5)'; btn.style.color = '#4ade80'; }
+    if (btn) {
+      btn.textContent       = '🔔 Activado';
+      btn.style.borderColor = 'rgba(74,222,128,.5)';
+      btn.style.color       = '#4ade80';
+    }
     return;
   }
 
-  // permission === 'default' → pedir
-  const OS = window._os;
-  if (OS) {
-    try { await OS.Slidedown.promptPush({ force: true }); } catch(e) {
-      try { await Notification.requestPermission(); } catch(e2) {}
-    }
-  } else {
-    try { await Notification.requestPermission(); } catch(e) {}
-  }
-
-  setTimeout(function() {
+  Notification.requestPermission().then(function(perm) {
     if (!btn) return;
-    const on = Notification.permission === 'granted';
+    const on = perm === 'granted';
     btn.textContent       = on ? '🔔 Activado' : '🔔 Notif.';
     btn.style.borderColor = on ? 'rgba(74,222,128,.5)' : 'rgba(96,165,250,.35)';
     btn.style.color       = on ? '#4ade80' : 'rgba(96,165,250,.8)';
-  }, 800);
+  });
 }
 
 /* Hacer clickeables los nombres de equipos en tablas de posiciones */
