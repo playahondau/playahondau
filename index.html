@@ -1758,26 +1758,20 @@ async function init() {
 }
 
 /* ── Animated Counter ── */
-/* ── 6. Odómetro (slot-machine) ── */
 function animateCounter(el, target) {
   if (!el) return;
-  el.setAttribute('data-target', target);
-  const digits = String(target).split('');
-  el.style.display = 'inline-flex';
-  el.style.gap = '.04em';
-  el.innerHTML = digits.map((d, i) =>
-    `<span style="overflow:hidden;display:inline-block;height:1em;line-height:1;">` +
-    `<span style="display:block;animation:odoReel .9s cubic-bezier(.22,.61,.36,1) ${i * 0.08}s both;--dn:${d}">` +
-    Array.from({length: parseInt(d) + 1}, (_, k) => k).join('<br>') +
-    `</span></span>`
-  ).join('');
+  el.textContent = '0';
+  const duration = 900;
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(ease * target);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
 }
-/* ── 6. CSS del odómetro ── */
-(function(){
-  const s = document.createElement('style');
-  s.textContent = `@keyframes odoReel{from{transform:translateY(calc((var(--dn) - var(--dn)) * -1em))}to{transform:translateY(calc(var(--dn) * -1em))}}`;
-  document.head.appendChild(s);
-})();
 
 /* ── Scroll Reveal (IntersectionObserver) ── */
 const revealObs = new IntersectionObserver((entries) => {
