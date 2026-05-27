@@ -1587,6 +1587,26 @@ window.addEventListener('scroll',()=>{
 
 /* ── Google Sheets API ── */
 const API = 'https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec';
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv';
+
+async function fetchSheetExtra() {
+  try {
+    const r = await fetch(SHEET_CSV);
+    const text = await r.text();
+    const map = {};
+    text.split('\n').slice(1).forEach(row => {
+      if (!row.trim()) return;
+      const cols = row.split(',');
+      const cat = (cols[0] || '').trim().toLowerCase();
+      map[cat] = {
+        localia:    (cols[4] || '').trim(),
+        goleadores: (cols[7] || '').trim(),
+        lugar:      (cols[8] || '').trim()   /* columna opcional */
+      };
+    });
+    return map;
+  } catch(e) { return {}; }
+}
 
 function renderTicker(rows) {
   if (!rows.length) return;
@@ -1598,7 +1618,8 @@ function renderTicker(rows) {
   document.getElementById('ticker-inner').innerHTML = inner + inner;
 }
 
-function renderResultados(rows) {
+function renderResultados(rows, extra) {
+  extra = extra || {};
   const wins = rows.filter(r => String(r.resultado).toLowerCase() === 'victoria').length;
   const statV = document.getElementById('stat-v');
   const statP = document.getElementById('stat-p');
@@ -1612,37 +1633,30 @@ function renderResultados(rows) {
     const res = String(r.resultado).toLowerCase();
     const cls = res === 'victoria' ? 'win' : res === 'empate' ? 'draw' : 'loss';
     const label = res === 'victoria' ? 'Victoria' : res === 'empate' ? 'Empate' : 'Derrota';
-    /* filas de detalle: solo aparecen si el campo tiene valor */
+    /* enriquecer con datos del sheet del newsletter */
+    var ex = extra[(r.categoria || '').trim().toLowerCase()] || {};
+    var goleadores = ex.goleadores || '';
+    var lugar      = ex.lugar      || '';
+    var localia    = ex.localia    || '';
+
     var detalles = '';
-    if (r.lugar && r.lugar.trim()) {
+    if (lugar) {
       detalles += '<div class="res-detail-row">' +
         '<span class="res-detail-icon">📍</span>' +
         '<div><span class="res-detail-label">Lugar</span>' +
-        '<span class="res-detail-val">' + r.lugar + '</span></div></div>';
+        '<span class="res-detail-val">' + lugar + '</span></div></div>';
+    } else if (localia) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">📍</span>' +
+        '<div><span class="res-detail-label">Localía</span>' +
+        '<span class="res-detail-val">' + localia + '</span></div></div>';
     }
-    if (r.goleadores && r.goleadores.trim()) {
+    if (goleadores) {
+      var golesArr = goleadores.split(';').map(function(g){ return g.trim(); }).filter(Boolean);
       detalles += '<div class="res-detail-row">' +
         '<span class="res-detail-icon">⚽</span>' +
         '<div><span class="res-detail-label">Goleadores</span>' +
-        '<span class="res-detail-val">' + r.goleadores + '</span></div></div>';
-    }
-    if (r.asistencias && r.asistencias.trim()) {
-      detalles += '<div class="res-detail-row">' +
-        '<span class="res-detail-icon">🎯</span>' +
-        '<div><span class="res-detail-label">Asistencias</span>' +
-        '<span class="res-detail-val">' + r.asistencias + '</span></div></div>';
-    }
-    if (r.arbitro && r.arbitro.trim()) {
-      detalles += '<div class="res-detail-row">' +
-        '<span class="res-detail-icon">🟨</span>' +
-        '<div><span class="res-detail-label">Árbitro</span>' +
-        '<span class="res-detail-val">' + r.arbitro + '</span></div></div>';
-    }
-    if (r.notas && r.notas.trim()) {
-      detalles += '<div class="res-detail-row">' +
-        '<span class="res-detail-icon">📝</span>' +
-        '<div><span class="res-detail-label">Notas</span>' +
-        '<span class="res-detail-val">' + r.notas + '</span></div></div>';
+        '<span class="res-detail-val">' + golesArr.join(' &nbsp;·&nbsp; ') + '</span></div></div>';
     }
     if (!detalles) {
       detalles = '<div class="res-detail-row"><span class="res-detail-val" style="color:rgba(150,160,180,.5);font-size:.78rem;">Sin datos adicionales cargados.</span></div>';
@@ -1715,12 +1729,12 @@ function renderFixture(rows) {
 
 async function init() {
   try {
-    const resp = await fetch(API);
+    const [resp, extra] = await Promise.all([fetch(API), fetchSheetExtra()]);
     const data = await resp.json();
     const resultados = Array.isArray(data.resultados) ? data.resultados : [];
-    const fixture   = Array.isArray(data.fixture)    ? data.fixture    : [];
+    const fixture    = Array.isArray(data.fixture)    ? data.fixture    : [];
     renderTicker(resultados);
-    renderResultados(resultados);
+    renderResultados(resultados, extra);
     renderFixture(fixture);
   } catch(e) {
     document.getElementById('resultados-grid').innerHTML = '<div class="msg">Error al conectar con la planilla</div>';
