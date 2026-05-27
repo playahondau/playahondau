@@ -2269,8 +2269,12 @@ function toggleNotif() {
   }
 
   function osSubscribe() {
-    if (!window._os) return;
-    try { window._os.User.PushSubscription.optIn(); } catch(e) {}
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      try { await OneSignal.User.PushSubscription.optIn(); } catch(e) {
+        try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
+      }
+    });
   }
 
   if (Notification.permission === 'granted') {
