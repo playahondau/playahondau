@@ -2135,15 +2135,22 @@ function entrarAlSitio() {
   btn.disabled = true;
   btn.textContent = '...';
 
-  /* Reproducir audio */
-  audio.volume = 0.45;
+  /* Reproducir audio con fade in suave */
+  audio.volume = 0;
   audio.play();
+  var fadeIn = setInterval(function() {
+    if (audio.volume < 0.18) {
+      audio.volume = Math.min(0.18, audio.volume + 0.01);
+    } else {
+      clearInterval(fadeIn);
+    }
+  }, 120);
 
   /* Fade out del audio a los 35s */
   setTimeout(function() {
     var fade = setInterval(function() {
-      if (audio.volume > 0.02) {
-        audio.volume = Math.max(0, audio.volume - 0.02);
+      if (audio.volume > 0.01) {
+        audio.volume = Math.max(0, audio.volume - 0.01);
       } else {
         audio.pause();
         clearInterval(fade);
