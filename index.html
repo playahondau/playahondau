@@ -2250,10 +2250,14 @@ function scrollToHistorial(teamName) {
 /* ── Feature 7: Botón notificaciones ── */
 function toggleNotif() {
   const btn = document.getElementById('btn-notif');
-  if (!('Notification' in window)) return;
+
+  if (!('Notification' in window)) {
+    alert('Tu navegador no soporta notificaciones push.');
+    return;
+  }
 
   if (Notification.permission === 'denied') {
-    if (btn) btn.title = 'Notificaciones bloqueadas — habilitálas en ajustes del navegador';
+    alert('Las notificaciones están bloqueadas en este navegador.\n\nPara activarlas: clic en el candado 🔒 de la barra de direcciones → Permisos del sitio → Notificaciones → Permitir.');
     return;
   }
 
