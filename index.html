@@ -1612,6 +1612,42 @@ function renderResultados(rows) {
     const res = String(r.resultado).toLowerCase();
     const cls = res === 'victoria' ? 'win' : res === 'empate' ? 'draw' : 'loss';
     const label = res === 'victoria' ? 'Victoria' : res === 'empate' ? 'Empate' : 'Derrota';
+    /* filas de detalle: solo aparecen si el campo tiene valor */
+    var detalles = '';
+    if (r.lugar && r.lugar.trim()) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">📍</span>' +
+        '<div><span class="res-detail-label">Lugar</span>' +
+        '<span class="res-detail-val">' + r.lugar + '</span></div></div>';
+    }
+    if (r.goleadores && r.goleadores.trim()) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">⚽</span>' +
+        '<div><span class="res-detail-label">Goleadores</span>' +
+        '<span class="res-detail-val">' + r.goleadores + '</span></div></div>';
+    }
+    if (r.asistencias && r.asistencias.trim()) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">🎯</span>' +
+        '<div><span class="res-detail-label">Asistencias</span>' +
+        '<span class="res-detail-val">' + r.asistencias + '</span></div></div>';
+    }
+    if (r.arbitro && r.arbitro.trim()) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">🟨</span>' +
+        '<div><span class="res-detail-label">Árbitro</span>' +
+        '<span class="res-detail-val">' + r.arbitro + '</span></div></div>';
+    }
+    if (r.notas && r.notas.trim()) {
+      detalles += '<div class="res-detail-row">' +
+        '<span class="res-detail-icon">📝</span>' +
+        '<div><span class="res-detail-label">Notas</span>' +
+        '<span class="res-detail-val">' + r.notas + '</span></div></div>';
+    }
+    if (!detalles) {
+      detalles = '<div class="res-detail-row"><span class="res-detail-val" style="color:rgba(150,160,180,.5);font-size:.78rem;">Sin datos adicionales cargados.</span></div>';
+    }
+
     return '<div class="resultado-card">' +
       '<span class="badge ' + cls + '">' + label + '</span>' +
       '<p class="res-cat">' + r.categoria + ' &middot; ' + r.fecha + '</p>' +
@@ -1620,6 +1656,8 @@ function renderResultados(rows) {
         '<span class="res-score">' + mkFlip(r.goles_local) + '<span style="opacity:.4;margin:0 .2em">&ndash;</span>' + mkFlip(r.goles_visitante) + '</span>' +
         '<span class="res-equipo away">' + r.visitante + '</span>' +
       '</div>' +
+      '<button class="res-info-btn" onclick="toggleResInfo(this)">Ver info del partido <span class="arr">▾</span></button>' +
+      '<div class="res-detail"><div class="res-detail-inner">' + detalles + '</div></div>' +
       '</div>';
   }).join('');
   initFlipObserver();
@@ -2014,6 +2052,42 @@ window.addEventListener('load', function(){
 <style>
 
 /* Historial search */
+/* ── Info del partido (expandible) ── */
+.res-info-btn{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  width:100%;margin-top:.9rem;
+  background:none;border:1px solid rgba(255,255,255,.08);
+  color:rgba(200,210,230,.6);font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.45rem;border-radius:3px;cursor:pointer;
+  transition:background .2s,border-color .2s,color .2s;
+}
+.res-info-btn:hover{background:rgba(27,58,107,.3);border-color:rgba(96,165,250,.3);color:#fff;}
+.res-info-btn .arr{display:inline-block;transition:transform .3s;}
+.res-info-btn.open .arr{transform:rotate(180deg);}
+.res-detail{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s ease, opacity .3s ease;
+  opacity:0;
+}
+.res-detail.open{max-height:400px;opacity:1;}
+.res-detail-inner{
+  border-top:1px solid rgba(255,255,255,.06);
+  margin-top:.85rem;padding-top:.85rem;
+  display:flex;flex-direction:column;gap:.6rem;
+}
+.res-detail-row{display:flex;align-items:flex-start;gap:.6rem;}
+.res-detail-icon{font-size:.9rem;flex-shrink:0;margin-top:.05rem;}
+.res-detail-label{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dorado);display:block;margin-bottom:.15rem;
+}
+.res-detail-val{
+  font-family:'Barlow',sans-serif;font-size:.82rem;
+  color:rgba(200,210,230,.85);line-height:1.5;
+}
+
 .hvse-search-wrap{margin-bottom:1rem;}
 .hvse-search{
   width:100%;max-width:380px;height:42px;
@@ -2045,6 +2119,14 @@ window.addEventListener('load', function(){
 </style>
 
 <script>
+
+/* ── Info del partido: toggle expandible ── */
+function toggleResInfo(btn) {
+  const detail = btn.nextElementSibling;
+  const open = detail.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  btn.querySelector('.arr').textContent = open ? '▴' : '▾';
+}
 
 /* ── Feature 3 & 4: Historial ordenable + buscable ── */
 let _hvSortCol = -1, _hvSortAsc = true;
