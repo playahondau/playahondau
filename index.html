@@ -2241,44 +2241,21 @@ function scrollToHistorial(teamName) {
 
 /* ── Feature 7: Botón notificaciones ── */
 function toggleNotif() {
-  const btn = document.getElementById('btn-notif');
-
-  if (!('Notification' in window)) {
-    alert('Tu navegador no soporta notificaciones push.');
-    return;
-  }
-
-  if (Notification.permission === 'denied') {
-    alert('Las notificaciones están bloqueadas.\n\nClic en el candado 🔒 → Permisos del sitio → Notificaciones → Permitir.');
-    return;
-  }
-
-  function setBtn(on) {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    if (Notification.permission === 'denied') {
+      alert('Las notificaciones están bloqueadas.\n\nClic en el candado 🔒 → Permisos del sitio → Notificaciones → Permitir.');
+      return;
+    }
+    try {
+      await OneSignal.Notifications.requestPermission();
+    } catch(e) {}
+    const btn = document.getElementById('btn-notif');
     if (!btn) return;
+    const on = OneSignal.Notifications.permission;
     btn.textContent       = on ? '🔔 Activado' : '🔔 Notif.';
     btn.style.borderColor = on ? 'rgba(74,222,128,.5)' : 'rgba(96,165,250,.35)';
     btn.style.color       = on ? '#4ade80' : 'rgba(96,165,250,.8)';
-  }
-
-  function osSubscribe() {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      try { await OneSignal.User.PushSubscription.optIn(); } catch(e) {
-        try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
-      }
-    });
-  }
-
-  if (Notification.permission === 'granted') {
-    setBtn(true);
-    osSubscribe();
-    return;
-  }
-
-  Notification.requestPermission().then(function(perm) {
-    const on = perm === 'granted';
-    setBtn(on);
-    if (on) osSubscribe();
   });
 }
 
