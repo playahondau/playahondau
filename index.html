@@ -18,6 +18,8 @@
         await OneSignal.init({
           appId: "7f50e1e4-ad03-4a6b-980a-2ea678a004ba",
           notifyButton: { enable: false },
+          serviceWorkerPath: "/playahondau/OneSignalSDKWorker.js",
+          serviceWorkerParam: { scope: "/playahondau/" },
           welcomeNotification: {
             title: "Playa Honda Universitario",
             message: "¡Suscrito! Te avisamos con cada resultado.",
