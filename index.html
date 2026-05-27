@@ -12,31 +12,21 @@
   <!-- OneSignal Push Notifications -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    window._os = null;
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "7f50e1e4-ad03-4a6b-980a-2ea678a0044b",
-        notifyButton: { enable: false },
-        welcomeNotification: {
-          title: "Playa Honda Universitario",
-          message: "¡Suscrito! Te avisamos con cada resultado.",
-        },
-        promptOptions: {
-          slidedown: {
-            prompts: [{
-              type: "push",
-              autoPrompt: false,
-              text: {
-                actionMessage: "Recibí los resultados de Playa Honda en tu celular o PC.",
-                acceptButton: "Activar",
-                cancelButton: "Ahora no",
-              }
-            }]
-          }
+      try {
+        await OneSignal.init({
+          appId: "7f50e1e4-ad03-4a6b-980a-2ea678a0044b",
+          notifyButton: { enable: false },
+          welcomeNotification: {
+            title: "Playa Honda Universitario",
+            message: "¡Suscrito! Te avisamos con cada resultado.",
+          },
+        });
+        if (Notification.permission === 'granted') {
+          try { await OneSignal.User.PushSubscription.optIn(); } catch(e) {}
         }
-      });
-      window._os = OneSignal;
+      } catch(e) {}
     });
   </script>
 
