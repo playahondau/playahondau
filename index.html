@@ -459,6 +459,7 @@
 </div>
 
 <section class="hero" id="hero">
+  <div id="hero-spotlight"></div>
   <div class="hero-bg"></div>
   <div class="hero-pitch"></div>
   <div class="hero-escudo-glow"></div>
@@ -764,9 +765,12 @@
 </style>
 <script>
 function showPartidos(name) {
-  document.querySelectorAll('.part-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.part-content').forEach(el => el.classList.remove('active','fade-in'));
   document.querySelectorAll('.tab-p').forEach(el => el.classList.remove('active'));
-  document.getElementById('part-' + name).classList.add('active');
+  const el = document.getElementById('part-' + name);
+  el.classList.add('active');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
   event.target.classList.add('active');
 }
 </script>
@@ -954,9 +958,12 @@ function showPartidos(name) {
 </style>
 <script>
 function showTab(name) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active','fade-in'));
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  const el = document.getElementById('tab-' + name);
+  el.classList.add('active');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
   event.target.classList.add('active');
 }
 </script>
@@ -1184,9 +1191,12 @@ function showTab(name) {
 </style>
 <script>
 function showPlantel(name) {
-  document.querySelectorAll('.pl-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.pl-content').forEach(el => el.classList.remove('active','fade-in'));
   document.querySelectorAll('.tab-pl').forEach(el => el.classList.remove('active'));
-  document.getElementById(name).classList.add('active');
+  const el = document.getElementById(name);
+  el.classList.add('active');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
   event.target.classList.add('active');
 }
 </script>
@@ -1291,9 +1301,12 @@ function showPlantel(name) {
 </style>
 <script>
 function showGol(name) {
-  document.querySelectorAll('.gol-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.gol-content').forEach(el => el.classList.remove('active','fade-in'));
   document.querySelectorAll('.tab-g').forEach(el => el.classList.remove('active'));
-  document.getElementById(name).classList.add('active');
+  const el = document.getElementById(name);
+  el.classList.add('active');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
   event.target.classList.add('active');
 }
 </script>
@@ -1615,7 +1628,7 @@ function renderTicker(rows) {
   const inner = rows.map(r =>
     '<span>&#9917; ' + r.categoria + ' &nbsp;' + r.resultado + ' &nbsp;' +
     r.goles_local + ' - ' + r.goles_visitante + ' &nbsp;vs&nbsp; ' + r.visitante +
-    '</span><span class="sep"> &#9670; </span>'
+    '</span><span class="sep"><img src="escudo.png" style="width:13px;height:13px;object-fit:contain;opacity:.55;vertical-align:middle;border-radius:50%;margin:0 .7rem;" alt=""></span>'
   ).join('');
   document.getElementById('ticker-inner').innerHTML = inner + inner;
 }
@@ -1631,7 +1644,7 @@ function renderResultados(rows, extra) {
     document.getElementById('resultados-grid').innerHTML = '<div class="msg">Sin resultados cargados aún</div>';
     return;
   }
-  document.getElementById('resultados-grid').innerHTML = rows.map(r => {
+  document.getElementById('resultados-grid').innerHTML = rows.map((r, idx) => {
     const res = String(r.resultado).toLowerCase();
     const cls = res === 'victoria' ? 'win' : res === 'empate' ? 'draw' : 'loss';
     const label = res === 'victoria' ? 'Victoria' : res === 'empate' ? 'Empate' : 'Derrota';
@@ -1664,7 +1677,7 @@ function renderResultados(rows, extra) {
       detalles = '<div class="res-detail-row"><span class="res-detail-val" style="color:rgba(150,160,180,.5);font-size:.78rem;">Sin datos adicionales cargados.</span></div>';
     }
 
-    return '<div class="resultado-card">' +
+    return '<div class="resultado-card ' + cls + '" style="--i:' + idx + '">' +
       '<span class="badge ' + cls + '">' + label + '</span>' +
       '<p class="res-cat">' + r.categoria + ' &middot; ' + r.fecha + '</p>' +
       '<div class="res-equipos">' +
@@ -1820,6 +1833,22 @@ window.addEventListener('scroll', () => {
     if (bg) bg.style.transform = 'translateY(' + (y * 0.25) + 'px)';
   }
 }, { passive: true });
+
+/* ── I. Hero spotlight on mousemove ── */
+(function() {
+  const hero = document.getElementById('hero');
+  const spot = document.getElementById('hero-spotlight');
+  if (!hero || !spot) return;
+  hero.addEventListener('mousemove', function(e) {
+    const rect = hero.getBoundingClientRect();
+    spot.style.left = (e.clientX - rect.left) + 'px';
+    spot.style.top  = (e.clientY - rect.top)  + 'px';
+  }, { passive: true });
+  hero.addEventListener('mouseleave', function() {
+    spot.style.left = '70%';
+    spot.style.top  = '50%';
+  }, { passive: true });
+})();
 
 /* ── Show desktop IG button on wider screens ── */
 function updateNavIG() {
@@ -2071,6 +2100,64 @@ window.addEventListener('load', function(){
   }, 1500);
 });
 </script>
+
+<!-- ===== MEJORAS ESTÉTICAS RONDA 2 ===== -->
+<style>
+
+/* ── A. Borde izquierdo de color según resultado ── */
+.resultado-card.win  { border-left: 4px solid #4ade80 !important; }
+.resultado-card.draw { border-left: 4px solid #fbbf24 !important; }
+.resultado-card.loss { border-left: 4px solid #f87171 !important; }
+
+/* ── C. Fade entre tabs ── */
+@keyframes tabFadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.tab-content.fade-in,
+.part-content.fade-in,
+.pl-content.fade-in,
+.gol-content.fade-in {
+  animation: tabFadeIn .22s ease both;
+}
+
+/* ── D. Luz de barrido en filas de tabla ── */
+.tabla tbody tr { position:relative; overflow:hidden; }
+.tabla tbody tr::after {
+  content:'';
+  position:absolute;
+  top:0; left:-120%;
+  width:60%; height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+  transition: left .55s ease;
+  pointer-events:none;
+}
+.tabla tbody tr:hover::after { left:160%; }
+
+/* ── H. Animación escalonada en fichas de resultado ── */
+@keyframes cardSlideUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.resultado-card {
+  animation: cardSlideUp .45s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+/* ── I. Spotlight en hero ── */
+#hero-spotlight {
+  position:absolute;
+  width:650px; height:650px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(96,165,250,.08) 0%, transparent 68%);
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  transition:left .18s ease, top .18s ease;
+  left:70%; top:50%;
+  z-index:1;
+}
+
+</style>
 
 <!-- ===== MEJORAS ESTÉTICAS ===== -->
 <style>
