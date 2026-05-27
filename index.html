@@ -1620,10 +1620,6 @@ function renderResultados(rows) {
         '<span class="res-score">' + mkFlip(r.goles_local) + '<span style="opacity:.4;margin:0 .2em">&ndash;</span>' + mkFlip(r.goles_visitante) + '</span>' +
         '<span class="res-equipo away">' + r.visitante + '</span>' +
       '</div>' +
-      '<button class="share-btn ripple-host" onclick="compartirResultado(this)" ' +
-        'data-local="' + r.local + '" data-visitante="' + r.visitante + '" ' +
-        'data-gl="' + r.goles_local + '" data-gv="' + r.goles_visitante + '" ' +
-        'data-cat="' + r.categoria + '" data-fecha="' + r.fecha + '">&#8679; Compartir</button>' +
       '</div>';
   }).join('');
   initFlipObserver();
@@ -2016,16 +2012,6 @@ window.addEventListener('load', function(){
 
 <!-- ===== FEATURES: COMPARTIR, HISTORIAL ORDENABLE/BUSCABLE, POSICIONES CLICKABLE ===== -->
 <style>
-/* Share button */
-.share-btn{
-  display:block;width:100%;margin-top:.9rem;
-  background:rgba(27,58,107,.25);border:1px solid rgba(96,165,250,.2);
-  color:rgba(245,245,240,.7);font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
-  padding:.45rem;border-radius:3px;cursor:pointer;
-  transition:background .2s,border-color .2s,color .2s;
-}
-.share-btn:hover{background:rgba(27,58,107,.5);border-color:rgba(96,165,250,.5);color:#fff;}
 
 /* Historial search */
 .hvse-search-wrap{margin-bottom:1rem;}
@@ -2059,105 +2045,6 @@ window.addEventListener('load', function(){
 </style>
 
 <script>
-/* ── Feature 2: Compartir resultado ── */
-function compartirResultado(btn) {
-  const local     = btn.dataset.local;
-  const visitante = btn.dataset.visitante;
-  const gl        = btn.dataset.gl;
-  const gv        = btn.dataset.gv;
-  const cat       = btn.dataset.cat;
-  const fecha     = btn.dataset.fecha;
-
-  const canvas = document.createElement('canvas');
-  canvas.width  = 1080;
-  canvas.height = 1080;
-  const ctx = canvas.getContext('2d');
-
-  /* fondo */
-  const grad = ctx.createLinearGradient(0, 0, 0, 1080);
-  grad.addColorStop(0, '#080c14');
-  grad.addColorStop(1, '#0d1628');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  /* bordes */
-  ctx.fillStyle = '#1B3A6B';
-  ctx.fillRect(0, 0, 1080, 7);
-  ctx.fillRect(0, 1073, 1080, 7);
-  ctx.fillRect(0, 0, 7, 1080);
-  ctx.fillRect(1073, 0, 7, 1080);
-
-  /* categoría */
-  ctx.textAlign  = 'center';
-  ctx.font       = '700 38px "Barlow Condensed", Arial Narrow, sans-serif';
-  ctx.fillStyle  = '#2048a0';
-  ctx.fillText(cat.toUpperCase(), 540, 110);
-
-  /* fecha */
-  ctx.font      = '28px Arial, sans-serif';
-  ctx.fillStyle = '#9aa0ac';
-  ctx.fillText(fecha, 540, 155);
-
-  /* línea divisora */
-  ctx.strokeStyle = 'rgba(27,58,107,.6)';
-  ctx.lineWidth   = 1;
-  ctx.beginPath(); ctx.moveTo(120, 185); ctx.lineTo(960, 185); ctx.stroke();
-
-  /* local */
-  ctx.font      = '700 68px Arial Narrow, sans-serif';
-  ctx.fillStyle = '#F5F5F0';
-  ctx.textAlign = 'right';
-  const localLines = wrapText(local, 380);
-  localLines.forEach((l, i) => ctx.fillText(l, 450, 500 + i * 75));
-
-  /* visitante */
-  ctx.fillStyle = '#9aa0ac';
-  ctx.textAlign = 'left';
-  const awayLines = wrapText(visitante, 380);
-  awayLines.forEach((l, i) => ctx.fillText(l, 630, 500 + i * 75));
-
-  /* marcador */
-  ctx.textAlign = 'center';
-  ctx.font      = '700 148px Arial Black, sans-serif';
-  ctx.fillStyle = '#F5F5F0';
-  ctx.fillText(gl + '-' + gv, 540, 560);
-
-  /* branding */
-  ctx.font      = '26px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(96,165,250,.5)';
-  ctx.fillText('Playa Honda Universitario · playahondau.github.io', 540, 990);
-
-  canvas.toBlob(async blob => {
-    const file = new File([blob], 'resultado.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: local + ' ' + gl + '-' + gv + ' ' + visitante }); }
-      catch(e) { downloadCanvas(blob); }
-    } else {
-      downloadCanvas(blob);
-    }
-  }, 'image/png');
-}
-
-function downloadCanvas(blob) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'resultado-playahonda.png';
-  a.click();
-}
-
-function wrapText(text, maxW) {
-  if (!text) return [''];
-  const words = text.split(' ');
-  const lines = [];
-  let cur = '';
-  words.forEach(w => {
-    const test = cur ? cur + ' ' + w : w;
-    if (test.length > 12 && cur) { lines.push(cur); cur = w; }
-    else cur = test;
-  });
-  if (cur) lines.push(cur);
-  return lines.slice(0, 2);
-}
 
 /* ── Feature 3 & 4: Historial ordenable + buscable ── */
 let _hvSortCol = -1, _hvSortAsc = true;
