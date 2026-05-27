@@ -12,6 +12,7 @@
   <!-- OneSignal Push Notifications -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
+    window._os = null;
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
@@ -35,6 +36,7 @@
           }
         }
       });
+      window._os = OneSignal;
     });
   </script>
 
@@ -2246,21 +2248,37 @@ function scrollToHistorial(teamName) {
 }
 
 /* ── Feature 7: Botón notificaciones ── */
-function toggleNotif() {
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    try {
-      await OneSignal.Slidedown.promptPush();
-    } catch(e) {
-      try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
+async function toggleNotif() {
+  const btn = document.getElementById('btn-notif');
+  if (!('Notification' in window)) return;
+
+  if (Notification.permission === 'denied') {
+    if (btn) { btn.textContent = '🔕 Bloqueado'; btn.title = 'Habilitá las notificaciones en ajustes del navegador'; }
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    if (btn) { btn.textContent = '🔔 Activado'; btn.style.borderColor = 'rgba(74,222,128,.5)'; btn.style.color = '#4ade80'; }
+    return;
+  }
+
+  // permission === 'default' → pedir
+  const OS = window._os;
+  if (OS) {
+    try { await OS.Slidedown.promptPush({ force: true }); } catch(e) {
+      try { await Notification.requestPermission(); } catch(e2) {}
     }
-    const btn = document.getElementById('btn-notif');
+  } else {
+    try { await Notification.requestPermission(); } catch(e) {}
+  }
+
+  setTimeout(function() {
     if (!btn) return;
-    const on = OneSignal.Notifications.permission;
+    const on = Notification.permission === 'granted';
     btn.textContent       = on ? '🔔 Activado' : '🔔 Notif.';
     btn.style.borderColor = on ? 'rgba(74,222,128,.5)' : 'rgba(96,165,250,.35)';
     btn.style.color       = on ? '#4ade80' : 'rgba(96,165,250,.8)';
-  });
+  }, 800);
 }
 
 /* Hacer clickeables los nombres de equipos en tablas de posiciones */
