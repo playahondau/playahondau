@@ -140,9 +140,13 @@
     .ripple-host{position:relative;overflow:hidden;}
     .ripple-wave{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rippleAnim .7s linear forwards;pointer-events:none;z-index:10;}
     @keyframes rippleAnim{to{transform:scale(4.5);opacity:0;}}
-    #page-loader{position:fixed;inset:0;background:var(--fondo);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;z-index:9999;transition:opacity .6s ease,visibility .6s ease;}
+    #page-loader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease,visibility .6s ease;}
     #page-loader.oculto{opacity:0;visibility:hidden;pointer-events:none;}
-    .loader-escudo{width:100px;height:100px;object-fit:cover;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;}
+    .loader-collage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:3px;}
+    .loader-collage div{background-size:cover;background-position:center;transition:transform 8s ease;}
+    .loader-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(4,8,18,.78) 0%,rgba(10,20,48,.72) 100%);}
+    .loader-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1.2rem;}
+    .loader-escudo{width:100px;height:100px;object-fit:cover;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 18px rgba(96,165,250,.5));}
     .loader-barra-wrap{width:140px;height:3px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
     .loader-barra{height:100%;width:0;background:var(--dorado-light);border-radius:4px;animation:loaderFill 1.4s ease forwards;}
     @keyframes loaderLatido{from{transform:scale(1);opacity:.75;}to{transform:scale(1.1);opacity:1;}}
@@ -394,8 +398,19 @@
 <div id="cursor-dot"></div>
 <div id="cursor-ring"></div>
 <div id="page-loader">
-  <img src="favicon.jpg" alt="Playa Honda Universitario" class="loader-escudo">
-  <div class="loader-barra-wrap"><div class="loader-barra"></div></div>
+  <div class="loader-collage">
+    <div style="background-image:url('loader1.jpg')"></div>
+    <div style="background-image:url('loader2.jpg')"></div>
+    <div style="background-image:url('loader5.jpg')"></div>
+    <div style="background-image:url('loader3.jpg')"></div>
+    <div style="background-image:url('loader4.jpg')"></div>
+    <div style="background-image:url('loader5.jpg');background-position:top center;"></div>
+  </div>
+  <div class="loader-overlay"></div>
+  <div class="loader-content">
+    <img src="escudo.png" alt="Playa Honda Universitario" class="loader-escudo">
+    <div class="loader-barra-wrap"><div class="loader-barra"></div></div>
+  </div>
 </div>
 <div class="newsletter-overlay" id="newsletter">
   <div class="newsletter-modal">
