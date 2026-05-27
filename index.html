@@ -2136,20 +2136,20 @@ function entrarAlSitio() {
   btn.textContent = '...';
 
   /* Reproducir audio */
-  audio.volume = 0.75;
+  audio.volume = 0.45;
   audio.play();
 
-  /* Fade out del audio a los 5s */
+  /* Fade out del audio a los 35s */
   setTimeout(function() {
     var fade = setInterval(function() {
-      if (audio.volume > 0.04) {
-        audio.volume = Math.max(0, audio.volume - 0.04);
+      if (audio.volume > 0.02) {
+        audio.volume = Math.max(0, audio.volume - 0.02);
       } else {
         audio.pause();
         clearInterval(fade);
       }
-    }, 120);
-  }, 5000);
+    }, 200);
+  }, 35000);
 
   /* Ocultar loader */
   setTimeout(function() {
