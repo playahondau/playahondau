@@ -157,9 +157,10 @@
     .loader-tip-text{margin:0;font-family:'Barlow',sans-serif;font-size:.92rem;color:rgba(255,255,255,.88);line-height:1.45;}
     .loader-progress-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;min-width:160px;}
     .loader-progress-label{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;letter-spacing:.2em;color:rgba(255,255,255,.35);text-transform:uppercase;}
-    .loader-barra-wrap{width:160px;height:3px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;}
-    .loader-barra{height:100%;width:0;background:var(--dorado-light);border-radius:4px;animation:loaderFill 1.4s ease forwards;}
-    @keyframes loaderFill{from{width:0;}to{width:100%;}}
+    .loader-enter-btn{margin-top:1.8rem;background:transparent;border:2px solid rgba(255,255,255,.55);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.45em;padding:.7rem 3.2rem;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;border-radius:3px;}
+    .loader-enter-btn:hover{background:rgba(255,255,255,.08);border-color:#fff;box-shadow:0 0 24px rgba(255,255,255,.18),0 0 48px rgba(96,165,250,.15);}
+    .loader-enter-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transition:left .5s;}
+    .loader-enter-btn:hover::before{left:100%;}
     @media(max-width:480px){
       .novedades-bar{gap:.35rem;padding:.4rem .9rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;}
       .novedades-bar::-webkit-scrollbar{display:none;}
@@ -416,18 +417,16 @@
     <div style="background-image:url('loader7.jpg')"></div>
   </div>
   <div class="loader-overlay"></div>
+  <audio id="loader-audio" src="loader-audio.mp3" preload="auto"></audio>
   <div class="loader-center">
     <img src="escudo.png" alt="Playa Honda Universitario" class="loader-escudo">
     <p class="loader-club-name">Playa Honda Universitario</p>
+    <button class="loader-enter-btn" id="loader-enter-btn" onclick="entrarAlSitio()">ENTRAR</button>
   </div>
   <div class="loader-bottom">
     <div class="loader-tip">
       <span class="loader-tip-label">⚽ &iexcl;Sab&iacute;as que?</span>
       <p class="loader-tip-text" id="loader-tip-text"></p>
-    </div>
-    <div class="loader-progress-wrap">
-      <span class="loader-progress-label">Cargando</span>
-      <div class="loader-barra-wrap"><div class="loader-barra"></div></div>
     </div>
   </div>
 </div>
@@ -2129,12 +2128,35 @@ function startTypewriter() {
   }, 50);
 }
 
-window.addEventListener('load', function(){
-  setTimeout(function(){
-    document.getElementById('page-loader').classList.add('oculto');
+function entrarAlSitio() {
+  var audio = document.getElementById('loader-audio');
+  var loader = document.getElementById('page-loader');
+  var btn = document.getElementById('loader-enter-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  /* Reproducir audio */
+  audio.volume = 0.75;
+  audio.play();
+
+  /* Fade out del audio a los 5s */
+  setTimeout(function() {
+    var fade = setInterval(function() {
+      if (audio.volume > 0.04) {
+        audio.volume = Math.max(0, audio.volume - 0.04);
+      } else {
+        audio.pause();
+        clearInterval(fade);
+      }
+    }, 120);
+  }, 5000);
+
+  /* Ocultar loader */
+  setTimeout(function() {
+    loader.classList.add('oculto');
     startTypewriter();
-  }, 1500);
-});
+  }, 900);
+}
 </script>
 
 <!-- ===== MEJORAS ESTÉTICAS RONDA 2 ===== -->
