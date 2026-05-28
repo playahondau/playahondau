@@ -3086,6 +3086,54 @@ var Penales=(function(){
     ctx.beginPath(); ctx.arc(bx+r*.38,by+r*.22,r*.18,0,Math.PI*2); ctx.fill();
   }
 
+  function pateador(px,kick){
+    /* px = X del jugador, kick = true dibuja la pierna levantada */
+    var sc=W/420;
+    var hr=11*sc, bw=15*sc, bh=22*sc, sw=13*sc, sh=9*sc, lw=8*sc, lh=18*sc;
+    var fy=H*.975; /* pies */
+    var legY=fy-lh, shortY=fy-lh-sh, bodyY=fy-lh-sh-bh, headY=bodyY-hr*1.1;
+    /* sombra */
+    ctx.fillStyle='rgba(0,0,0,.18)';
+    ctx.beginPath(); ctx.ellipse(px,fy,bw*1.1,3.5*sc,0,0,Math.PI*2); ctx.fill();
+    /* pierna izquierda */
+    ctx.fillStyle='#1a3a8f';
+    ctx.fillRect(px-sw+2*sc, legY, lw, lh);
+    /* pierna derecha — levantada si kick */
+    if(kick){
+      ctx.save(); ctx.translate(px+sw-lw*.5-2*sc, legY);
+      ctx.rotate(-0.45); ctx.fillRect(-lw/2,0,lw,lh); ctx.restore();
+    } else {
+      ctx.fillRect(px+sw-lw-2*sc, legY, lw, lh);
+    }
+    /* botines */
+    ctx.fillStyle='#111';
+    ctx.fillRect(px-sw+sc, fy-4*sc, lw+3*sc, 4*sc);
+    if(!kick) ctx.fillRect(px+sw-lw-3*sc, fy-4*sc, lw+3*sc, 4*sc);
+    /* short blanco */
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(px-sw, shortY, sw*2, sh);
+    /* camiseta azul Playa Honda con franja blanca central */
+    var jg=ctx.createLinearGradient(px-bw,0,px+bw,0);
+    jg.addColorStop(0,'#1a3a8f'); jg.addColorStop(.42,'#1a3a8f');
+    jg.addColorStop(.44,'#ffffff'); jg.addColorStop(.56,'#ffffff');
+    jg.addColorStop(.58,'#1a3a8f'); jg.addColorStop(1,'#1a3a8f');
+    ctx.fillStyle=jg; ctx.fillRect(px-bw,bodyY,bw*2,bh);
+    /* mangas */
+    ctx.fillStyle='#1a3a8f';
+    ctx.fillRect(px-bw-6*sc, bodyY+2*sc, 7*sc, bh*.65);
+    ctx.fillRect(px+bw-sc,   bodyY+2*sc, 7*sc, bh*.65);
+    /* número 9 */
+    ctx.fillStyle='#fff'; ctx.font='bold '+(9*sc)+'px "Barlow Condensed",sans-serif';
+    ctx.textAlign='center'; ctx.fillText('9',px,bodyY+bh*.65);
+    /* cabeza */
+    ctx.fillStyle='#f0c090';
+    ctx.beginPath(); ctx.arc(px,headY,hr,0,Math.PI*2); ctx.fill();
+    /* pelo */
+    ctx.fillStyle='#3a2410';
+    ctx.beginPath(); ctx.arc(px,headY,hr,Math.PI*1.1,Math.PI*1.9,false); ctx.fill();
+    ctx.beginPath(); ctx.arc(px,headY-hr*.35,hr*.85,Math.PI,0); ctx.fill();
+  }
+
   function hud(){
     ctx.fillStyle='#fff'; ctx.font='bold '+(W*.036)+'px "Bebas Neue","Barlow Condensed",sans-serif';
     ctx.textAlign='left'; ctx.fillText('GOLES: '+score+'/'+kicks,W*.03,H*.97);
@@ -3115,27 +3163,27 @@ var Penales=(function(){
   function render(){
     ctx.clearRect(0,0,W,H); bg(); goal();
     if(state==='intro'){
-      keeper(kCX); ball(bX,bY,1);
+      keeper(kCX); pateador(W/2,false); ball(bX,bY,1);
       overlay('TANDA DE\nPENALES','rgba(0,0,0,.6)');
       ctx.fillStyle='#60a5fa'; ctx.font=(W*.038)+'px "Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.65);
       ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=(W*.028)+'px "Barlow Condensed",sans-serif';
       ctx.fillText('TOCÁ PARA COMENZAR',W/2,H*.77);
     } else if(state==='choose'){
-      keeper(kCX); ball(bX,bY,1); zones(); hud();
+      keeper(kCX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
       ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('¿DÓNDE PATEÁS?',W/2,H*.045);
     } else if(state==='shoot'){
       var t=Math.min(anim,1), e=1-Math.pow(1-t,3);
       var cbx=bX+(tBX-bX)*e, cby=bY+(tBY-bY)*e;
       var ckx=kCX+(tKX-kCX)*Math.min(t*1.6,1);
-      keeper(ckx); ball(cbx,cby,1-t*.4); hud();
+      keeper(ckx); pateador(W/2,t>0.1); ball(cbx,cby,1-t*.4); hud();
       anim+=0.045;
       if(anim<1){requestAnimationFrame(render);}
       else{state='result';render();setTimeout(function(){state=kicks>=MAXK?'over':'choose';render();},1600);}
       return;
     } else if(state==='result'){
-      keeper(tKX); ball(tBX,tBY,.65); hud();
+      keeper(tKX); pateador(W/2,false); ball(tBX,tBY,.65); hud();
       var rc=goalScored?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)';
       var rt=goalScored?'GOOOOL!':'ATAJADO';
       var rcc=goalScored?'rgba(34,197,94,.9)':'rgba(239,68,68,.9)';
@@ -3144,7 +3192,7 @@ var Penales=(function(){
       ctx.textAlign='center'; ctx.shadowColor=rcc; ctx.shadowBlur=24;
       ctx.fillText(rt,W/2,H*.57); ctx.shadowBlur=0;
     } else if(state==='over'){
-      keeper(kCX); ball(bX,bY,1);
+      keeper(kCX); pateador(W/2,false); ball(bX,bY,1);
       ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(0,0,W,H);
       var pct=score/MAXK;
       var rat=pct>=.8?'¡CRACK!':pct>=.6?'¡BUEN RESULTADO!':pct>=.4?'REGULAR':'A ENTRENAR MÁS';
