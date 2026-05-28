@@ -27,6 +27,8 @@ body{margin:0;padding:0;background:#ffffff;font-family:'Barlow',Helvetica,sans-s
 .dr-item{display:flex;flex-direction:column;gap:.08rem;padding:.32rem 0;border-bottom:1px dotted #ccc;font-family:'Barlow Condensed',sans-serif;}
 .dr-cat{font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#8b0000;}
 .dr-score{font-size:.9rem;font-weight:700;}
+.dr-goles{font-size:.72rem;color:#1a3a8f;letter-spacing:.04em;}
+.dr-goles-main{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;color:#1a3a8f;margin-top:.5rem;letter-spacing:.04em;}
 @media(max-width:600px){
   .dr-grid{grid-template-columns:1fr;}
   .dr-col-main{border-right:none;padding-right:0;}
@@ -160,9 +162,13 @@ function renderDiario(resultados, fixture) {
   var resHtml = resultados.slice(0,6).map(function(rv) {
     var col   = rv.estado==='victoria'?'#1a5c1a':rv.estado==='empate'?'#7a5800':'#8b0000';
     var badge = rv.estado==='victoria'?'▲':rv.estado==='empate'?'▬':'▼';
+    var golesHtml = rv.goleadores
+      ? '<span class="dr-goles">&#9917; '+rv.goleadores.split(';').map(function(g){return g.trim();}).join(' · ')+'</span>'
+      : '';
     return '<div class="dr-item">'+
       '<span class="dr-cat">'+rv.categoria+'</span>'+
       '<span class="dr-score" style="color:'+col+'">'+badge+' Playa Honda '+rv.score+' '+rv.rival+'</span>'+
+      golesHtml+
     '</div>';
   }).join('');
 
@@ -183,10 +189,11 @@ function renderDiario(resultados, fixture) {
     '<p class="dr-tagline">Playa Honda Universitario · Liga Universitaria del Uruguay · Desde 1964</p>'+
     '<div class="dr-grid">'+
       '<div class="dr-col dr-col-main">'+
-        '<p class="dr-kicker">'+cat+' · '+r.fecha+'</p>'+
+        '<p class="dr-kicker">'+cat+' · '+r.fecha+' · '+r.localia+'</p>'+
         '<h3 class="dr-titular">'+titular+'</h3>'+
         '<p class="dr-subtit">'+subtit+'</p>'+
         '<p class="dr-body">'+cronica+'</p>'+
+        (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
       '</div>'+
       '<div class="dr-col dr-col-side">'+
         '<h4 class="dr-sh">Resultados</h4>'+resHtml+
