@@ -1893,6 +1893,7 @@ async function init() {
     renderTicker(resultados);
     renderResultados(resultados, extra);
     renderFixture(fixture);
+    initCountdown(fixture);
   } catch(e) {
     document.getElementById('resultados-grid').innerHTML = '<div class="msg">Error al conectar con la planilla</div>';
     document.getElementById('fixtures-list').innerHTML   = '<div class="msg">Error al conectar con la planilla</div>';
@@ -2619,66 +2620,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 /* ══════════════════════════════════════════════════════
-   FEATURE 3 — COUNTDOWN
+   FEATURE 3 — COUNTDOWN (dinámico desde el sheet)
 ══════════════════════════════════════════════════════ */
-(function(){
-  var meses={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
-  var fechaGroups=[
-    {fecha:new Date(2026,4,30,15,0), label:'Sáb 30 may.', matches:[
-      {div:'Reserva', txt:'Club Seminario vs Playa Honda'},
-      {div:'Pre Senior', txt:'Playa Honda vs Old Christians Club'},
-      {div:'Sub 18', txt:'Club Seminario vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,4,31,10,0), label:'Dom 31 may.', matches:[
-      {div:'Mayores', txt:'Playa Honda vs Nacional Universitario'},
-      {div:'Sub 20', txt:'Elbio Fernandez vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,6,15,0), label:'Sáb 6 jun.', matches:[
-      {div:'Reserva', txt:'Playa Honda vs Sagrada Familia Univ.'},
-      {div:'Pre Senior', txt:'Juan XXIII vs Playa Honda'},
-      {div:'Sub 18', txt:'Ceibos Club vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,7,10,0), label:'Dom 7 jun.', matches:[
-      {div:'Mayores', txt:'Juan XXIII vs Playa Honda'},
-      {div:'Sub 20', txt:'HCA Universitario vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,13,15,0), label:'Sáb 13 jun.', matches:[
-      {div:'Reserva', txt:'Ceibos Club vs Playa Honda'},
-      {div:'Pre Senior', txt:'Playa Honda vs Old Boys Club'},
-      {div:'Sub 18', txt:'Playa Honda vs Old Boys Club'}
-    ]},
-    {fecha:new Date(2026,5,14,10,0), label:'Dom 14 jun.', matches:[
-      {div:'Mayores', txt:'Playa Honda vs Hebraica Univ.'},
-      {div:'Sub 20', txt:'Playa Honda vs Juan XXIII'}
-    ]},
-    {fecha:new Date(2026,5,20,15,0), label:'Sáb 20 jun.', matches:[
-      {div:'Reserva', txt:'Playa Honda vs Aleman Univ.'},
-      {div:'Pre Senior', txt:'La Blanqueada vs Playa Honda'},
-      {div:'Sub 18', txt:'La Blanqueada vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,21,10,0), label:'Dom 21 jun.', matches:[
-      {div:'Mayores', txt:'Old Boys Club vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,27,15,0), label:'Sáb 27 jun.', matches:[
-      {div:'Reserva', txt:'Old Christians Azul vs Playa Honda'},
-      {div:'Pre Senior', txt:'Playa Honda vs Universitario Verones'},
-      {div:'Sub 18', txt:'Old Christians Club vs Playa Honda'}
-    ]},
-    {fecha:new Date(2026,5,28,10,0), label:'Dom 28 jun.', matches:[
-      {div:'Mayores', txt:'Playa Honda vs Old Ivy'}
-    ]}
-  ];
-
-  function getNextGroup(){
-    var now=new Date();
-    for(var i=0;i<fechaGroups.length;i++){
-      if(fechaGroups[i].fecha>now) return fechaGroups[i];
-    }
-    return null;
-  }
-
-  function pad(n){return n<10?'0'+n:String(n);}
-
+function initCountdown(rows){
   var wrap=document.getElementById('countdown-wrap');
   var elD=document.getElementById('cd-d');
   var elH=document.getElementById('cd-h');
@@ -2688,31 +2632,47 @@ document.addEventListener('DOMContentLoaded', function() {
   var elML=document.getElementById('cd-matches-list');
   if(!wrap||!elD) return;
 
-  var current=null;
+  function parseDH(dh){
+    var m=(dh||'').trim().match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
+    if(!m) return null;
+    return new Date(2026,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[3]),parseInt(m[4]));
+  }
 
-  function renderMatches(group){
-    elF.textContent=group.label;
-    var m=group.matches[0];
-    elML.innerHTML='<div class="cd-match-row"><span class="cd-div">'+m.div+'</span>'+m.txt+'</div>';
+  function pad(n){return n<10?'0'+n:String(n);}
+
+  var partidos=rows.map(function(r){
+    return {fecha:parseDH(r.dia_hora),dh:r.dia_hora,div:r.categoria,txt:r.local+' vs '+r.visitante};
+  }).filter(function(p){return p.fecha;})
+    .sort(function(a,b){return a.fecha-b.fecha;});
+
+  var current=null;
+  var timer=null;
+
+  function getNext(){
+    var now=new Date();
+    for(var i=0;i<partidos.length;i++){if(partidos[i].fecha>now) return partidos[i];}
+    return null;
+  }
+
+  function render(p){
+    elF.textContent=p.dh;
+    elML.innerHTML='<div class="cd-match-row"><span class="cd-div">'+p.div+'</span>'+p.txt+'</div>';
   }
 
   function tick(){
-    var g=getNextGroup();
-    if(!g){wrap.style.display='none';return;}
-    if(!current||current.label!==g.label){current=g;renderMatches(g);}
-    var diff=Math.max(0,g.fecha-new Date());
+    var p=getNext();
+    if(!p){wrap.style.display='none';if(timer)clearInterval(timer);return;}
+    if(!current||current.fecha.getTime()!==p.fecha.getTime()||current.div!==p.div){current=p;render(p);}
+    var diff=Math.max(0,p.fecha-new Date());
     var d=Math.floor(diff/86400000);
     var h=Math.floor((diff%86400000)/3600000);
     var m=Math.floor((diff%3600000)/60000);
     var s=Math.floor((diff%60000)/1000);
-    elD.textContent=pad(d);
-    elH.textContent=pad(h);
-    elM.textContent=pad(m);
-    elS.textContent=pad(s);
+    elD.textContent=pad(d);elH.textContent=pad(h);elM.textContent=pad(m);elS.textContent=pad(s);
   }
   tick();
-  setInterval(tick,1000);
-})();
+  timer=setInterval(tick,1000);
+}
 
 /* ══════════════════════════════════════════════════════
    FEATURE 5 — CHARTS
