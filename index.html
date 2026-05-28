@@ -2936,15 +2936,14 @@ function generarTarjeta(btn){
     /* fondo */
     ctx.fillStyle='#040812'; ctx.fillRect(0,0,W,H);
 
-    /* barras laterales */
-    var sg=ctx.createLinearGradient(0,0,0,H);
-    sg.addColorStop(0,'#1a3a8f'); sg.addColorStop(1,'#081e4a');
-    ctx.fillStyle=sg; ctx.fillRect(0,0,14,H); ctx.fillRect(W-14,0,14,H);
+    /* barra lateral izquierda: azul | derecha: blanca */
+    ctx.fillStyle='#1a3a8f'; ctx.fillRect(0,0,14,H);
+    ctx.fillStyle='#ffffff';  ctx.fillRect(W-14,0,14,H);
 
-    /* barra top degradado */
-    var tg=ctx.createLinearGradient(0,0,W,0);
-    tg.addColorStop(0,'#1a3a8f'); tg.addColorStop(.55,'#60a5fa'); tg.addColorStop(1,'#f4c430');
-    ctx.fillStyle=tg; ctx.fillRect(14,0,W-28,10); ctx.fillRect(14,H-10,W-28,10);
+    /* barra top y bottom: mitad izquierda azul, mitad derecha blanca */
+    var half=Math.floor((W-28)/2);
+    ctx.fillStyle='#1a3a8f'; ctx.fillRect(14,0,half,10);     ctx.fillRect(14,H-10,half,10);
+    ctx.fillStyle='#ffffff';  ctx.fillRect(14+half,0,W-28-half,10); ctx.fillRect(14+half,H-10,W-28-half,10);
 
     /* chip categoría */
     ctx.fillStyle='rgba(96,165,250,.15)'; ctx.fillRect(390,50,300,54);
