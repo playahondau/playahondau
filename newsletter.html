@@ -112,7 +112,10 @@ function renderDiario(resultados, fixture){
   var sarr    = SUB[res]||SUB.derrota;
   var subtit  = sarr[Math.floor(Math.random()*sarr.length)];
   var carr    = CRON[res]||CRON.derrota;
-  var cronica = carr[Math.floor(Math.random()*carr.length)];
+  // Si el sheet tiene texto en la columna "cronica", se usa ese. Si no, cae al automático.
+  var cronica = (r.cronica && r.cronica.trim())
+    ? r.cronica.trim()
+    : carr[Math.floor(Math.random()*carr.length)];
 
   var resHtml = resultados.slice(0,6).map(function(rv){
     var rv_res = (rv.resultado||'').toLowerCase();
