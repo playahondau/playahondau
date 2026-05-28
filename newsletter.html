@@ -168,6 +168,7 @@ function renderDiario(resultados, fixture) {
     return '<div class="dr-item">'+
       '<span class="dr-cat">'+rv.categoria+'</span>'+
       '<span class="dr-score" style="color:'+col+'">'+badge+' Playa Honda '+rv.score+' '+rv.rival+'</span>'+
+      '<span style="font-size:.68rem;color:#666;">'+rv.dia+' '+rv.fecha+' &middot; '+rv.localia+'</span>'+
       golesHtml+
     '</div>';
   }).join('');
@@ -189,7 +190,7 @@ function renderDiario(resultados, fixture) {
     '<p class="dr-tagline">Playa Honda Universitario · Liga Universitaria del Uruguay · Desde 1964</p>'+
     '<div class="dr-grid">'+
       '<div class="dr-col dr-col-main">'+
-        '<p class="dr-kicker">'+cat+' · '+r.fecha+' · '+r.localia+'</p>'+
+        '<p class="dr-kicker">'+cat+' &middot; '+r.dia+' '+r.fecha+' &middot; '+r.localia+'</p>'+
         '<h3 class="dr-titular">'+titular+'</h3>'+
         '<p class="dr-subtit">'+subtit+'</p>'+
         '<p class="dr-body">'+cronica+'</p>'+
