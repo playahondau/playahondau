@@ -446,6 +446,12 @@
 </style>
 </head>
 <body>
+<!-- ── MATCH DAY BANNER ── -->
+<div id="matchday-banner">
+  <span class="md-dot"></span>
+  <span id="md-text"></span>
+  <button class="md-close" onclick="document.getElementById('matchday-banner').style.display='none'">✕</button>
+</div>
 <div id="cursor-dot"></div>
 <div id="cursor-ring"></div>
 <div id="page-loader">
@@ -1830,7 +1836,11 @@ function renderResultados(rows, extra) {
       detalles = '<div class="res-detail-row"><span class="res-detail-val" style="color:rgba(150,160,180,.5);font-size:.78rem;">Sin datos adicionales cargados.</span></div>';
     }
 
-    return '<div class="resultado-card ' + cls + '" style="--i:' + idx + '">' +
+    var safeL=(r.local||'').replace(/"/g,'&quot;'),safeV=(r.visitante||'').replace(/"/g,'&quot;'),safeC=(r.categoria||'').replace(/"/g,'&quot;'),safeF=(r.fecha||'').replace(/"/g,'&quot;');
+    return '<div class="resultado-card '+cls+'" style="--i:'+idx+'"'+
+      ' data-local="'+safeL+'" data-visitante="'+safeV+'"'+
+      ' data-gl="'+r.goles_local+'" data-gv="'+r.goles_visitante+'"'+
+      ' data-cat="'+safeC+'" data-fecha="'+safeF+'" data-res="'+res+'">' +
       '<span class="badge ' + cls + '">' + label + '</span>' +
       '<p class="res-cat">' + r.categoria + ' &middot; ' + r.fecha + '</p>' +
       '<div class="res-equipos">' +
@@ -1838,7 +1848,10 @@ function renderResultados(rows, extra) {
         '<span class="res-score">' + mkFlip(r.goles_local) + '<span style="opacity:.4;margin:0 .2em">&ndash;</span>' + mkFlip(r.goles_visitante) + '</span>' +
         '<span class="res-equipo away">' + r.visitante + '</span>' +
       '</div>' +
-      '<button class="res-info-btn" onclick="toggleResInfo(this)">Ver info del partido <span class="arr">▾</span></button>' +
+      '<div class="res-actions">' +
+        '<button class="res-info-btn" onclick="toggleResInfo(this)">Ver info <span class="arr">▾</span></button>' +
+        '<button class="res-share-btn" onclick="generarTarjeta(this)">📤 Compartir</button>' +
+      '</div>' +
       '<div class="res-detail"><div class="res-detail-inner">' + detalles + '</div></div>' +
       '</div>';
   }).join('');
@@ -1905,6 +1918,7 @@ async function init() {
     renderResultados(resultados, extra);
     renderFixture(fixture);
     initCountdown(fixture);
+    checkMatchDay(fixture);
   } catch(e) {
     document.getElementById('resultados-grid').innerHTML = '<div class="msg">Error al conectar con la planilla</div>';
     document.getElementById('fixtures-list').innerHTML   = '<div class="msg">Error al conectar con la planilla</div>';
@@ -2841,6 +2855,161 @@ function initCountdown(rows){
 })();
 </script>
 
+<!-- ── SHARE MODAL ── -->
+<div id="share-modal">
+  <div id="share-modal-inner">
+    <canvas id="share-canvas"></canvas>
+    <div class="share-modal-btns">
+      <button onclick="downloadTarjeta()">⬇ DESCARGAR</button>
+      <button class="share-close" onclick="document.getElementById('share-modal').classList.remove('open')">✕ CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Match Day Banner ── */
+#matchday-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:10001;background:linear-gradient(90deg,#081e4a,#0d2a6b 45%,#081e4a);border-bottom:2px solid var(--dorado);padding:.45rem 1.2rem;align-items:center;justify-content:center;gap:.7rem;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;letter-spacing:.1em;color:#fff;text-transform:uppercase;}
+.md-dot{width:9px;height:9px;min-width:9px;background:#ef4444;border-radius:50%;animation:mdPulse 1s ease-in-out infinite;}
+@keyframes mdPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.65);}}
+.md-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1rem;padding:.15rem .5rem;line-height:1;}
+.md-close:hover{color:#fff;}
+body.match-day{padding-top:38px;}
+body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-shadow:0 0 24px rgba(244,196,48,.2)!important;}
+
+/* ── Share Modal ── */
+#share-modal{display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:1rem;}
+#share-modal.open{display:flex;}
+#share-modal-inner{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:500px;width:100%;}
+#share-canvas{max-width:min(440px,88vw);max-height:min(440px,88vw);border-radius:6px;display:block;}
+.share-modal-btns{display:flex;gap:.8rem;}
+.share-modal-btns button{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:.12em;padding:.55rem 2rem;border-radius:3px;cursor:pointer;border:none;}
+.share-modal-btns button:first-child{background:var(--dorado);color:#040812;}
+.share-modal-btns button.share-close{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);}
+.share-modal-btns button:hover{opacity:.85;}
+
+/* ── Res actions row ── */
+.res-actions{display:flex;gap:.6rem;margin-top:.5rem;flex-wrap:wrap;}
+.res-info-btn{flex:1;}
+.res-share-btn{background:transparent;border:1px solid rgba(96,165,250,.3);color:#60a5fa;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.05em;padding:.45rem .9rem;cursor:pointer;transition:all .2s;border-radius:2px;}
+.res-share-btn:hover{background:rgba(96,165,250,.1);border-color:#60a5fa;}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   FEATURE — MATCH DAY MODE
+══════════════════════════════════════════════════════ */
+function checkMatchDay(rows){
+  var now=new Date();
+  var hoy=rows.filter(function(r){
+    var m=(r.dia_hora||'').trim().match(/^(\d{1,2})\/(\d{1,2})\s/);
+    if(!m) return false;
+    return parseInt(m[1])===now.getDate() && parseInt(m[2])===(now.getMonth()+1);
+  });
+  if(!hoy.length) return;
+  document.body.classList.add('match-day');
+  var banner=document.getElementById('matchday-banner');
+  var p=hoy[0];
+  var hora=(p.dia_hora||'').split(' ')[1]||'';
+  document.getElementById('md-text').innerHTML=
+    '⚽ HOY JUGAMOS &nbsp;·&nbsp; <strong>'+p.categoria+'</strong> &nbsp;·&nbsp; '+
+    p.local+' vs '+p.visitante+' &nbsp;·&nbsp; '+hora+
+    (p.lugar?' &nbsp;·&nbsp; '+p.lugar:'');
+  banner.style.display='flex';
+}
+
+/* ══════════════════════════════════════════════════════
+   FEATURE — GENERADOR DE TARJETAS
+══════════════════════════════════════════════════════ */
+function generarTarjeta(btn){
+  var card=btn.closest('.resultado-card');
+  var local=card.dataset.local, visitante=card.dataset.visitante;
+  var gl=card.dataset.gl, gv=card.dataset.gv;
+  var cat=card.dataset.cat, fecha=card.dataset.fecha, res=card.dataset.res;
+  var canvas=document.getElementById('share-canvas');
+  var ctx=canvas.getContext('2d');
+  var W=1080,H=1080;
+  canvas.width=W; canvas.height=H;
+  var resColor=res==='victoria'?'#22c55e':res==='empate'?'#f59e0b':'#ef4444';
+  var resLabel=res==='victoria'?'VICTORIA':res==='empate'?'EMPATE':'DERROTA';
+
+  function draw(escudo){
+    /* fondo */
+    ctx.fillStyle='#040812'; ctx.fillRect(0,0,W,H);
+
+    /* barras laterales */
+    var sg=ctx.createLinearGradient(0,0,0,H);
+    sg.addColorStop(0,'#1a3a8f'); sg.addColorStop(1,'#081e4a');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,14,H); ctx.fillRect(W-14,0,14,H);
+
+    /* barra top degradado */
+    var tg=ctx.createLinearGradient(0,0,W,0);
+    tg.addColorStop(0,'#1a3a8f'); tg.addColorStop(.55,'#60a5fa'); tg.addColorStop(1,'#f4c430');
+    ctx.fillStyle=tg; ctx.fillRect(14,0,W-28,10); ctx.fillRect(14,H-10,W-28,10);
+
+    /* chip categoría */
+    ctx.fillStyle='rgba(96,165,250,.15)'; ctx.fillRect(390,50,300,54);
+    ctx.fillStyle='#60a5fa'; ctx.font='700 24px "Barlow Condensed",Arial,sans-serif';
+    ctx.textAlign='center'; ctx.fillText(cat.toUpperCase(),W/2,86);
+
+    /* escudo */
+    if(escudo){ ctx.save(); ctx.beginPath(); ctx.arc(W/2,210,75,0,Math.PI*2); ctx.clip(); ctx.drawImage(escudo,W/2-75,135,150,150); ctx.restore(); }
+
+    /* club name */
+    ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.font='700 48px "Bebas Neue","Barlow Condensed",Arial,sans-serif';
+    ctx.textAlign='center'; ctx.fillText('PLAYA HONDA UNIVERSITARIO',W/2,340);
+
+    /* separador */
+    ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(80,360); ctx.lineTo(W-80,360); ctx.stroke();
+
+    /* equipos */
+    ctx.fillStyle='#ffffff'; ctx.font='700 64px "Bebas Neue","Barlow Condensed",Arial,sans-serif';
+    ctx.fillText(local.toUpperCase(),W/2,440);
+    ctx.fillStyle='rgba(255,255,255,.3)'; ctx.font='400 30px "Barlow Condensed",Arial,sans-serif';
+    ctx.fillText('vs',W/2,488);
+    ctx.fillStyle='rgba(200,215,240,.85)'; ctx.font='700 64px "Bebas Neue","Barlow Condensed",Arial,sans-serif';
+    ctx.fillText(visitante.toUpperCase(),W/2,562);
+
+    /* separador */
+    ctx.strokeStyle='rgba(255,255,255,.08)';
+    ctx.beginPath(); ctx.moveTo(80,585); ctx.lineTo(W-80,585); ctx.stroke();
+
+    /* marcador */
+    ctx.fillStyle=resColor;
+    ctx.font='700 240px "Bebas Neue","Barlow Condensed",Arial,sans-serif';
+    ctx.fillText(gl+'-'+gv,W/2,820);
+
+    /* badge resultado */
+    ctx.fillStyle=resColor+'28'; ctx.fillRect(W/2-130,838,260,64);
+    ctx.fillStyle=resColor; ctx.font='700 40px "Bebas Neue","Barlow Condensed",Arial,sans-serif';
+    ctx.fillText(resLabel,W/2,882);
+
+    /* footer */
+    ctx.fillStyle='rgba(255,255,255,.28)';
+    ctx.font='400 28px "Barlow Condensed",Arial,sans-serif';
+    ctx.fillText('Liga Universitaria Uruguay  ·  '+fecha,W/2,960);
+    ctx.fillStyle='rgba(255,255,255,.14)';
+    ctx.font='400 22px "Barlow Condensed",Arial,sans-serif';
+    ctx.fillText('playahondau.github.io',W/2,1010);
+  }
+
+  document.fonts.ready.then(function(){
+    var img=new Image();
+    img.onload=function(){ draw(img); };
+    img.onerror=function(){ draw(null); };
+    img.src='escudo.png';
+    document.getElementById('share-modal').classList.add('open');
+  });
+}
+
+function downloadTarjeta(){
+  var a=document.createElement('a');
+  a.download='playa-honda-resultado.png';
+  a.href=document.getElementById('share-canvas').toDataURL('image/png');
+  a.click();
+}
+</script>
 </body>
 </html>
 
