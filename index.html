@@ -31,7 +31,18 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Playa Honda">
   <link rel="apple-touch-icon" href="escudo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Preload crítico del loader -->
+  <link rel="preload" href="escudo.png" as="image" />
+  <link rel="preload" href="loader1.jpg" as="image" />
+  <link rel="preload" href="loader2.jpg" as="image" />
+  <link rel="preload" href="loader3.jpg" as="image" />
+  <link rel="preload" href="loader4.jpg" as="image" />
+  <link rel="preload" href="loader6.jpg" as="image" />
+  <link rel="preload" href="loader7.jpg" as="image" />
   <style>
     :root{--azul:#002D62;--dorado:#1B3A6B;--dorado-light:#2048a0;--blanco:#F5F5F0;--gris:#9aa0ac;--negro:#0a0c10;--fondo:#080c14;--card-bg:rgba(13,18,32,.62);--border:rgba(255,255,255,.07);--transition:.25s ease;}
     *{margin:0;padding:0;box-sizing:border-box;}
@@ -140,14 +151,14 @@
     .ripple-host{position:relative;overflow:hidden;}
     .ripple-wave{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rippleAnim .7s linear forwards;pointer-events:none;z-index:10;}
     @keyframes rippleAnim{to{transform:scale(4.5);opacity:0;}}
-    #page-loader{position:fixed;inset:0;z-index:9999;transition:opacity .6s ease,visibility .6s ease;}
+    #page-loader{position:fixed;inset:0;z-index:9999;background:#040812;transition:opacity .6s ease,visibility .6s ease;will-change:opacity;}
     #page-loader.oculto{opacity:0;visibility:hidden;pointer-events:none;}
     .loader-collage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:3px;}
     .loader-collage div{background-size:cover;background-position:center;}
     .loader-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(4,8,18,.55) 0%,rgba(4,8,18,.6) 55%,rgba(4,8,18,.93) 100%);}
     /* Centro: escudo */
     .loader-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);z-index:2;text-align:center;}
-    .loader-escudo{width:110px;height:110px;object-fit:contain;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 22px rgba(96,165,250,.55));}
+    .loader-escudo{width:110px;height:110px;object-fit:contain;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 22px rgba(96,165,250,.55));will-change:transform,opacity;}
     .loader-club-name{margin:.7rem 0 0 0;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.3em;color:rgba(255,255,255,.55);text-transform:uppercase;}
     @keyframes loaderLatido{from{transform:scale(1);opacity:.8;}to{transform:scale(1.08);opacity:1;}}
     /* Bottom bar estilo Fortnite */
@@ -403,7 +414,7 @@
     .flip-active .flip-digit{animation:flipIn .45s cubic-bezier(.455,.03,.515,.955) both;}
     @keyframes flipIn{from{transform:rotateX(-90deg);opacity:0;}to{transform:rotateX(0deg);opacity:1;}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <style>
 /* ── COUNTDOWN ── */
 .countdown-wrap{position:relative;margin-top:2.5rem;display:inline-flex;flex-direction:column;align-items:center;gap:.6rem;background:rgba(0,45,98,.18);border:1px solid rgba(96,165,250,.2);padding:1.2rem 1.8rem;backdrop-filter:blur(10px);max-width:260px;width:100%;text-align:center;}
@@ -447,7 +458,7 @@
     <div style="background-image:url('loader7.jpg')"></div>
   </div>
   <div class="loader-overlay"></div>
-  <audio id="loader-audio" src="loader-audio.mp3" preload="auto"></audio>
+  <audio id="loader-audio" src="loader-audio.mp3" preload="none"></audio>
   <div class="loader-center">
     <img src="escudo.png" alt="Playa Honda Universitario" class="loader-escudo">
     <p class="loader-club-name">Playa Honda Universitario</p>
