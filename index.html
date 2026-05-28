@@ -426,11 +426,11 @@
 .chart-tab.active,.chart-tab:hover{color:#60a5fa;border-bottom-color:#60a5fa;}
 .chart-panel{display:none;}.chart-panel.active{display:block;}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
-.chart-box{background:#0d1220;border:1px solid rgba(255,255,255,.06);padding:1.5rem;}
-.chart-box h4{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gris);letter-spacing:.08em;margin-bottom:1.2rem;}
-.chart-box canvas{max-height:220px;}
+.chart-box{background:#0d1220;border:1px solid rgba(255,255,255,.06);padding:1rem;}
+.chart-box h4{font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:var(--gris);letter-spacing:.08em;margin-bottom:.7rem;}
+.chart-box canvas{max-height:150px;}
 .chart-box.full{grid-column:1/-1;}
-.chart-box.full canvas{max-height:200px;}
+.chart-box.full canvas{max-height:130px;}
 @media(max-width:768px){.charts-grid{grid-template-columns:1fr;}.chart-box.full{grid-column:1;}}
 </style>
 </head>
@@ -2752,16 +2752,16 @@ document.addEventListener('DOMContentLoaded', function() {
       wdl:[3,0,2]
     },
     s20:{
-      fechas:['19 abr','26 abr','17 may','24 may'],
-      gf:[1,1,2,3], gc:[0,1,1,0],
-      pts:[3,4,7,10],
-      wdl:[3,1,0]
-    },
-    s18:{
       fechas:['11 abr','18 abr','25 abr','16 may','23 may'],
       gf:[0,1,4,1,1], gc:[1,1,3,2,0],
       pts:[0,1,4,4,7],
       wdl:[2,1,2]
+    },
+    s18:{
+      fechas:['19 abr','26 abr','17 may','24 may'],
+      gf:[1,1,2,3], gc:[0,1,1,0],
+      pts:[3,4,7,10],
+      wdl:[3,1,0]
     },
     mas:{
       fechas:['11 abr','18 abr','16 may','23 may'],
