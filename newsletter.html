@@ -3,46 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resultados · Playa Honda Universitario</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&family=Georgia&display=swap" rel="stylesheet">
+<title>El Universitario · Playa Honda</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0;}
-body{margin:0;padding:0;background:#f5f0e8;font-family:'Barlow',Helvetica,sans-serif;}
+body{margin:0;padding:0;background:#f0ebe0;font-family:'Barlow',Helvetica,sans-serif;}
 
-/* ════════════════════════════════════════
-   BLOQUE 1 — RESULTADOS (tabla newsletter)
-════════════════════════════════════════ */
-.nl-wrap{background:transparent;padding:24px 12px;}
-.nl-inner{max-width:520px;margin:0 auto;background:linear-gradient(180deg,#0c1728,#0b1320);border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.05);box-shadow:0 10px 40px rgba(0,0,0,.45);}
-
-.nl-header{text-align:center;padding-bottom:22px;}
-.nl-escudo{display:block;width:60px;margin:0 auto 14px auto;border-radius:50%;filter:drop-shadow(0 0 14px rgba(212,175,55,.35));}
-.nl-sup{color:#8ea4c7;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.45em;text-transform:uppercase;display:block;margin-bottom:6px;}
-.nl-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;line-height:.95;color:#ffffff;font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 30px rgba(255,255,255,.08);}
-.nl-sub{color:#1e4fad;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;display:block;margin-top:8px;}
-.nl-sep{width:80px;height:2px;background:#1e3a6e;border-radius:999px;margin:14px auto 0 auto;box-shadow:0 0 10px rgba(30,58,110,.5);}
-
-.nl-card{position:relative;overflow:hidden;background:rgba(19,39,68,.95);border-radius:12px;margin-bottom:10px;}
-.nl-card-inner{padding:14px 18px;}
-.nl-card-cat{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#8ea4c7;margin-bottom:4px;}
-.nl-card-score{display:block;font-family:'Bebas Neue',Impact,sans-serif;font-size:30px;line-height:1;color:#ffffff;letter-spacing:.04em;}
-.nl-card-score span{color:#1e4fad;}
-.nl-card-estado{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-top:4px;}
-.nl-card-fecha{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:14px;font-weight:500;color:#9fb0ca;text-transform:capitalize;letter-spacing:.04em;margin-top:10px;}
-.nl-card-goles{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;color:#1e4fad;letter-spacing:.05em;margin-top:10px;}
-.nl-ribbon{display:inline-block;background:#e53e3e;color:#fff;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px;vertical-align:middle;}
-
-.nl-footer{text-align:center;padding-top:22px;border-top:1px solid rgba(255,255,255,.05);}
-.nl-footer-1{color:#7d8ea8;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;}
-.nl-footer-2{font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;margin-top:10px;}
-.nl-footer-2 .white{color:#ffffff;}
-.nl-footer-2 .blue{color:#1e4fad;}
-
-/* ════════════════════════════════════════
-   BLOQUE 2 — EL UNIVERSITARIO (diario)
-════════════════════════════════════════ */
+/* ── Diario Deportivo ── */
 #diario{background:#f0ebe0;color:#1a1a1a;padding:3rem 1rem;}
 .dr-wrap{max-width:900px;margin:0 auto;}
 .dr-top{display:flex;align-items:center;justify-content:space-between;border-top:3px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:.4rem 0;margin-bottom:.2rem;}
@@ -73,33 +41,6 @@ body{margin:0;padding:0;background:#f5f0e8;font-family:'Barlow',Helvetica,sans-s
 
 <body>
 
-<!-- ════════════════════════════════════════
-     BLOQUE 1 — RESULTADOS
-════════════════════════════════════════ -->
-<div class="nl-wrap">
-  <div class="nl-inner">
-
-    <div class="nl-header">
-      <img class="nl-escudo" src="https://playahondau.github.io/playahondau/escudo.png" alt="Escudo">
-      <span class="nl-sup">Playa Honda Universitario</span>
-      <div class="nl-title">Resultados</div>
-      <span class="nl-sub">Fin de semana</span>
-      <div class="nl-sep"></div>
-    </div>
-
-    <div id="resultados"></div>
-
-    <div class="nl-footer">
-      <p class="nl-footer-1">Liga Universitaria del Uruguay &middot; Desde 1964</p>
-      <p class="nl-footer-2"><span class="white">#Somos</span><span class="blue">Playa</span></p>
-    </div>
-
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     BLOQUE 2 — EL UNIVERSITARIO (diario)
-════════════════════════════════════════ -->
 <section id="diario">
   <div class="dr-wrap" id="diario-inner">
     <p style="text-align:center;font-family:'Barlow Condensed',sans-serif;color:#888;letter-spacing:.15em;font-size:.8rem;">Cargando edición&hellip;</p>
@@ -107,69 +48,12 @@ body{margin:0;padding:0;background:#f5f0e8;font-family:'Barlow',Helvetica,sans-s
 </section>
 
 <script>
-/* ── API (misma que el sitio principal) ── */
 var API = "https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec";
 
-/* ════════════════════════════════════════
-   BLOQUE 1 — RESULTADOS (newsletter cards)
-════════════════════════════════════════ */
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv")
-.then(function(r){ return r.text(); })
-.then(function(data){
-  var rows = data.split("\n").slice(1);
-  var html = "";
-
-  rows.forEach(function(row){
-    if(row.trim()==="") return;
-    var cols = row.split(",");
-    var categoria  = cols[0]||"";
-    var rival      = cols[1]||"";
-    var resultado  = cols[2]||"";
-    var estado     = cols[3]||"";
-    var localia    = cols[4]||"";
-    var dia        = cols[5]||"";
-    var fecha      = cols[6]||"";
-    var goleadores = (cols[7]||"").trim();
-
-    var color="#cfcfcf";
-    if(estado.toLowerCase()==="victoria") color="#41d17d";
-    if(estado.toLowerCase()==="derrota")  color="#ff6b6b";
-
-    var golesHtml = goleadores
-      ? '<span class="nl-card-goles">&#9917; '+goleadores.split(";").map(function(g){return g.trim();}).join(" &nbsp;&#183;&nbsp; ")+'</span>'
-      : "";
-
-    var ribbonText="";
-    if(categoria.toLowerCase().indexOf("mayor")!==-1) ribbonText="EN LA HORA";
-    if(categoria.toLowerCase().indexOf("sub 18")!==-1) ribbonText="PUNTEROS";
-    var ribbonHtml = ribbonText
-      ? '<span class="nl-ribbon">'+ribbonText+'</span>'
-      : "";
-
-    html +=
-      '<div class="nl-card" style="border-left:4px solid '+color+';">'+
-        '<div class="nl-card-inner">'+
-          '<span class="nl-card-cat">'+categoria+' '+ribbonHtml+'</span>'+
-          '<span class="nl-card-score">Playa Honda <span>'+resultado+'</span> '+rival+'</span>'+
-          '<span class="nl-card-estado" style="color:'+color+';">&#9679; '+estado+'</span>'+
-          '<span class="nl-card-fecha">&#128197; '+fecha+' &nbsp;&middot;&nbsp; '+dia+' &nbsp;&middot;&nbsp; '+localia+'</span>'+
-          golesHtml+
-        '</div>'+
-      '</div>';
-  });
-
-  document.getElementById("resultados").innerHTML = html;
-});
-
-/* ════════════════════════════════════════
-   BLOQUE 2 — EL UNIVERSITARIO (diario)
-   Lee de la misma API del sitio principal.
-   Se actualiza solo cuando se actualiza el sheet.
-════════════════════════════════════════ */
 fetch(API)
 .then(function(r){ return r.json(); })
 .then(function(data){
-  var resultados = (data.resultados||[]).filter(function(r){return r.resultado&&r.resultado.trim()!=="";});
+  var resultados = (data.resultados||[]).filter(function(r){ return r.resultado && r.resultado.trim()!==""; });
   var fixture    = data.fixture||[];
   renderDiario(resultados, fixture);
 })
