@@ -525,7 +525,7 @@
     <li><a href="#proximos">Fixture</a></li>
     <li><a href="#posiciones">Posiciones</a></li>
     <li><a href="#planteles">Planteles</a></li>
-    <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li><li><a href="#diario">Diario</a></li><li><a href="#" onclick="abrirPenales();return false;">⚽ Penales</a></li>
+    <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li><li><a href="#" onclick="abrirPenales();return false;">Penales</a></li>
   </ul>
   <div class="nav-live" id="nav-live"><span class="live-dot"></span>En Vivo</div>
   <a class="nav-ig" href="https://www.instagram.com/playahondau/" target="_blank" style="display:none;" id="nav-ig-desktop"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:.3rem"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> @playahondau</a>
@@ -544,8 +544,7 @@
   <a href="#historial" onclick="closeMobileNav()">Historial</a>
   <a href="#estadisticas" onclick="closeMobileNav()">Estad&iacute;sticas</a>
   <a href="#divisiones" onclick="closeMobileNav()">Divisiones</a>
-  <a href="#diario" onclick="closeMobileNav()">Diario</a>
-  <a href="#" onclick="closeMobileNav();abrirPenales();return false;">⚽ Penales</a>
+  <a href="#" onclick="closeMobileNav();abrirPenales();return false;">Penales</a>
   <a href="https://www.instagram.com/playahondau/" target="_blank" style="color:var(--dorado-light)">@playahondau</a>
 </div>
 
@@ -1708,8 +1707,6 @@ document.querySelectorAll('.hvse tbody tr').forEach(function(row){
   </div>
 </section>
 
-<section id="diario"></section>
-
 <section id="divisiones">
   <p class="section-label reveal">El club</p>
   <h2 class="section-title reveal">Divisiones</h2>
@@ -1924,7 +1921,6 @@ async function init() {
     renderFixture(fixture);
     initCountdown(fixture);
     checkMatchDay(fixture);
-    renderDiario(resultados, fixture);
   } catch(e) {
     document.getElementById('resultados-grid').innerHTML = '<div class="msg">Error al conectar con la planilla</div>';
     document.getElementById('fixtures-list').innerHTML   = '<div class="msg">Error al conectar con la planilla</div>';
@@ -2901,27 +2897,6 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 .share-modal-btns button.share-close{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3);}
 .share-modal-btns button:hover{opacity:.85;}
 
-/* ── Diario Deportivo ── */
-#diario{background:#f0ebe0;color:#1a1a1a;padding:3rem 1rem;}
-.dr-wrap{max-width:900px;margin:0 auto;}
-.dr-top{display:flex;align-items:center;justify-content:space-between;border-top:3px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:.4rem 0;margin-bottom:.2rem;}
-.dr-name{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.8rem,5.5vw,3.8rem);font-weight:700;letter-spacing:.04em;line-height:1;text-align:center;flex:1;}
-.dr-meta{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:#555;letter-spacing:.06em;flex:1;text-align:center;}
-.dr-meta:first-child{text-align:left;}
-.dr-meta:last-child{text-align:right;}
-.dr-tagline{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #1a1a1a;padding-bottom:.35rem;margin-bottom:1rem;color:#444;}
-.dr-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.4rem;}
-.dr-col-main{border-right:1px solid #aaa;padding-right:1.4rem;}
-.dr-kicker{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#8b0000;margin-bottom:.3rem;}
-.dr-titular{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.3rem,2.8vw,2rem);font-weight:700;line-height:1.18;margin-bottom:.5rem;}
-.dr-subtit{font-family:'Barlow',sans-serif;font-size:.85rem;color:#444;border-bottom:1px dotted #aaa;padding-bottom:.5rem;margin-bottom:.7rem;}
-.dr-body{font-family:'Georgia',serif;font-size:.86rem;line-height:1.7;color:#333;column-count:2;column-gap:1rem;}
-.dr-sh{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-top:2px solid #1a1a1a;border-bottom:1px solid #aaa;padding:.22rem 0;margin-bottom:.5rem;}
-.dr-item{display:flex;flex-direction:column;gap:.08rem;padding:.32rem 0;border-bottom:1px dotted #ccc;font-family:'Barlow Condensed',sans-serif;}
-.dr-cat{font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#8b0000;}
-.dr-score{font-size:.9rem;font-weight:700;}
-@media(max-width:600px){.dr-grid{grid-template-columns:1fr;}.dr-col-main{border-right:none;padding-right:0;}.dr-body{column-count:1;}.dr-top{flex-wrap:wrap;gap:.3rem;justify-content:center;}.dr-meta{flex:none;width:100%;text-align:center!important;}}
-
 /* ── Penales Modal ── */
 #penales-modal{display:none;position:fixed;inset:0;z-index:10003;background:rgba(0,0,0,.93);align-items:center;justify-content:center;padding:1rem;}
 #penales-modal.open{display:flex;}
@@ -3043,96 +3018,6 @@ function generarTarjeta(btn){
     img.src='escudo.png';
     document.getElementById('share-modal').classList.add('open');
   });
-}
-
-/* ══════════════════════════════════════════════════════
-   FEATURE — DIARIO DEPORTIVO
-══════════════════════════════════════════════════════ */
-function renderDiario(resultados, fixture){
-  var sec=document.getElementById('diario');
-  if(!sec||!resultados||!resultados.length) return;
-  var ahora=new Date();
-  var diasSem=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var mesesN=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  var fechaStr=diasSem[ahora.getDay()]+' '+ahora.getDate()+' de '+mesesN[ahora.getMonth()]+' de '+ahora.getFullYear();
-  var edicion=Math.floor(Math.random()*80+40);
-
-  var r=resultados[0];
-  var res=(r.resultado||'').toLowerCase();
-  var rival=((r.local||'').toLowerCase().indexOf('playa honda')!==-1)?r.visitante:r.local;
-  var sc=r.goles_local+'-'+r.goles_visitante;
-  var cat=r.categoria||'';
-
-  var TIT={
-    victoria:[
-      'PLAYA HONDA APLASTA A '+rival.toUpperCase()+' CON UN CONTUNDENTE '+sc,
-      'NOCHE AZUL EN '+cat.toUpperCase()+': VICTORIA HISTÓRICA DE LOS UNIVERSITARIOS',
-      'IMPARABLES: LOS AZULES SE IMPONEN '+sc+' Y SIGUEN SOÑANDO',
-      'DOMINIO TOTAL: PLAYA HONDA APLICA '+sc+' Y SUMA TRES PUNTOS DE ORO'
-    ],
-    empate:[
-      'SE REPARTEN LOS PUNTOS: PLAYA HONDA Y '+rival.toUpperCase()+' IGUALAN '+sc,
-      'PUNTO VALIOSO DE LOS UNIVERSITARIOS ANTE '+rival.toUpperCase(),
-      'NI VENCEDORES NI VENCIDOS: EMPATE JUSTO EN '+cat.toUpperCase()
-    ],
-    derrota:[
-      'GOLPE DURO: PLAYA HONDA CAE ANTE '+rival.toUpperCase()+' POR '+sc,
-      'TROPIEZO AZUL QUE DUELE EN '+cat.toUpperCase(),
-      'DURA NOCHE UNIVERSITARIA: DERROTA '+sc+' ANTE '+rival.toUpperCase()
-    ]
-  };
-  var SUB={
-    victoria:['Los azules demostraron carácter y se llevaron los tres puntos.','Una victoria que levanta el ánimo de toda la hinchada universitaria.','Playa Honda sumó de a tres y sigue en la pelea por los primeros puestos.'],
-    empate:['Un punto que puede valer mucho en el balance final de la temporada.','Reparto justo en un partido disputado y equilibrado de principio a fin.'],
-    derrota:['Los universitarios deberán reponerse de cara a la próxima fecha.','Golpe duro que no define, pero obliga a responder en el siguiente partido.']
-  };
-  var CRON={
-    victoria:['Desde el primer silbato Playa Honda mostró intensidad. Los azules cerraron bien los espacios atrás y fueron peligrosos en ataque, con una ventaja que reflejan los números: '+sc+'. Tres puntos vitales para la campaña universitaria.','Un partido para enmarcar. Playa Honda manejó los tiempos con inteligencia, sostuvo la presión y terminó siendo justo vencedor. El '+sc+' es elocuente.'],
-    empate:['Un partido parejo de principio a fin. Playa Honda mostró solvencia defensiva y generó situaciones, aunque el gol no llegó a más. El punto suma y el equipo sigue en carrera.'],
-    derrota:['La derrota duele pero no define. Playa Honda compitió, tuvo momentos, pero el rival fue más efectivo. Ahora toca reponerse y pensar en la próxima fecha con la cabeza alta.']
-  };
-  var arr=TIT[res]||TIT.derrota;
-  var titular=arr[Math.floor(Math.random()*arr.length)];
-  var sarr=SUB[res]||SUB.derrota;
-  var subtit=sarr[Math.floor(Math.random()*sarr.length)];
-  var carr=CRON[res]||CRON.derrota;
-  var cronica=carr[Math.floor(Math.random()*carr.length)];
-
-  var resHtml=resultados.slice(0,6).map(function(rv){
-    var rv_res=(rv.resultado||'').toLowerCase();
-    var col=rv_res==='victoria'?'#1a5c1a':rv_res==='empate'?'#7a5800':'#8b0000';
-    var badge=rv_res==='victoria'?'▲':rv_res==='empate'?'▬':'▼';
-    return '<div class="dr-item"><span class="dr-cat">'+rv.categoria+'</span>'+
-      '<span class="dr-score" style="color:'+col+'">'+badge+' '+rv.local+' '+rv.goles_local+'-'+rv.goles_visitante+' '+rv.visitante+'</span></div>';
-  }).join('');
-
-  var fixHtml=(fixture||[]).slice(0,5).map(function(f){
-    return '<div class="dr-item"><span class="dr-cat">'+f.categoria+'</span>'+
-      '<span>'+f.local+' vs '+f.visitante+'</span>'+
-      '<span style="font-size:.72rem;color:#666">'+f.dia_hora+(f.lugar?' · '+f.lugar:'')+'</span></div>';
-  }).join('');
-
-  sec.innerHTML=
-    '<div class="dr-wrap">'+
-      '<div class="dr-top">'+
-        '<span class="dr-meta">Nº '+edicion+' · Edición Digital</span>'+
-        '<h2 class="dr-name">EL UNIVERSITARIO</h2>'+
-        '<span class="dr-meta">'+fechaStr+'</span>'+
-      '</div>'+
-      '<p class="dr-tagline">Playa Honda Universitario · Liga Universitaria del Uruguay · Desde 1964</p>'+
-      '<div class="dr-grid">'+
-        '<div class="dr-col dr-col-main">'+
-          '<p class="dr-kicker">'+cat+' · '+r.fecha+'</p>'+
-          '<h3 class="dr-titular">'+titular+'</h3>'+
-          '<p class="dr-subtit">'+subtit+'</p>'+
-          '<p class="dr-body">'+cronica+'</p>'+
-        '</div>'+
-        '<div class="dr-col dr-col-side">'+
-          '<h4 class="dr-sh">Resultados</h4>'+resHtml+
-          '<h4 class="dr-sh" style="margin-top:1rem">Próximos partidos</h4>'+fixHtml+
-        '</div>'+
-      '</div>'+
-    '</div>';
 }
 
 /* ══════════════════════════════════════════════════════

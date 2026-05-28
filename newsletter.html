@@ -3,143 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resultados Playa Honda</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
+<title>Resultados · Playa Honda Universitario</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&family=Georgia&display=swap" rel="stylesheet">
+
+<style>
+/* ── Reset ── */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{margin:0;padding:0;background:#f5f0e8;font-family:'Barlow',Helvetica,sans-serif;}
+
+/* ════════════════════════════════════════
+   BLOQUE 1 — RESULTADOS (tabla newsletter)
+════════════════════════════════════════ */
+.nl-wrap{background:transparent;padding:24px 12px;}
+.nl-inner{max-width:520px;margin:0 auto;background:linear-gradient(180deg,#0c1728,#0b1320);border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.05);box-shadow:0 10px 40px rgba(0,0,0,.45);}
+
+.nl-header{text-align:center;padding-bottom:22px;}
+.nl-escudo{display:block;width:60px;margin:0 auto 14px auto;border-radius:50%;filter:drop-shadow(0 0 14px rgba(212,175,55,.35));}
+.nl-sup{color:#8ea4c7;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.45em;text-transform:uppercase;display:block;margin-bottom:6px;}
+.nl-title{font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;line-height:.95;color:#ffffff;font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 30px rgba(255,255,255,.08);}
+.nl-sub{color:#1e4fad;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;display:block;margin-top:8px;}
+.nl-sep{width:80px;height:2px;background:#1e3a6e;border-radius:999px;margin:14px auto 0 auto;box-shadow:0 0 10px rgba(30,58,110,.5);}
+
+.nl-card{position:relative;overflow:hidden;background:rgba(19,39,68,.95);border-radius:12px;margin-bottom:10px;}
+.nl-card-inner{padding:14px 18px;}
+.nl-card-cat{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#8ea4c7;margin-bottom:4px;}
+.nl-card-score{display:block;font-family:'Bebas Neue',Impact,sans-serif;font-size:30px;line-height:1;color:#ffffff;letter-spacing:.04em;}
+.nl-card-score span{color:#1e4fad;}
+.nl-card-estado{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-top:4px;}
+.nl-card-fecha{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:14px;font-weight:500;color:#9fb0ca;text-transform:capitalize;letter-spacing:.04em;margin-top:10px;}
+.nl-card-goles{display:block;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;color:#1e4fad;letter-spacing:.05em;margin-top:10px;}
+.nl-ribbon{display:inline-block;background:#e53e3e;color:#fff;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px;vertical-align:middle;}
+
+.nl-footer{text-align:center;padding-top:22px;border-top:1px solid rgba(255,255,255,.05);}
+.nl-footer-1{color:#7d8ea8;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;}
+.nl-footer-2{font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;margin-top:10px;}
+.nl-footer-2 .white{color:#ffffff;}
+.nl-footer-2 .blue{color:#1e4fad;}
+
+/* ════════════════════════════════════════
+   BLOQUE 2 — EL UNIVERSITARIO (diario)
+════════════════════════════════════════ */
+#diario{background:#f0ebe0;color:#1a1a1a;padding:3rem 1rem;}
+.dr-wrap{max-width:900px;margin:0 auto;}
+.dr-top{display:flex;align-items:center;justify-content:space-between;border-top:3px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:.4rem 0;margin-bottom:.2rem;}
+.dr-name{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.8rem,5.5vw,3.8rem);font-weight:700;letter-spacing:.04em;line-height:1;text-align:center;flex:1;}
+.dr-meta{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:#555;letter-spacing:.06em;flex:1;text-align:center;}
+.dr-meta:first-child{text-align:left;}
+.dr-meta:last-child{text-align:right;}
+.dr-tagline{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid #1a1a1a;padding-bottom:.35rem;margin-bottom:1rem;color:#444;}
+.dr-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.4rem;}
+.dr-col-main{border-right:1px solid #aaa;padding-right:1.4rem;}
+.dr-kicker{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#8b0000;margin-bottom:.3rem;}
+.dr-titular{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.3rem,2.8vw,2rem);font-weight:700;line-height:1.18;margin-bottom:.5rem;}
+.dr-subtit{font-family:'Barlow',sans-serif;font-size:.85rem;color:#444;border-bottom:1px dotted #aaa;padding-bottom:.5rem;margin-bottom:.7rem;}
+.dr-body{font-family:'Georgia',serif;font-size:.86rem;line-height:1.7;color:#333;column-count:2;column-gap:1rem;}
+.dr-sh{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-top:2px solid #1a1a1a;border-bottom:1px solid #aaa;padding:.22rem 0;margin-bottom:.5rem;}
+.dr-item{display:flex;flex-direction:column;gap:.08rem;padding:.32rem 0;border-bottom:1px dotted #ccc;font-family:'Barlow Condensed',sans-serif;}
+.dr-cat{font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#8b0000;}
+.dr-score{font-size:.9rem;font-weight:700;}
+@media(max-width:600px){
+  .dr-grid{grid-template-columns:1fr;}
+  .dr-col-main{border-right:none;padding-right:0;}
+  .dr-body{column-count:1;}
+  .dr-top{flex-wrap:wrap;gap:.3rem;justify-content:center;}
+  .dr-meta{flex:none;width:100%;text-align:center!important;}
+}
+</style>
 </head>
 
-<body style="margin:0;padding:0;background:transparent;font-family:'Barlow',Helvetica,sans-serif;">
+<body>
 
-<table width="100%" cellpadding="0" cellspacing="0" style="background:transparent;padding:0;">
-<tr>
-<td align="center">
+<!-- ════════════════════════════════════════
+     BLOQUE 1 — RESULTADOS
+════════════════════════════════════════ -->
+<div class="nl-wrap">
+  <div class="nl-inner">
 
-<!-- CONTENEDOR PRINCIPAL -->
-<table width="520" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#0c1728,#0b1320);border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.05);box-shadow:0 10px 40px rgba(0,0,0,.45);">
+    <div class="nl-header">
+      <img class="nl-escudo" src="https://playahondau.github.io/playahondau/escudo.png" alt="Escudo">
+      <span class="nl-sup">Playa Honda Universitario</span>
+      <div class="nl-title">Resultados</div>
+      <span class="nl-sub">Fin de semana</span>
+      <div class="nl-sep"></div>
+    </div>
 
-<!-- HEADER -->
-<tr>
-<td align="center" style="padding-bottom:22px;">
+    <div id="resultados"></div>
 
-  <img
-    src="https://playahondau.github.io/playahondau/escudo.png"
-    width="60"
-    style="display:block;margin:0 auto 14px auto;border-radius:50%;filter:drop-shadow(0 0 14px rgba(212,175,55,.35));"
-  >
+    <div class="nl-footer">
+      <p class="nl-footer-1">Liga Universitaria del Uruguay &middot; Desde 1964</p>
+      <p class="nl-footer-2"><span class="white">#Somos</span><span class="blue">Playa</span></p>
+    </div>
 
-  <p style="margin:0 0 6px 0;color:#8ea4c7;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.45em;text-transform:uppercase;">
-    Playa Honda Universitario
-  </p>
+  </div>
+</div>
 
-  <h1 style="margin:0;font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;line-height:.95;color:#ffffff;font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 30px rgba(255,255,255,.08);">
-    Resultados
-  </h1>
-
-  <p style="margin:8px 0 0 0;color:#1e4fad;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;">
-    Fin de semana
-  </p>
-
-  <div style="width:80px;height:2px;background:#1e3a6e;border-radius:999px;margin:14px auto 0 auto;box-shadow:0 0 10px rgba(30,58,110,.5);"></div>
-
-</td>
-</tr>
-
-<!-- RESULTADOS DINÁMICOS -->
-<tr>
-<td>
-  <div id="resultados"></div>
-</td>
-</tr>
-
-<!-- FOOTER -->
-<tr>
-<td align="center" style="padding-top:22px;border-top:1px solid rgba(255,255,255,.05);">
-  <p style="margin:0;color:#7d8ea8;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;">
-    Liga Universitaria del Uruguay &middot; Desde 1964
-  </p>
-  <p style="margin:10px 0 0 0;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;">
-    <span style="color:#ffffff;">#Somos</span><span style="color:#1e4fad;">Playa</span>
-  </p>
-</td>
-</tr>
-
-</table>
-</td>
-</tr>
-</table>
+<!-- ════════════════════════════════════════
+     BLOQUE 2 — EL UNIVERSITARIO (diario)
+════════════════════════════════════════ -->
+<section id="diario">
+  <div class="dr-wrap" id="diario-inner">
+    <p style="text-align:center;font-family:'Barlow Condensed',sans-serif;color:#888;letter-spacing:.15em;font-size:.8rem;">Cargando edición&hellip;</p>
+  </div>
+</section>
 
 <script>
+/* ── API (misma que el sitio principal) ── */
+var API = "https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec";
+
+/* ════════════════════════════════════════
+   BLOQUE 1 — RESULTADOS (newsletter cards)
+════════════════════════════════════════ */
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv")
-.then(r => r.text())
-.then(data => {
+.then(function(r){ return r.text(); })
+.then(function(data){
+  var rows = data.split("\n").slice(1);
+  var html = "";
 
-  const rows = data.split("\n").slice(1);
-  let html = "";
+  rows.forEach(function(row){
+    if(row.trim()==="") return;
+    var cols = row.split(",");
+    var categoria  = cols[0]||"";
+    var rival      = cols[1]||"";
+    var resultado  = cols[2]||"";
+    var estado     = cols[3]||"";
+    var localia    = cols[4]||"";
+    var dia        = cols[5]||"";
+    var fecha      = cols[6]||"";
+    var goleadores = (cols[7]||"").trim();
 
-  rows.forEach(row => {
-    if (row.trim() === "") return;
-    const cols = row.split(",");
+    var color="#cfcfcf";
+    if(estado.toLowerCase()==="victoria") color="#41d17d";
+    if(estado.toLowerCase()==="derrota")  color="#ff6b6b";
 
-    const categoria  = cols[0] || "";
-    const rival      = cols[1] || "";
-    const resultado  = cols[2] || "";
-    const estado     = cols[3] || "";
-    const localia    = cols[4] || "";
-    const dia        = cols[5] || "";
-    const fecha      = cols[6] || "";
-    const goleadores = (cols[7] || "").trim();
-
-    let color = "#cfcfcf";
-    if (estado.toLowerCase() === "victoria") color = "#41d17d";
-    if (estado.toLowerCase() === "derrota")  color = "#ff6b6b";
-    if (estado.toLowerCase() === "empate")   color = "#cfcfcf";
-
-    const golesHtml = goleadores
-      ? `<p style="margin:10px 0 0 0;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:13px;color:#1e4fad;letter-spacing:.05em;">
-           &#9917; ${goleadores.split(";").map(g => g.trim()).join(" &nbsp;&#183;&nbsp; ")}
-         </p>`
+    var golesHtml = goleadores
+      ? '<span class="nl-card-goles">&#9917; '+goleadores.split(";").map(function(g){return g.trim();}).join(" &nbsp;&#183;&nbsp; ")+'</span>'
       : "";
 
-    let ribbonText = "";
-    if (categoria.toLowerCase().includes("mayor")) ribbonText = "EN LA HORA";
-    if (categoria.toLowerCase().includes("sub 18")) ribbonText = "PUNTEROS";
-
-    const ribbonHtml = ribbonText
-      ? `<span style="display:inline-block;background:#e53e3e;color:#fff;
-                      font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;
-                      letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px;
-                      margin-left:8px;vertical-align:middle;">
-           ${ribbonText}
-         </span>`
+    var ribbonText="";
+    if(categoria.toLowerCase().indexOf("mayor")!==-1) ribbonText="EN LA HORA";
+    if(categoria.toLowerCase().indexOf("sub 18")!==-1) ribbonText="PUNTEROS";
+    var ribbonHtml = ribbonText
+      ? '<span class="nl-ribbon">'+ribbonText+'</span>'
       : "";
 
-    html += `
-    <div style="position:relative;overflow:hidden;background:rgba(19,39,68,.95);border-radius:12px;margin-bottom:10px;border-left:4px solid ${color};">
-    <div style="padding:14px 18px;">
-
-      <p style="margin:0 0 4px 0;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#8ea4c7;">
-        ${categoria} ${ribbonHtml}
-      </p>
-
-      <p style="margin:0 0 3px 0;font-family:'Bebas Neue',Impact,sans-serif;font-size:30px;line-height:1;color:#ffffff;letter-spacing:.04em;">
-        Playa Honda <span style="color:#1e4fad;">${resultado}</span> ${rival}
-      </p>
-
-      <p style="margin:4px 0 0 0;font-family:'Barlow Condensed',Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:${color};">
-        &#9679; ${estado}
-      </p>
-
-      <p style="margin:10px 0 0 0;font-family:'Rajdhani',Helvetica,sans-serif;font-size:14px;font-weight:500;color:#9fb0ca;text-transform:capitalize;letter-spacing:.04em;">
-        &#128197; ${fecha} &nbsp;&middot;&nbsp; ${dia} &nbsp;&middot;&nbsp; ${localia}
-      </p>
-
-      ${golesHtml}
-
-    </div>
-    </div>`;
+    html +=
+      '<div class="nl-card" style="border-left:4px solid '+color+';">'+
+        '<div class="nl-card-inner">'+
+          '<span class="nl-card-cat">'+categoria+' '+ribbonHtml+'</span>'+
+          '<span class="nl-card-score">Playa Honda <span>'+resultado+'</span> '+rival+'</span>'+
+          '<span class="nl-card-estado" style="color:'+color+';">&#9679; '+estado+'</span>'+
+          '<span class="nl-card-fecha">&#128197; '+fecha+' &nbsp;&middot;&nbsp; '+dia+' &nbsp;&middot;&nbsp; '+localia+'</span>'+
+          golesHtml+
+        '</div>'+
+      '</div>';
   });
 
   document.getElementById("resultados").innerHTML = html;
 });
+
+/* ════════════════════════════════════════
+   BLOQUE 2 — EL UNIVERSITARIO (diario)
+   Lee de la misma API del sitio principal.
+   Se actualiza solo cuando se actualiza el sheet.
+════════════════════════════════════════ */
+fetch(API)
+.then(function(r){ return r.json(); })
+.then(function(data){
+  var resultados = (data.resultados||[]).filter(function(r){return r.resultado&&r.resultado.trim()!=="";});
+  var fixture    = data.fixture||[];
+  renderDiario(resultados, fixture);
+})
+.catch(function(){
+  document.getElementById('diario-inner').innerHTML =
+    '<p style="text-align:center;color:#888;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:.1em;">No se pudo cargar el diario.</p>';
+});
+
+function renderDiario(resultados, fixture){
+  var sec = document.getElementById('diario-inner');
+  if(!sec||!resultados||!resultados.length){ sec.innerHTML=''; return; }
+
+  var ahora   = new Date();
+  var diasSem = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var mesesN  = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var fechaStr = diasSem[ahora.getDay()]+' '+ahora.getDate()+' de '+mesesN[ahora.getMonth()]+' de '+ahora.getFullYear();
+  var edicion  = Math.floor(Math.random()*80+40);
+
+  var r   = resultados[0];
+  var res = (r.resultado||'').toLowerCase();
+  var rival = ((r.local||'').toLowerCase().indexOf('playa honda')!==-1) ? r.visitante : r.local;
+  var sc  = r.goles_local+'-'+r.goles_visitante;
+  var cat = r.categoria||'';
+
+  var TIT={
+    victoria:[
+      'PLAYA HONDA APLASTA A '+rival.toUpperCase()+' CON UN CONTUNDENTE '+sc,
+      'NOCHE AZUL EN '+cat.toUpperCase()+': VICTORIA HISTÓRICA DE LOS UNIVERSITARIOS',
+      'IMPARABLES: LOS AZULES SE IMPONEN '+sc+' Y SIGUEN SOÑANDO',
+      'DOMINIO TOTAL: PLAYA HONDA APLICA '+sc+' Y SUMA TRES PUNTOS DE ORO'
+    ],
+    empate:[
+      'SE REPARTEN LOS PUNTOS: PLAYA HONDA Y '+rival.toUpperCase()+' IGUALAN '+sc,
+      'PUNTO VALIOSO DE LOS UNIVERSITARIOS ANTE '+rival.toUpperCase(),
+      'NI VENCEDORES NI VENCIDOS: EMPATE JUSTO EN '+cat.toUpperCase()
+    ],
+    derrota:[
+      'GOLPE DURO: PLAYA HONDA CAE ANTE '+rival.toUpperCase()+' POR '+sc,
+      'TROPIEZO AZUL QUE DUELE EN '+cat.toUpperCase(),
+      'DURA NOCHE UNIVERSITARIA: DERROTA '+sc+' ANTE '+rival.toUpperCase()
+    ]
+  };
+  var SUB={
+    victoria:['Los azules demostraron carácter y se llevaron los tres puntos.','Una victoria que levanta el ánimo de toda la hinchada universitaria.','Playa Honda sumó de a tres y sigue en la pelea por los primeros puestos.'],
+    empate:['Un punto que puede valer mucho en el balance final de la temporada.','Reparto justo en un partido disputado y equilibrado de principio a fin.'],
+    derrota:['Los universitarios deberán reponerse de cara a la próxima fecha.','Golpe duro que no define, pero obliga a responder en el siguiente partido.']
+  };
+  var CRON={
+    victoria:['Desde el primer silbato Playa Honda mostró intensidad. Los azules cerraron bien los espacios atrás y fueron peligrosos en ataque, con una ventaja que reflejan los números: '+sc+'. Tres puntos vitales para la campaña universitaria.','Un partido para enmarcar. Playa Honda manejó los tiempos con inteligencia, sostuvo la presión y terminó siendo justo vencedor. El '+sc+' es elocuente.'],
+    empate:['Un partido parejo de principio a fin. Playa Honda mostró solvencia defensiva y generó situaciones, aunque el gol no llegó a más. El punto suma y el equipo sigue en carrera.'],
+    derrota:['La derrota duele pero no define. Playa Honda compitió, tuvo momentos, pero el rival fue más efectivo. Ahora toca reponerse y pensar en la próxima fecha con la cabeza alta.']
+  };
+
+  var arr     = TIT[res]||TIT.derrota;
+  var titular = arr[Math.floor(Math.random()*arr.length)];
+  var sarr    = SUB[res]||SUB.derrota;
+  var subtit  = sarr[Math.floor(Math.random()*sarr.length)];
+  var carr    = CRON[res]||CRON.derrota;
+  var cronica = carr[Math.floor(Math.random()*carr.length)];
+
+  var resHtml = resultados.slice(0,6).map(function(rv){
+    var rv_res = (rv.resultado||'').toLowerCase();
+    var col    = rv_res==='victoria'?'#1a5c1a':rv_res==='empate'?'#7a5800':'#8b0000';
+    var badge  = rv_res==='victoria'?'▲':rv_res==='empate'?'▬':'▼';
+    return '<div class="dr-item">'+
+      '<span class="dr-cat">'+rv.categoria+'</span>'+
+      '<span class="dr-score" style="color:'+col+'">'+badge+' '+rv.local+' '+rv.goles_local+'-'+rv.goles_visitante+' '+rv.visitante+'</span>'+
+    '</div>';
+  }).join('');
+
+  var fixHtml = (fixture||[]).slice(0,5).map(function(f){
+    return '<div class="dr-item">'+
+      '<span class="dr-cat">'+f.categoria+'</span>'+
+      '<span>'+f.local+' vs '+f.visitante+'</span>'+
+      '<span style="font-size:.72rem;color:#666">'+f.dia_hora+(f.lugar?' · '+f.lugar:'')+'</span>'+
+    '</div>';
+  }).join('');
+
+  sec.innerHTML =
+    '<div class="dr-top">'+
+      '<span class="dr-meta">Nº '+edicion+' · Edición Digital</span>'+
+      '<h2 class="dr-name">EL UNIVERSITARIO</h2>'+
+      '<span class="dr-meta">'+fechaStr+'</span>'+
+    '</div>'+
+    '<p class="dr-tagline">Playa Honda Universitario · Liga Universitaria del Uruguay · Desde 1964</p>'+
+    '<div class="dr-grid">'+
+      '<div class="dr-col dr-col-main">'+
+        '<p class="dr-kicker">'+cat+' · '+r.fecha+'</p>'+
+        '<h3 class="dr-titular">'+titular+'</h3>'+
+        '<p class="dr-subtit">'+subtit+'</p>'+
+        '<p class="dr-body">'+cronica+'</p>'+
+      '</div>'+
+      '<div class="dr-col dr-col-side">'+
+        '<h4 class="dr-sh">Resultados</h4>'+resHtml+
+        '<h4 class="dr-sh" style="margin-top:1rem">Próximos partidos</h4>'+fixHtml+
+      '</div>'+
+    '</div>';
+}
 </script>
 
 </body>
