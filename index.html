@@ -3090,15 +3090,17 @@ var Penales=(function(){
   function pateador(px,kick,playerOverride){
     var player=playerOverride||selectedPlayer;
     var isSica=(player==='sica');
+    var isRodo=(player==='rodo');
     var sc=W/420;
     var hr=11*sc, bw=15*sc, bh=22*sc, sw=13*sc, sh=9*sc, lw=8*sc, lh=18*sc;
     var fy=H*.975;
     var legY=fy-lh, shortY=fy-lh-sh, bodyY=fy-lh-sh-bh, headY=bodyY-hr*1.15;
-    var cL=isSica?'#151515':'#1a3a8f';   /* color izquierdo camiseta */
-    var cR=isSica?'#2a2a2a':'#ffffff';   /* color derecho camiseta */
+    var cL=isSica?'#151515':'#1a3a8f';
+    var cR=isSica?'#2a2a2a':'#ffffff';
     var cShort=isSica?'#111':'#ffffff';
     var cSock=isSica?'#222':'#1a3a8f';
-    var pName=player.toUpperCase();
+    var pName=player==='sica'?'SICA':player==='rodo'?'RODO':'TITAN';
+    var pNum =player==='sica'?'1':player==='rodo'?'4':'11';
     /* sombra */
     ctx.fillStyle='rgba(0,0,0,.18)';
     ctx.beginPath(); ctx.ellipse(px,fy,bw*1.1,3.5*sc,0,0,Math.PI*2); ctx.fill();
@@ -3108,52 +3110,83 @@ var Penales=(function(){
     if(kick){
       ctx.save(); ctx.translate(px+sw-lw*.5-2*sc,legY);
       ctx.rotate(-0.45); ctx.fillRect(-lw/2,0,lw,lh); ctx.restore();
-    } else {
-      ctx.fillRect(px+sw-lw-2*sc,legY,lw,lh);
-    }
+    } else { ctx.fillRect(px+sw-lw-2*sc,legY,lw,lh); }
     /* botines */
     ctx.fillStyle='#111';
     ctx.fillRect(px-sw+sc,fy-4*sc,lw+3*sc,4*sc);
     if(!kick) ctx.fillRect(px+sw-lw-3*sc,fy-4*sc,lw+3*sc,4*sc);
     /* short */
-    ctx.fillStyle=cShort;
-    ctx.fillRect(px-sw,shortY,sw*2,sh);
-    /* camiseta: mitad izquierda */
+    ctx.fillStyle=cShort; ctx.fillRect(px-sw,shortY,sw*2,sh);
+    /* camiseta mitad izq / der */
     ctx.fillStyle=cL; ctx.fillRect(px-bw,bodyY,bw,bh);
-    /* camiseta: mitad derecha */
     ctx.fillStyle=cR; ctx.fillRect(px,bodyY,bw,bh);
     /* mangas */
     ctx.fillStyle=cL; ctx.fillRect(px-bw-6*sc,bodyY+2*sc,7*sc,bh*.65);
     ctx.fillStyle=cR; ctx.fillRect(px+bw-sc,bodyY+2*sc,7*sc,bh*.65);
-    /* nombre en camiseta — clip para dos colores */
-    ctx.font='bold '+(7*sc)+'px "Barlow Condensed",sans-serif';
+    /* número dorsal arriba, nombre abajo — clip dos colores */
     ctx.textAlign='center';
-    if(isSica){
-      ctx.fillStyle='#ffffff'; ctx.fillText(pName,px,bodyY+bh*.65);
-    } else {
+    var drawClippedText=function(txt,y,size){
+      ctx.font='bold '+size+'px "Barlow Condensed",sans-serif';
+      if(isSica){ ctx.fillStyle='#fff'; ctx.fillText(txt,px,y); return; }
       ctx.save(); ctx.beginPath(); ctx.rect(px-bw,bodyY,bw,bh); ctx.clip();
-      ctx.fillStyle='#ffffff'; ctx.fillText(pName,px,bodyY+bh*.65); ctx.restore();
+      ctx.fillStyle='#fff'; ctx.fillText(txt,px,y); ctx.restore();
       ctx.save(); ctx.beginPath(); ctx.rect(px,bodyY,bw,bh); ctx.clip();
-      ctx.fillStyle='#1a3a8f'; ctx.fillText(pName,px,bodyY+bh*.65); ctx.restore();
-    }
-    /* guantes golero (Sica) */
+      ctx.fillStyle='#1a3a8f'; ctx.fillText(txt,px,y); ctx.restore();
+    };
+    drawClippedText(pNum, bodyY+bh*.42, 10*sc);
+    drawClippedText(pName, bodyY+bh*.75, 6*sc);
+    /* guantes golero */
     if(isSica){
       ctx.fillStyle='#f59e0b';
-      ctx.beginPath(); ctx.arc(px-bw-2*sc,bodyY+bh*.58,6*sc,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(px+bw+2*sc,bodyY+bh*.58,6*sc,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px-bw-2*sc,bodyY+bh*.55,6*sc,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px+bw+2*sc,bodyY+bh*.55,6*sc,0,Math.PI*2); ctx.fill();
     }
-    /* cabeza */
+    /* ── CARA ── */
+    /* Barcia/Sica: cara más alargada (elipse oval) */
     ctx.fillStyle='#f0c090';
-    ctx.beginPath(); ctx.arc(px,headY,hr,0,Math.PI*2); ctx.fill();
-    /* pelo */
-    ctx.fillStyle='#3a2410';
-    ctx.beginPath(); ctx.arc(px,headY,hr,Math.PI*1.1,Math.PI*1.9,false); ctx.fill();
-    ctx.beginPath(); ctx.arc(px,headY-hr*.35,hr*.85,Math.PI,0); ctx.fill();
-    /* gorra golero */
+    if(isSica){
+      ctx.beginPath(); ctx.ellipse(px,headY,hr*.88,hr*1.08,0,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(px,headY,hr,0,Math.PI*2); ctx.fill();
+    }
+    /* pelo según jugador */
+    ctx.fillStyle='#2a1508';
+    if(isSica){
+      /* Barcia: pelo corto, liso, un poco de entradas */
+      ctx.beginPath(); ctx.arc(px,headY,hr*.88,Math.PI*1.15,Math.PI*1.85,false); ctx.fill();
+      ctx.beginPath(); ctx.arc(px,headY-hr*.28,hr*.72,Math.PI,0); ctx.fill();
+      /* barba leve: sombra en mandíbula */
+      ctx.fillStyle='rgba(40,20,8,.28)';
+      ctx.beginPath(); ctx.ellipse(px,headY+hr*.55,hr*.55,hr*.38,0,0,Math.PI); ctx.fill();
+    } else if(isRodo){
+      /* Rodo: pelo rizado — masa base + bultos rizados encima */
+      ctx.beginPath(); ctx.arc(px,headY-hr*.25,hr*.9,Math.PI,0); ctx.fill();
+      ctx.beginPath(); ctx.arc(px,headY,hr,Math.PI*1.05,Math.PI*1.95,false); ctx.fill();
+      /* rizos: pequeños círculos a lo largo del arco superior */
+      var curlPos=[-0.75,-0.45,-0.15,0.15,0.45,0.75];
+      curlPos.forEach(function(t){
+        var ang=Math.PI+t*0.55;
+        ctx.beginPath();
+        ctx.arc(px+Math.cos(ang)*hr*.82, headY+Math.sin(ang)*hr*.82, hr*.3, 0, Math.PI*2);
+        ctx.fill();
+      });
+    } else {
+      /* Titan: pelo corto liso, bien marcado */
+      ctx.beginPath(); ctx.arc(px,headY,hr,Math.PI*1.08,Math.PI*1.92,false); ctx.fill();
+      ctx.beginPath(); ctx.arc(px,headY-hr*.32,hr*.82,Math.PI,0); ctx.fill();
+      /* patillas cortas */
+      ctx.fillRect(px-hr*.82,headY+hr*.1,hr*.18,hr*.45);
+      ctx.fillRect(px+hr*.64,headY+hr*.1,hr*.18,hr*.45);
+    }
+    /* ojos (2 puntos) */
+    ctx.fillStyle='#2a1508';
+    ctx.beginPath(); ctx.arc(px-hr*.3,headY+hr*.05,hr*.12,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px+hr*.3,headY+hr*.05,hr*.12,0,Math.PI*2); ctx.fill();
+    /* gorra golero (encima del pelo) */
     if(isSica){
       ctx.fillStyle='#f59e0b';
-      ctx.beginPath(); ctx.arc(px,headY-hr*.2,hr*1.05,Math.PI,0); ctx.fill();
-      ctx.fillRect(px-hr*1.3,headY-hr*.05,hr*2.6,hr*.35);
+      ctx.beginPath(); ctx.arc(px,headY-hr*.18,hr*1.0,Math.PI,0); ctx.fill();
+      ctx.fillRect(px-hr*1.28,headY-hr*.05,hr*2.56,hr*.32);
     }
   }
 
