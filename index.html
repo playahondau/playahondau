@@ -2912,6 +2912,15 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
   .penales-inner{max-width:min(940px,94vw);}
   #penales-modal{padding:1.2rem 1.5rem;}
 }
+@media(min-width:1280px){
+  .penales-inner{max-width:min(1200px,94vw);}
+}
+@media(min-width:1920px){
+  .penales-inner{max-width:min(1700px,94vw);}
+}
+@media(min-width:2560px){
+  .penales-inner{max-width:min(2400px,90vw);}
+}
 /* ── Botón pantalla completa (solo táctil) ── */
 #fs-btn{
   position:absolute;bottom:10px;right:10px;z-index:6;
@@ -3128,7 +3137,7 @@ function generarTarjeta(btn){
    FEATURE — MINI JUEGO DE PENALES
 ══════════════════════════════════════════════════════ */
 var Penales=(function(){
-  var cv,ctx,W,H;
+  var cv,ctx,W,H,dpr=1;
   var state='intro'; // intro | pickplayer | choose | shoot | result | over
   var score=0,kicks=0,MAXK=5;
   var pZone=-1,kZone=-1,goalScored=false;
@@ -3168,17 +3177,21 @@ var Penales=(function(){
     var parentW=cv.parentElement.offsetWidth||cv.parentElement.clientWidth||560;
     var maxByH=9999;
     if(inRealFs){
-      /* fullscreen real: limitar por altura de pantalla */
       maxByH=Math.floor(window.innerHeight*0.88/0.62);
     } else if(inFakeFs){
-      /* fake-fs (iOS): el modal está rotado 90°; CSS height del modal = vw (portrait width) */
-      /* así el canvas CSS height no puede superar vw o se desborda visualmente */
-      var avail=Math.min(window.innerWidth,window.innerHeight); /* la dimensión menor = landscape height */
+      var avail=Math.min(window.innerWidth,window.innerHeight);
       maxByH=Math.floor(avail*0.90/0.62);
+    } else {
+      /* limitar por altura disponible también en ventana normal */
+      maxByH=Math.floor(window.innerHeight*0.90/0.62);
     }
-    var sz=Math.min(parentW, 960, maxByH);
-    cv.width=sz; cv.height=Math.round(sz*0.62);
-    W=cv.width; H=cv.height;
+    var sz=Math.min(parentW, 3840, maxByH);
+    /* DPR: el buffer de píxeles es sz×dpr para nitidez 4K/Retina; W,H permanecen en CSS px */
+    dpr=Math.min(window.devicePixelRatio||1, 3);
+    var cssW=sz; var cssH=Math.round(sz*0.62);
+    cv.style.width=cssW+'px'; cv.style.height=cssH+'px';
+    cv.width=Math.round(cssW*dpr); cv.height=Math.round(cssH*dpr);
+    W=cssW; H=cssH;
     gW=W*0.52; gH=H*0.38;
     gX=(W-gW)/2; gY=H*0.07;
     bX=W/2; bY=H*0.84;
@@ -3547,6 +3560,7 @@ var Penales=(function(){
   }
 
   function render(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,W,H); bg(); goal();
     if(state==='intro'){
       keeper(kCX); pateador(W/2,false); ball(bX,bY,1);
