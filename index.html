@@ -3087,9 +3087,9 @@ var Penales=(function(){
     }
 
     var doSprite = keeperImg && keeperImg.complete && keeperImg.naturalWidth>0;
-    var kpH=doSprite?gH*1.38:gH*0.90;
+    var kpH=doSprite?gH*0.95:gH*0.90;
     var kpW=doSprite?kpH*(keeperImg.naturalWidth/keeperImg.naturalHeight):W*.072;
-    var baseY=doSprite?(gY+gH-kpH*0.88):(gY+gH*.12);
+    var baseY=doSprite?(gY+gH-kpH):(gY+gH*.12);
 
     /* sombra */
     ctx.fillStyle='rgba(0,0,0,.18)';
@@ -3131,7 +3131,7 @@ var Penales=(function(){
     /* si el sprite ya cargó → normalizar todos al MISMO slot con cover-crop */
     if(img && img.complete && img.naturalWidth>0){
       /* slot fijo igual para todos los jugadores */
-      var tW=W*0.215, tH=H*0.68;
+      var tW=W*0.15, tH=H*0.48;
       var natW=img.naturalWidth, natH=img.naturalHeight;
       var boxAR=tW/tH, imgAR=natW/natH;
       var sx,sy,sw,sh;
