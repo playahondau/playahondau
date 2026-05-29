@@ -3025,10 +3025,11 @@ function generarTarjeta(btn){
 ══════════════════════════════════════════════════════ */
 var Penales=(function(){
   var cv,ctx,W,H;
-  var state='intro'; // intro | choose | shoot | result | over
+  var state='intro'; // intro | pickplayer | choose | shoot | result | over
   var score=0,kicks=0,MAXK=5;
   var pZone=-1,kZone=-1,goalScored=false;
   var anim=0,rival='el rival';
+  var selectedPlayer='titan'; // titan | rodo | sica
   var gX,gY,gW,gH,bX,bY,kCX;
   var tBX,tBY,tKX;
 
@@ -3086,45 +3087,61 @@ var Penales=(function(){
     ctx.beginPath(); ctx.arc(bx+r*.38,by+r*.22,r*.18,0,Math.PI*2); ctx.fill();
   }
 
-  function pateador(px,kick){
-    /* px = X del jugador, kick = true dibuja la pierna levantada */
+  function pateador(px,kick,playerOverride){
+    var player=playerOverride||selectedPlayer;
+    var isSica=(player==='sica');
     var sc=W/420;
     var hr=11*sc, bw=15*sc, bh=22*sc, sw=13*sc, sh=9*sc, lw=8*sc, lh=18*sc;
-    var fy=H*.975; /* pies */
-    var legY=fy-lh, shortY=fy-lh-sh, bodyY=fy-lh-sh-bh, headY=bodyY-hr*1.1;
+    var fy=H*.975;
+    var legY=fy-lh, shortY=fy-lh-sh, bodyY=fy-lh-sh-bh, headY=bodyY-hr*1.15;
+    var cL=isSica?'#151515':'#1a3a8f';   /* color izquierdo camiseta */
+    var cR=isSica?'#2a2a2a':'#ffffff';   /* color derecho camiseta */
+    var cShort=isSica?'#111':'#ffffff';
+    var cSock=isSica?'#222':'#1a3a8f';
+    var pName=player.toUpperCase();
     /* sombra */
     ctx.fillStyle='rgba(0,0,0,.18)';
     ctx.beginPath(); ctx.ellipse(px,fy,bw*1.1,3.5*sc,0,0,Math.PI*2); ctx.fill();
-    /* pierna izquierda */
-    ctx.fillStyle='#1a3a8f';
-    ctx.fillRect(px-sw+2*sc, legY, lw, lh);
-    /* pierna derecha — levantada si kick */
+    /* medias */
+    ctx.fillStyle=cSock;
+    ctx.fillRect(px-sw+2*sc,legY,lw,lh);
     if(kick){
-      ctx.save(); ctx.translate(px+sw-lw*.5-2*sc, legY);
+      ctx.save(); ctx.translate(px+sw-lw*.5-2*sc,legY);
       ctx.rotate(-0.45); ctx.fillRect(-lw/2,0,lw,lh); ctx.restore();
     } else {
-      ctx.fillRect(px+sw-lw-2*sc, legY, lw, lh);
+      ctx.fillRect(px+sw-lw-2*sc,legY,lw,lh);
     }
     /* botines */
     ctx.fillStyle='#111';
-    ctx.fillRect(px-sw+sc, fy-4*sc, lw+3*sc, 4*sc);
-    if(!kick) ctx.fillRect(px+sw-lw-3*sc, fy-4*sc, lw+3*sc, 4*sc);
-    /* short blanco */
-    ctx.fillStyle='#ffffff';
-    ctx.fillRect(px-sw, shortY, sw*2, sh);
-    /* camiseta azul Playa Honda con franja blanca central */
-    var jg=ctx.createLinearGradient(px-bw,0,px+bw,0);
-    jg.addColorStop(0,'#1a3a8f'); jg.addColorStop(.42,'#1a3a8f');
-    jg.addColorStop(.44,'#ffffff'); jg.addColorStop(.56,'#ffffff');
-    jg.addColorStop(.58,'#1a3a8f'); jg.addColorStop(1,'#1a3a8f');
-    ctx.fillStyle=jg; ctx.fillRect(px-bw,bodyY,bw*2,bh);
+    ctx.fillRect(px-sw+sc,fy-4*sc,lw+3*sc,4*sc);
+    if(!kick) ctx.fillRect(px+sw-lw-3*sc,fy-4*sc,lw+3*sc,4*sc);
+    /* short */
+    ctx.fillStyle=cShort;
+    ctx.fillRect(px-sw,shortY,sw*2,sh);
+    /* camiseta: mitad izquierda */
+    ctx.fillStyle=cL; ctx.fillRect(px-bw,bodyY,bw,bh);
+    /* camiseta: mitad derecha */
+    ctx.fillStyle=cR; ctx.fillRect(px,bodyY,bw,bh);
     /* mangas */
-    ctx.fillStyle='#1a3a8f';
-    ctx.fillRect(px-bw-6*sc, bodyY+2*sc, 7*sc, bh*.65);
-    ctx.fillRect(px+bw-sc,   bodyY+2*sc, 7*sc, bh*.65);
-    /* número 9 */
-    ctx.fillStyle='#fff'; ctx.font='bold '+(9*sc)+'px "Barlow Condensed",sans-serif';
-    ctx.textAlign='center'; ctx.fillText('9',px,bodyY+bh*.65);
+    ctx.fillStyle=cL; ctx.fillRect(px-bw-6*sc,bodyY+2*sc,7*sc,bh*.65);
+    ctx.fillStyle=cR; ctx.fillRect(px+bw-sc,bodyY+2*sc,7*sc,bh*.65);
+    /* nombre en camiseta — clip para dos colores */
+    ctx.font='bold '+(7*sc)+'px "Barlow Condensed",sans-serif';
+    ctx.textAlign='center';
+    if(isSica){
+      ctx.fillStyle='#ffffff'; ctx.fillText(pName,px,bodyY+bh*.65);
+    } else {
+      ctx.save(); ctx.beginPath(); ctx.rect(px-bw,bodyY,bw,bh); ctx.clip();
+      ctx.fillStyle='#ffffff'; ctx.fillText(pName,px,bodyY+bh*.65); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(px,bodyY,bw,bh); ctx.clip();
+      ctx.fillStyle='#1a3a8f'; ctx.fillText(pName,px,bodyY+bh*.65); ctx.restore();
+    }
+    /* guantes golero (Sica) */
+    if(isSica){
+      ctx.fillStyle='#f59e0b';
+      ctx.beginPath(); ctx.arc(px-bw-2*sc,bodyY+bh*.58,6*sc,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px+bw+2*sc,bodyY+bh*.58,6*sc,0,Math.PI*2); ctx.fill();
+    }
     /* cabeza */
     ctx.fillStyle='#f0c090';
     ctx.beginPath(); ctx.arc(px,headY,hr,0,Math.PI*2); ctx.fill();
@@ -3132,6 +3149,12 @@ var Penales=(function(){
     ctx.fillStyle='#3a2410';
     ctx.beginPath(); ctx.arc(px,headY,hr,Math.PI*1.1,Math.PI*1.9,false); ctx.fill();
     ctx.beginPath(); ctx.arc(px,headY-hr*.35,hr*.85,Math.PI,0); ctx.fill();
+    /* gorra golero */
+    if(isSica){
+      ctx.fillStyle='#f59e0b';
+      ctx.beginPath(); ctx.arc(px,headY-hr*.2,hr*1.05,Math.PI,0); ctx.fill();
+      ctx.fillRect(px-hr*1.3,headY-hr*.05,hr*2.6,hr*.35);
+    }
   }
 
   function hud(){
@@ -3169,6 +3192,39 @@ var Penales=(function(){
       ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.65);
       ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=(W*.028)+'px "Barlow Condensed",sans-serif';
       ctx.fillText('TOCÁ PARA COMENZAR',W/2,H*.77);
+    } else if(state==='pickplayer'){
+      keeper(kCX); ball(bX,bY,1);
+      ctx.fillStyle='rgba(255,255,255,.92)';
+      ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('ELEGÍ TU PATEADOR',W/2,H*.1);
+      var PP=[{name:'TITAN',p:'titan',role:'DELANTERO'},{name:'RODO',p:'rodo',role:'VOLANTE'},{name:'SICA',p:'sica',role:'GOLERO'}];
+      var cw=W*.27,ch=H*.62,cy2=H*.54,xs=[W*.19,W*.5,W*.81];
+      PP.forEach(function(pp,i){
+        var cx=xs[i],sel=(selectedPlayer===pp.p),isSica=(pp.p==='sica');
+        /* fondo card */
+        ctx.fillStyle=sel?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)';
+        ctx.strokeStyle=sel?'#ffffff':'rgba(255,255,255,.28)'; ctx.lineWidth=sel?2:1;
+        ctx.beginPath();
+        var rx=cx-cw/2,ry=cy2-ch/2,rr=8;
+        ctx.moveTo(rx+rr,ry); ctx.arcTo(rx+cw,ry,rx+cw,ry+ch,rr); ctx.arcTo(rx+cw,ry+ch,rx,ry+ch,rr); ctx.arcTo(rx,ry+ch,rx,ry,rr); ctx.arcTo(rx,ry,rx+cw,ry,rr); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        /* mini camiseta swatch */
+        var jw=cw*.44,jh=ch*.2,jy2=cy2-ch*.2;
+        if(isSica){ ctx.fillStyle='#151515'; ctx.fillRect(cx-jw/2,jy2,jw,jh); }
+        else { ctx.fillStyle='#1a3a8f'; ctx.fillRect(cx-jw/2,jy2,jw/2,jh); ctx.fillStyle='#ffffff'; ctx.fillRect(cx,jy2,jw/2,jh); }
+        /* nombre jugador */
+        ctx.fillStyle='#ffffff';
+        ctx.font='bold '+(W*.052)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+        ctx.textAlign='center'; ctx.fillText(pp.name,cx,cy2+ch*.1);
+        /* rol */
+        ctx.fillStyle=sel?'#60a5fa':'rgba(255,255,255,.5)';
+        ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
+        ctx.fillText(sel?'✓ LISTO — TOCÁ DE NUEVO':pp.role,cx,cy2+ch*.22);
+        /* dibuja mini figura dentro de card */
+        pateador(cx,false,pp.p);
+      });
+      ctx.fillStyle='rgba(255,255,255,.28)'; ctx.font=(W*.021)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('1er TOQUE: ELEGIR · 2do TOQUE: PATEAR',W/2,H*.975);
     } else if(state==='choose'){
       keeper(kCX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
       ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
@@ -3210,8 +3266,18 @@ var Penales=(function(){
   }
 
   function click(ex,ey){
-    if(state==='intro'){state='choose';render();return;}
-    if(state==='over'){score=0;kicks=0;state='choose';render();return;}
+    if(state==='intro'){state='pickplayer';render();return;}
+    if(state==='over'){score=0;kicks=0;state='pickplayer';render();return;}
+    if(state==='pickplayer'){
+      var xs=[W*.19,W*.5,W*.81],cw=W*.27,ch=H*.62,cy2=H*.54,pp=['titan','rodo','sica'];
+      for(var i=0;i<3;i++){
+        if(ex>=xs[i]-cw/2&&ex<=xs[i]+cw/2&&ey>=cy2-ch/2&&ey<=cy2+ch/2){
+          if(selectedPlayer===pp[i]){state='choose';render();return;}
+          selectedPlayer=pp[i]; render(); return;
+        }
+      }
+      return;
+    }
     if(state!=='choose')return;
     var z=-1;
     for(var i=0;i<3;i++){var zx=gX+i*gW/3;if(ex>=zx&&ex<=zx+gW/3&&ey>=gY-H*.02&&ey<=gY+gH+H*.07){z=i;break;}}
