@@ -3029,7 +3029,8 @@ var Penales=(function(){
   var score=0,kicks=0,MAXK=5;
   var pZone=-1,kZone=-1,goalScored=false;
   var anim=0,rival='el rival';
-  var selectedPlayer='titan'; // titan | rodo | sica
+  var selectedPlayer='titan';
+  var idleT=0; // timer para animaciones idle (keeper shuffle)
   var gX,gY,gW,gH,bX,bY,kCX;
   var tBX,tBY,tKX;
 
@@ -3323,51 +3324,94 @@ var Penales=(function(){
       ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('ELEGÍ TU PATEADOR',W/2,H*.1);
       var PP=[{name:'TITAN',p:'titan',role:'DELANTERO'},{name:'RODO',p:'rodo',role:'DEFENSA'},{name:'FELI',p:'feli',role:'DELANTERO'}];
-      var cw=W*.27,ch=H*.62,cy2=H*.54,xs=[W*.19,W*.5,W*.81];
+      var cw=W*.27,ch=H*.64,cy2=H*.52,xs=[W*.19,W*.5,W*.81];
+      var sprZone=ch*.72; /* 72% superior de la card = zona del sprite */
       PP.forEach(function(pp,i){
-        var cx=xs[i],sel=(selectedPlayer===pp.p),isSica=(pp.p==='sica');
-        /* fondo card */
-        ctx.fillStyle=sel?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)';
-        ctx.strokeStyle=sel?'#ffffff':'rgba(255,255,255,.28)'; ctx.lineWidth=sel?2:1;
+        var cx=xs[i],sel=(selectedPlayer===pp.p);
+        var rx=cx-cw/2, ry=cy2-ch/2, rr=8;
+        /* ── fondo card ── */
+        ctx.fillStyle=sel?'rgba(255,255,255,.18)':'rgba(255,255,255,.06)';
+        ctx.strokeStyle=sel?'#ffffff':'rgba(255,255,255,.22)'; ctx.lineWidth=sel?2:1;
         ctx.beginPath();
-        var rx=cx-cw/2,ry=cy2-ch/2,rr=8;
-        ctx.moveTo(rx+rr,ry); ctx.arcTo(rx+cw,ry,rx+cw,ry+ch,rr); ctx.arcTo(rx+cw,ry+ch,rx,ry+ch,rr); ctx.arcTo(rx,ry+ch,rx,ry,rr); ctx.arcTo(rx,ry,rx+cw,ry,rr); ctx.closePath();
+        ctx.moveTo(rx+rr,ry); ctx.arcTo(rx+cw,ry,rx+cw,ry+ch,rr);
+        ctx.arcTo(rx+cw,ry+ch,rx,ry+ch,rr); ctx.arcTo(rx,ry+ch,rx,ry,rr);
+        ctx.arcTo(rx,ry,rx+cw,ry,rr); ctx.closePath();
         ctx.fill(); ctx.stroke();
-        /* mini camiseta swatch */
-        var jw=cw*.44,jh=ch*.2,jy2=cy2-ch*.2;
-        if(isSica){ ctx.fillStyle='#151515'; ctx.fillRect(cx-jw/2,jy2,jw,jh); }
-        else { ctx.fillStyle='#1a3a8f'; ctx.fillRect(cx-jw/2,jy2,jw/2,jh); ctx.fillStyle='#ffffff'; ctx.fillRect(cx,jy2,jw/2,jh); }
-        /* nombre jugador */
+        /* ── sprite con contain-scale, clipeado a la card ── */
+        var img=sprites[pp.p];
+        ctx.save();
+        /* clip estricto a la card */
+        ctx.beginPath();
+        ctx.moveTo(rx+rr,ry); ctx.arcTo(rx+cw,ry,rx+cw,ry+ch,rr);
+        ctx.arcTo(rx+cw,ry+ch,rx,ry+ch,rr); ctx.arcTo(rx,ry+ch,rx,ry,rr);
+        ctx.arcTo(rx,ry,rx+cw,ry,rr); ctx.closePath(); ctx.clip();
+        if(img && img.complete && img.naturalWidth>0){
+          var spH=sprZone, spW=spH*(img.naturalWidth/img.naturalHeight);
+          if(spW>cw*.9){spW=cw*.9; spH=spW*(img.naturalHeight/img.naturalWidth);}
+          /* alinear al fondo de la zona sprite */
+          var spX=cx-spW/2, spY=ry+sprZone-spH;
+          /* sombra */
+          ctx.fillStyle='rgba(0,0,0,.18)';
+          ctx.beginPath(); ctx.ellipse(cx,ry+sprZone,spW*.35,3,0,0,Math.PI*2); ctx.fill();
+          ctx.drawImage(img,spX,spY,spW,spH);
+        }
+        ctx.restore();
+        /* ── franja de texto en la parte baja de la card ── */
+        var txtY=ry+sprZone;
+        var tg=ctx.createLinearGradient(rx,txtY-ch*.08,rx,ry+ch);
+        tg.addColorStop(0,'rgba(0,0,0,0)'); tg.addColorStop(.3,'rgba(0,0,20,.82)'); tg.addColorStop(1,'rgba(0,0,20,.95)');
+        ctx.fillStyle=tg; ctx.fillRect(rx,txtY-ch*.08,cw,ch*(1-.72)+ch*.08);
+        /* nombre */
         ctx.fillStyle='#ffffff';
         ctx.font='bold '+(W*.052)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-        ctx.textAlign='center'; ctx.fillText(pp.name,cx,cy2+ch*.1);
-        /* rol */
-        ctx.fillStyle=sel?'#60a5fa':'rgba(255,255,255,.5)';
+        ctx.textAlign='center'; ctx.fillText(pp.name,cx,ry+ch*.84);
+        /* rol / estado */
+        ctx.fillStyle=sel?'#60a5fa':'rgba(255,255,255,.55)';
         ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
-        ctx.fillText(sel?'✓ LISTO — TOCÁ DE NUEVO':pp.role,cx,cy2+ch*.22);
-        /* dibuja mini figura dentro de card */
-        pateador(cx,false,pp.p);
+        ctx.fillText(sel?'✓ TOCÁ PARA PATEAR':pp.role,cx,ry+ch*.94);
       });
       ctx.fillStyle='rgba(255,255,255,.28)'; ctx.font=(W*.021)+'px "Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('1er TOQUE: ELEGIR · 2do TOQUE: PATEAR',W/2,H*.975);
     } else if(state==='choose'){
-      keeper(kCX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
+      /* portero shuffle: se mueve levemente de lado a lado esperando el penal */
+      idleT+=0.038;
+      var swayX=kCX+Math.sin(idleT)*W*0.022;
+      keeper(swayX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
       ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('¿DÓNDE PATEÁS?',W/2,H*.045);
+      requestAnimationFrame(render); /* loop continuo para el shuffle */
     } else if(state==='shoot'){
-      var t=Math.min(anim,1), e=1-Math.pow(1-t,3);
-      var cbx=bX+(tBX-bX)*e;
-      /* arco parabólico: sube hasta mitad de trayectoria, baja al entrar al arco */
-      var cby=bY+(tBY-bY)*e - H*0.14*Math.sin(Math.PI*t);
-      /* portero reacciona con leve retardo (espera t>0.15 antes de lanzarse) */
-      var diveT=Math.max(0,(t-0.15)/0.85);
-      var ckx=kCX+(tKX-kCX)*Math.min(diveT*1.8,1);
-      keeper(ckx,diveT,kZone);
-      pateador(W/2,t>0.08?t:false);
-      ball(cbx,cby,1-t*.4,t*Math.PI*4); hud();
-      anim+=0.045;
+      var t=Math.min(anim,1);
+      /*
+       * Fases del penal (t: 0→1, duración total ~1.4s):
+       *   0.00→0.38  Carrera: pateador corre hacia la pelota, portero shufflea
+       *   0.38→0.58  Pateo: pateador planta y golpea
+       *   0.58→1.00  Vuelo: pelota vuela al arco, portero se lanza
+       */
+      var tRun    = Math.min(t/0.38,1);                     /* carrera 0→1 */
+      var tKick   = Math.max(0,Math.min((t-0.38)/0.20,1));  /* pateo 0→1 */
+      var tFlight = Math.max(0,Math.min((t-0.58)/0.42,1));  /* vuelo 0→1 */
+
+      /* ── portero: shuffle hasta el pateo, luego clavada ── */
+      var keepSway=kCX+Math.sin(idleT+t*18)*W*0.025*(1-tKick);
+      var diveT   =Math.max(0,(t-0.50)/0.50);  /* se lanza cuando la pelota ya salió */
+      var ckx     =t<0.50 ? keepSway : kCX+(tKX-kCX)*Math.min(diveT*2.0,1);
+      keeper(ckx, t>=0.50?diveT:undefined, kZone);
+
+      /* ── pateador: carrera de aproximación + kick ── */
+      var kickPhase = tKick>0 ? tKick : false;
+      pateador(W/2, kickPhase);
+
+      /* ── pelota: se queda en el spot hasta el pateo, luego vuela ── */
+      var fE=1-Math.pow(1-tFlight,2.5);          /* ease rápido al inicio del vuelo */
+      var cbx=bX+(tBX-bX)*fE;
+      var cby=bY+(tBY-bY)*fE - H*0.18*Math.sin(Math.PI*tFlight);
+      ball(cbx,cby,1-tFlight*.45,tFlight*Math.PI*5);
+      hud();
+
+      anim+=0.018;  /* ~1.4s total a 60fps */
       if(anim<1){requestAnimationFrame(render);}
-      else{state='result';render();setTimeout(function(){state=kicks>=MAXK?'over':'choose';render();},1600);}
+      else{state='result';render();setTimeout(function(){state=kicks>=MAXK?'over':'choose';idleT=0;render();},1800);}
       return;
     } else if(state==='result'){
       /* portero queda inclinado en posición de clavada final */
