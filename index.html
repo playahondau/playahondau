@@ -2860,7 +2860,10 @@ function initCountdown(rows){
 <!-- ── PENALES MODAL ── -->
 <div id="penales-modal">
   <div class="penales-inner">
-    <canvas id="penales-canvas"></canvas>
+    <div id="penales-canvas-wrap">
+      <canvas id="penales-canvas"></canvas>
+      <div id="mp-panel"></div>
+    </div>
     <button class="penales-close" onclick="document.getElementById('penales-modal').classList.remove('open')">✕ CERRAR</button>
   </div>
 </div>
@@ -2904,6 +2907,34 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 #penales-canvas{border-radius:8px;cursor:pointer;max-width:100%;display:block;box-shadow:0 0 40px rgba(96,165,250,.2);}
 .penales-close{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.12em;padding:.4rem 2rem;cursor:pointer;border-radius:3px;}
 .penales-close:hover{color:#fff;border-color:#fff;}
+
+/* ── Canvas wrap for MP overlay ── */
+#penales-canvas-wrap{position:relative;max-width:100%;display:block;line-height:0;}
+/* ── Multiplayer Panel (overlay sobre el canvas) ── */
+#mp-panel{display:none;position:absolute;inset:0;z-index:4;background:rgba(4,8,18,.97);border-radius:8px;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:1.6rem;box-sizing:border-box;}
+#mp-panel.mp-show{display:flex;}
+.mp-title{font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:clamp(1.5rem,7vw,2.2rem);letter-spacing:.14em;color:#fff;text-align:center;margin:0;}
+.mp-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(.7rem,3vw,.95rem);color:rgba(255,255,255,.45);letter-spacing:.1em;text-align:center;text-transform:uppercase;margin:0;}
+.mp-code-box{font-family:'Bebas Neue',monospace;font-size:clamp(2rem,9vw,3rem);letter-spacing:.35em;color:#f4c430;text-align:center;background:rgba(244,196,48,.08);padding:.4rem 1.2rem;border:1px solid rgba(244,196,48,.3);cursor:pointer;user-select:all;}
+.mp-code-box:hover{background:rgba(244,196,48,.14);}
+.mp-input{font-family:'Bebas Neue',monospace;font-size:1.6rem;letter-spacing:.28em;text-align:center;text-transform:uppercase;width:9.5rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.4rem .5rem;outline:none;border-radius:2px;}
+.mp-input::placeholder{color:rgba(255,255,255,.2);letter-spacing:.18em;}
+.mp-input:focus{border-color:#60a5fa;}
+.mp-btn{font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:1.2rem;letter-spacing:.1em;padding:.5rem 0;border:none;cursor:pointer;width:100%;max-width:210px;border-radius:2px;transition:opacity .15s;}
+.mp-btn:hover{opacity:.82;}
+.mp-btn-primary{background:var(--dorado);color:#040812;}
+.mp-btn-secondary{background:transparent;border:1px solid rgba(255,255,255,.28);color:rgba(255,255,255,.7);}
+.mp-btn-danger{background:transparent;border:1px solid rgba(239,68,68,.4);color:rgba(239,68,68,.8);}
+.mp-hint{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);text-align:center;letter-spacing:.05em;}
+.mp-spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.12);border-top-color:#60a5fa;border-radius:50%;animation:mpSpin .7s linear infinite;}
+@keyframes mpSpin{to{transform:rotate(360deg);}}
+.mp-copy-hint{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:rgba(244,196,48,.5);text-align:center;height:.9rem;}
+.mp-score-final{display:flex;gap:1.6rem;align-items:center;justify-content:center;}
+.mp-score-side{display:flex;flex-direction:column;align-items:center;gap:.2rem;}
+.mp-score-side span:first-child{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.1em;color:rgba(255,255,255,.45);text-transform:uppercase;}
+.mp-score-side span:last-child{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:#fff;line-height:1;}
+.mp-score-sep{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:rgba(255,255,255,.25);}
+.mp-winner{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,6vw,2rem);letter-spacing:.12em;text-align:center;}
 
 /* ── Res actions row ── */
 .res-actions{display:flex;gap:.6rem;margin-top:.5rem;flex-wrap:wrap;}
@@ -3033,6 +3064,13 @@ var Penales=(function(){
   var idleT=0; // timer para animaciones idle (keeper shuffle)
   var gX,gY,gW,gH,bX,bY,kCX;
   var tBX,tBY,tKX;
+  /* ── Multiplayer (PeerJS) ── */
+  var mpActive=false, mpIsHost=false;
+  var mpPeer=null, mpConn=null;
+  var mpRound=0, mpMaxR=10;
+  var mpScore={me:0,opp:0};
+  var mpMyPick=-1, mpOppPick=-1;
+  var mpPanel=null;
 
   /* ── sprites jugadores (pateadores) ── */
   var sprites={};
@@ -3374,11 +3412,21 @@ var Penales=(function(){
   }
 
   function hud(){
-    ctx.fillStyle='#fff'; ctx.font='bold '+(W*.036)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-    ctx.textAlign='left'; ctx.fillText('GOLES: '+score+'/'+kicks,W*.03,H*.97);
-    ctx.textAlign='right'; ctx.fillText((MAXK-kicks)+' TIROS RESTANTES',W*.97,H*.97);
-    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
-    ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.97);
+    if(mpActive){
+      var rnd=Math.floor(mpRound/2)+1;
+      var role=(mpRound%2===0)===mpIsHost?'PATEÁS':'ATAJÁS';
+      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.032)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='left'; ctx.fillText('VOS: '+mpScore.me,W*.03,H*.97);
+      ctx.textAlign='right'; ctx.fillText('RIVAL: '+mpScore.opp,W*.97,H*.97);
+      ctx.fillStyle='rgba(96,165,250,.8)'; ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('RONDA '+rnd+'/'+mpMaxR/2+' · '+role,W/2,H*.97);
+    } else {
+      ctx.fillStyle='#fff'; ctx.font='bold '+(W*.036)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='left'; ctx.fillText('GOLES: '+score+'/'+kicks,W*.03,H*.97);
+      ctx.textAlign='right'; ctx.fillText((MAXK-kicks)+' TIROS RESTANTES',W*.97,H*.97);
+      ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.97);
+    }
   }
 
   function zones(){
@@ -3408,6 +3456,12 @@ var Penales=(function(){
       ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.65);
       ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=(W*.028)+'px "Barlow Condensed",sans-serif';
       ctx.fillText('TOCÁ PARA COMENZAR',W/2,H*.77);
+      /* botón multijugador */
+      ctx.fillStyle='rgba(96,165,250,.15)'; ctx.strokeStyle='rgba(96,165,250,.4)'; ctx.lineWidth=1;
+      var bw=W*.52, bh=H*.072, bx2=(W-bw)/2, by2=H*.855;
+      ctx.fillRect(bx2,by2,bw,bh); ctx.strokeRect(bx2+.5,by2+.5,bw-1,bh-1);
+      ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.028)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.fillText('🌐 MULTIJUGADOR',W/2,by2+bh*.66);
     } else if(state==='pickplayer'){
       keeper(kCX); ball(bX,bY,1);
       ctx.fillStyle='rgba(255,255,255,.92)';
@@ -3467,8 +3521,15 @@ var Penales=(function(){
       idleT+=0.038;
       var swayX=kCX+Math.sin(idleT)*W*0.022;
       keeper(swayX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
+      var mpKicking=mpActive&&(mpRound%2===0)===mpIsHost;
+      var mpLabel=mpActive?(mpKicking?'¿DÓNDE PATEÁS?':'¿DÓNDE TE TIRÁS?'):'¿DÓNDE PATEÁS?';
       ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText('¿DÓNDE PATEÁS?',W/2,H*.045);
+      ctx.textAlign='center'; ctx.fillText(mpLabel,W/2,H*.045);
+      if(mpActive && mpMyPick!==-1){
+        /* ya elegiste, esperando rival */
+        ctx.fillStyle='rgba(96,165,250,.85)'; ctx.font='bold '+(W*.030)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+        ctx.fillText('ESPERANDO AL RIVAL...',W/2,H*.045+H*.05);
+      }
       requestAnimationFrame(render); /* loop continuo para el shuffle */
     } else if(state==='shoot'){
       var t=Math.min(anim,1);
@@ -3505,7 +3566,21 @@ var Penales=(function(){
 
       anim+=0.018;  /* ~1.4s total a 60fps */
       if(anim<1){requestAnimationFrame(render);}
-      else{state='result';render();setTimeout(function(){state=kicks>=MAXK?'over':'choose';idleT=0;render();},1800);}
+      else{
+        state='result'; render();
+        setTimeout(function(){
+          if(mpActive){
+            mpRound++;
+            if(mpRound>=mpMaxR){ showMpOver(); return; }
+            mpMyPick=-1; mpOppPick=-1;
+            /* el host sincroniza inicio de ronda */
+            if(mpIsHost && mpConn){ mpConn.send(JSON.stringify({type:'nextround',round:mpRound})); }
+            state='choose'; idleT=0; render();
+          } else {
+            state=kicks>=MAXK?'over':'choose'; idleT=0; render();
+          }
+        },1800);
+      }
       return;
     } else if(state==='result'){
       /* portero queda inclinado en posición de clavada final */
@@ -3536,7 +3611,12 @@ var Penales=(function(){
   }
 
   function click(ex,ey){
-    if(state==='intro'){state='pickplayer';render();return;}
+    if(state==='intro'){
+      /* detectar clic en botón multijugador */
+      var bw=W*.52, bh=H*.072, bx2=(W-bw)/2, by2=H*.855;
+      if(ex>=bx2&&ex<=bx2+bw&&ey>=by2&&ey<=by2+bh){ showMpMenu(); return; }
+      state='pickplayer'; render(); return;
+    }
     if(state==='over'){score=0;kicks=0;state='pickplayer';render();return;}
     if(state==='pickplayer'){
       var xs=[W*.19,W*.5,W*.81],cw=W*.27,ch=H*.62,cy2=H*.54,pp=['titan','rodo','feli'];
@@ -3552,6 +3632,14 @@ var Penales=(function(){
     var z=-1;
     for(var i=0;i<3;i++){var zx=gX+i*gW/3;if(ex>=zx&&ex<=zx+gW/3&&ey>=gY-H*.02&&ey<=gY+gH+H*.07){z=i;break;}}
     if(z===-1)return;
+    if(mpActive){
+      if(mpMyPick!==-1)return; /* ya elegiste, esperar rival */
+      mpMyPick=z;
+      if(mpConn)mpConn.send(JSON.stringify({type:'pick',zone:z}));
+      if(mpOppPick!==-1){ mpResolveRound(); } /* rival ya había elegido */
+      /* else: esperamos el pick del rival via ondata */
+      render(); return;
+    }
     pZone=z; kZone=Math.floor(Math.random()*3);
     goalScored=pZone!==kZone;
     if(goalScored)score++; kicks++;
@@ -3560,15 +3648,238 @@ var Penales=(function(){
     anim=0; state='shoot'; render();
   }
 
+  /* ════════════════════════════════════════════════════
+     MULTIPLAYER — PeerJS WebRTC
+  ════════════════════════════════════════════════════ */
+  function genCode(){
+    var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var r=''; for(var i=0;i<6;i++) r+=c[Math.floor(Math.random()*c.length)];
+    return r;
+  }
+
+  function mpPanelHTML(html){
+    if(!mpPanel)return;
+    mpPanel.innerHTML=html;
+    mpPanel.classList.add('mp-show');
+  }
+  function hideMpPanel(){
+    if(!mpPanel)return;
+    mpPanel.classList.remove('mp-show');
+    mpPanel.innerHTML='';
+  }
+
+  function showMpMenu(){
+    mpPanelHTML(
+      '<p class="mp-title">⚽ MULTIJUGADOR</p>'+
+      '<p class="mp-sub">Jugá contra un amigo en tiempo real</p>'+
+      '<button class="mp-btn mp-btn-primary" id="mp-create-btn">CREAR SALA</button>'+
+      '<button class="mp-btn mp-btn-secondary" id="mp-join-btn">UNIRSE A SALA</button>'+
+      '<button class="mp-btn mp-btn-danger" id="mp-back-btn">← VOLVER</button>'
+    );
+    document.getElementById('mp-create-btn').onclick=function(){ mpStartCreate(); };
+    document.getElementById('mp-join-btn').onclick=function(){ showMpJoin(''); };
+    document.getElementById('mp-back-btn').onclick=function(){ hideMpPanel(); };
+  }
+
+  function mpStartCreate(){
+    var code=genCode();
+    mpPanelHTML(
+      '<p class="mp-title">SALA CREADA</p>'+
+      '<p class="mp-sub">Compartí este código con tu rival</p>'+
+      '<div class="mp-code-box" id="mp-code-disp" title="Tocá para copiar">'+code+'</div>'+
+      '<p class="mp-copy-hint" id="mp-copy-hint">tocá el código para copiar</p>'+
+      '<p class="mp-sub">— o compartí el link —</p>'+
+      '<button class="mp-btn mp-btn-secondary" id="mp-share-link-btn">📤 COMPARTIR LINK</button>'+
+      '<div class="mp-spinner" style="margin-top:.4rem"></div>'+
+      '<p class="mp-sub" id="mp-wait-txt">Esperando rival...</p>'+
+      '<button class="mp-btn mp-btn-danger" style="margin-top:.3rem" id="mp-cancel-btn">CANCELAR</button>'
+    );
+    document.getElementById('mp-code-disp').onclick=function(){
+      navigator.clipboard&&navigator.clipboard.writeText(code);
+      document.getElementById('mp-copy-hint').textContent='¡Copiado!';
+    };
+    document.getElementById('mp-share-link-btn').onclick=function(){
+      var url=location.href.split('#')[0]+'#sala='+code;
+      if(navigator.share){ navigator.share({title:'Tanda de penales',text:'Jugá contra mí en Playa Honda',url:url}).catch(function(){}); }
+      else { navigator.clipboard&&navigator.clipboard.writeText(url); document.getElementById('mp-copy-hint').textContent='¡Link copiado!'; }
+    };
+    document.getElementById('mp-cancel-btn').onclick=function(){
+      if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
+      showMpMenu();
+    };
+    mpIsHost=true; mpPeer=null; mpConn=null;
+    try{
+      var peer=new Peer(code,{debug:0});
+      mpPeer=peer;
+      peer.on('error',function(err){
+        /* código en uso → reintentar con nuevo código */
+        if(err.type==='unavailable-id'){ peer.destroy(); mpStartCreate(); return; }
+        var w=document.getElementById('mp-wait-txt');
+        if(w) w.textContent='Error: '+err.message;
+      });
+      peer.on('connection',function(conn){
+        mpConn=conn;
+        mpSetupConn(conn, true);
+      });
+    }catch(e){ console.warn('PeerJS no disponible',e); }
+  }
+
+  function showMpJoin(prefill){
+    mpPanelHTML(
+      '<p class="mp-title">UNIRSE</p>'+
+      '<p class="mp-sub">Ingresá el código de sala</p>'+
+      '<input class="mp-input" id="mp-code-input" maxlength="6" placeholder="XXXXXX" value="'+prefill+'" autocomplete="off" autocorrect="off" spellcheck="false">'+
+      '<button class="mp-btn mp-btn-primary" id="mp-do-join-btn">UNIRSE →</button>'+
+      '<p class="mp-sub" id="mp-join-err" style="color:#ef4444;min-height:1.1rem;"></p>'+
+      '<button class="mp-btn mp-btn-danger" id="mp-back2-btn">← VOLVER</button>'
+    );
+    var inp=document.getElementById('mp-code-input');
+    inp.focus();
+    inp.oninput=function(){ this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); };
+    document.getElementById('mp-do-join-btn').onclick=function(){
+      var code=(document.getElementById('mp-code-input').value||'').trim().toUpperCase();
+      if(code.length<4){ document.getElementById('mp-join-err').textContent='Código muy corto'; return; }
+      mpDoJoin(code);
+    };
+    document.getElementById('mp-back2-btn').onclick=function(){
+      if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
+      showMpMenu();
+    };
+    if(prefill && prefill.length>=4){ setTimeout(function(){ mpDoJoin(prefill); },400); }
+  }
+
+  function mpDoJoin(code){
+    var errEl=document.getElementById('mp-join-err');
+    if(errEl) errEl.textContent='Conectando...';
+    mpIsHost=false; mpConn=null;
+    try{
+      var peer=new Peer(undefined,{debug:0});
+      mpPeer=peer;
+      peer.on('open',function(){
+        var conn=peer.connect(code,{reliable:true});
+        mpConn=conn;
+        mpSetupConn(conn, false);
+        conn.on('error',function(err){
+          if(errEl) errEl.textContent='No se pudo conectar: '+err.message;
+        });
+      });
+      peer.on('error',function(err){
+        if(errEl) errEl.textContent='Error: '+err.message;
+      });
+    }catch(e){ if(errEl) errEl.textContent='PeerJS no disponible'; }
+  }
+
+  function mpSetupConn(conn, isHost){
+    conn.on('open',function(){
+      if(isHost){
+        var wt=document.getElementById('mp-wait-txt');
+        if(wt) wt.textContent='¡Rival conectado! Comenzando...';
+      }
+      mpPanelHTML(
+        '<p class="mp-title" style="color:#22c55e">¡CONECTADOS!</p>'+
+        '<p class="mp-sub">La tanda empieza en...</p>'+
+        '<p class="mp-title" id="mp-cd-num" style="font-size:3.5rem;color:#f4c430">3</p>'
+      );
+      var n=3;
+      var iv=setInterval(function(){
+        n--;
+        var el=document.getElementById('mp-cd-num');
+        if(el) el.textContent=n>0?n:'¡YA!';
+        if(n<=0){
+          clearInterval(iv);
+          setTimeout(function(){
+            hideMpPanel();
+            mpActive=true; mpRound=0;
+            mpScore={me:0,opp:0}; mpMyPick=-1; mpOppPick=-1;
+            score=0; kicks=0;
+            state='choose'; idleT=0; render();
+          },700);
+        }
+      },900);
+    });
+    conn.on('data',function(raw){
+      try{ var msg=JSON.parse(raw); }catch(e){ return; }
+      if(msg.type==='pick'){
+        mpOppPick=msg.zone;
+        if(mpMyPick!==-1){ mpResolveRound(); }
+        /* else esperamos que el usuario local elija */
+      }
+      if(msg.type==='nextround'){
+        mpMyPick=-1; mpOppPick=-1;
+        if(!isHost){
+          /* el guest recibe nextround del host */
+          state='choose'; idleT=0; render();
+        }
+      }
+    });
+    conn.on('close',function(){
+      if(mpActive){
+        mpActive=false;
+        mpPanelHTML('<p class="mp-title" style="color:#ef4444">RIVAL DESCONECTADO</p><button class="mp-btn mp-btn-danger" onclick="Penales._mpExit()">SALIR</button>');
+      }
+    });
+    conn.on('error',function(err){ console.warn('MP conn error',err); });
+  }
+
+  function mpResolveRound(){
+    var kicking=(mpRound%2===0)===mpIsHost;
+    if(kicking){ pZone=mpMyPick; kZone=mpOppPick; }
+    else        { pZone=mpOppPick; kZone=mpMyPick; }
+    goalScored=pZone!==kZone;
+    if(goalScored){ if(kicking) mpScore.me++; else mpScore.opp++; }
+    kicks++;
+    var cx=[gX+gW*.17,gX+gW*.5,gX+gW*.83];
+    tBX=cx[pZone]; tBY=gY+gH*.28; tKX=cx[kZone];
+    anim=0; state='shoot'; render();
+  }
+
+  function showMpOver(){
+    var diff=mpScore.me-mpScore.opp;
+    var winnerTxt=diff>0?'¡GANASTE!':diff<0?'PERDISTE':'¡EMPATE!';
+    var winnerColor=diff>0?'#22c55e':diff<0?'#ef4444':'#f59e0b';
+    mpPanelHTML(
+      '<p class="mp-title" style="color:'+winnerColor+'">'+winnerTxt+'</p>'+
+      '<div class="mp-score-final">'+
+        '<div class="mp-score-side"><span>VOS</span><span>'+mpScore.me+'</span></div>'+
+        '<span class="mp-score-sep">-</span>'+
+        '<div class="mp-score-side"><span>RIVAL</span><span>'+mpScore.opp+'</span></div>'+
+      '</div>'+
+      '<button class="mp-btn mp-btn-primary" id="mp-rematch-btn">REVANCHA →</button>'+
+      '<button class="mp-btn mp-btn-danger" id="mp-exit-btn">SALIR</button>'
+    );
+    document.getElementById('mp-rematch-btn').onclick=function(){
+      /* revancha: nuevo juego, misma conexión, host invierte roles */
+      hideMpPanel();
+      mpActive=true; mpRound=0;
+      mpScore={me:0,opp:0}; mpMyPick=-1; mpOppPick=-1;
+      score=0; kicks=0;
+      state='choose'; idleT=0; render();
+      if(mpIsHost && mpConn){ mpConn.send(JSON.stringify({type:'nextround',round:0})); }
+    };
+    document.getElementById('mp-exit-btn').onclick=function(){
+      Penales._mpExit();
+    };
+  }
+
   return{
     init:function(rows){
       cv=document.getElementById('penales-canvas'); if(!cv)return;
+      mpPanel=document.getElementById('mp-panel');
       setup(); ctx=cv.getContext('2d');
       if(rows&&rows.length){var f=rows[0];rival=((f.visitante||'').toLowerCase().indexOf('playa honda')!==-1)?f.local:f.visitante;}
       render();
       function pos(e){var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height,cx=e.clientX||(e.touches&&e.touches[0].clientX)||0,cy=e.clientY||(e.touches&&e.touches[0].clientY)||0;return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};}
       cv.addEventListener('click',function(e){var p=pos(e);click(p.x,p.y);});
       cv.addEventListener('touchend',function(e){e.preventDefault();var p=pos(e.changedTouches[0]);click(p.x,p.y);},{passive:false});
+      /* auto-join si la URL tiene #sala=CÓDIGO */
+      var hashMatch=(location.hash||'').match(/[#&]sala=([A-Z0-9]{4,8})/i);
+      if(hashMatch){ showMpJoin(hashMatch[1].toUpperCase()); }
+    },
+    _mpExit:function(){
+      if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
+      mpActive=false; mpRound=0; mpScore={me:0,opp:0};
+      hideMpPanel();
+      state='intro'; render();
     }
   };
 })();
@@ -3578,6 +3889,16 @@ function abrirPenales(){
   m.classList.add('open');
   Penales.init(window._fixtureRows||[]);
 }
+/* Auto-abrir si URL tiene #sala= (link de invitación multijugador) */
+(function(){
+  if((location.hash||'').match(/[#&]sala=/i)){
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',function(){ setTimeout(abrirPenales,400); });
+    } else {
+      setTimeout(abrirPenales,400);
+    }
+  }
+})();
 
 function compartirTarjeta(){
   var canvas=document.getElementById('share-canvas');
@@ -3599,6 +3920,7 @@ function compartirTarjeta(){
   },'image/png');
 }
 </script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </body>
 </html>
 
