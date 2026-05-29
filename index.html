@@ -2953,31 +2953,61 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 
 /* ── Canvas wrap for MP overlay ── */
 #penales-canvas-wrap{position:relative;max-width:100%;display:block;line-height:0;}
-/* ── Multiplayer Panel (overlay sobre el canvas) ── */
-#mp-panel{display:none;position:absolute;inset:0;z-index:4;background:rgba(4,8,18,.97);border-radius:8px;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:1.6rem;box-sizing:border-box;}
+/* ── Multiplayer Panel ── */
+#mp-panel{
+  display:none;position:absolute;inset:0;z-index:4;
+  background:rgba(4,8,18,.97);border-radius:8px;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:.6rem;padding:.85rem 1rem;box-sizing:border-box;overflow-y:auto;
+}
 #mp-panel.mp-show{display:flex;}
-.mp-title{font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:clamp(1.5rem,7vw,2.2rem);letter-spacing:.14em;color:#fff;text-align:center;margin:0;}
-.mp-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(.7rem,3vw,.95rem);color:rgba(255,255,255,.45);letter-spacing:.1em;text-align:center;text-transform:uppercase;margin:0;}
-.mp-code-box{font-family:'Bebas Neue',monospace;font-size:clamp(2rem,9vw,3rem);letter-spacing:.35em;color:#f4c430;text-align:center;background:rgba(244,196,48,.08);padding:.4rem 1.2rem;border:1px solid rgba(244,196,48,.3);cursor:pointer;user-select:all;}
-.mp-code-box:hover{background:rgba(244,196,48,.14);}
-.mp-input{font-family:'Bebas Neue',monospace;font-size:1.6rem;letter-spacing:.28em;text-align:center;text-transform:uppercase;width:9.5rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.4rem .5rem;outline:none;border-radius:2px;}
-.mp-input::placeholder{color:rgba(255,255,255,.2);letter-spacing:.18em;}
+.mp-title{
+  font-family:'Bebas Neue','Barlow Condensed',sans-serif;
+  font-size:1.55rem;letter-spacing:.04em;
+  color:#fff;text-align:center;margin:0;line-height:1.1;
+}
+.mp-sub{
+  font-family:'Barlow Condensed',sans-serif;font-size:.78rem;
+  color:rgba(255,255,255,.4);letter-spacing:.05em;
+  text-align:center;margin:0;
+}
+.mp-code-box{
+  font-family:'Bebas Neue',monospace;font-size:2.1rem;letter-spacing:.22em;
+  color:#f4c430;text-align:center;
+  background:rgba(244,196,48,.08);padding:.28rem .9rem;
+  border:1px solid rgba(244,196,48,.3);cursor:pointer;user-select:all;border-radius:2px;
+}
+.mp-code-box:hover{background:rgba(244,196,48,.16);}
+.mp-input{
+  font-family:'Bebas Neue',monospace;font-size:1.55rem;letter-spacing:.24em;
+  text-align:center;text-transform:uppercase;width:8rem;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.3);
+  color:#fff;padding:.35rem .5rem;outline:none;border-radius:2px;
+}
+.mp-input::placeholder{color:rgba(255,255,255,.18);letter-spacing:.12em;}
 .mp-input:focus{border-color:#60a5fa;}
-.mp-btn{font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:1.2rem;letter-spacing:.1em;padding:.5rem 0;border:none;cursor:pointer;width:100%;max-width:210px;border-radius:2px;transition:opacity .15s;}
-.mp-btn:hover{opacity:.82;}
+.mp-btn{
+  font-family:'Bebas Neue','Barlow Condensed',sans-serif;
+  font-size:1.05rem;letter-spacing:.07em;padding:.42rem 1.2rem;
+  border:none;cursor:pointer;width:100%;max-width:190px;
+  border-radius:2px;transition:opacity .15s;
+}
+.mp-btn:hover{opacity:.8;}
 .mp-btn-primary{background:var(--dorado);color:#040812;}
-.mp-btn-secondary{background:transparent;border:1px solid rgba(255,255,255,.28);color:rgba(255,255,255,.7);}
-.mp-btn-danger{background:transparent;border:1px solid rgba(239,68,68,.4);color:rgba(239,68,68,.8);}
-.mp-hint{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:rgba(255,255,255,.3);text-align:center;letter-spacing:.05em;}
-.mp-spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.12);border-top-color:#60a5fa;border-radius:50%;animation:mpSpin .7s linear infinite;}
+.mp-btn-secondary{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.35);color:#60a5fa;}
+.mp-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);}
+.mp-btn-danger{background:transparent;border:1px solid rgba(239,68,68,.35);color:rgba(239,68,68,.75);}
+.mp-wait-row{display:flex;align-items:center;gap:.45rem;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.05em;color:rgba(255,255,255,.45);}
+.mp-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.12);border-top-color:#60a5fa;border-radius:50%;animation:mpSpin .7s linear infinite;flex-shrink:0;}
 @keyframes mpSpin{to{transform:rotate(360deg);}}
-.mp-copy-hint{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:rgba(244,196,48,.5);text-align:center;height:.9rem;}
-.mp-score-final{display:flex;gap:1.6rem;align-items:center;justify-content:center;}
-.mp-score-side{display:flex;flex-direction:column;align-items:center;gap:.2rem;}
-.mp-score-side span:first-child{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.1em;color:rgba(255,255,255,.45);text-transform:uppercase;}
-.mp-score-side span:last-child{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:#fff;line-height:1;}
-.mp-score-sep{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:rgba(255,255,255,.25);}
-.mp-winner{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,6vw,2rem);letter-spacing:.12em;text-align:center;}
+.mp-copy-hint{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:rgba(244,196,48,.5);text-align:center;margin:0;min-height:.85rem;}
+.mp-err-txt{font-family:'Barlow Condensed',sans-serif;font-size:.76rem;color:#f87171;text-align:center;margin:0;min-height:.9rem;letter-spacing:.03em;}
+.mp-countdown{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#f4c430;text-align:center;margin:0;line-height:1;}
+.mp-score-final{display:flex;gap:1.4rem;align-items:center;justify-content:center;}
+.mp-score-side{display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+.mp-slabel{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.09em;color:rgba(255,255,255,.38);text-transform:uppercase;}
+.mp-snum{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:#fff;line-height:1;}
+.mp-score-sep{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(255,255,255,.2);}
 
 /* ── Res actions row ── */
 .res-actions{display:flex;gap:.6rem;margin-top:.5rem;flex-wrap:wrap;}
@@ -3114,6 +3144,13 @@ var Penales=(function(){
   var mpScore={me:0,opp:0};
   var mpMyPick=-1, mpOppPick=-1;
   var mpPanel=null;
+  var MP_ICE={iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+    {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+  ]};
 
   /* ── sprites jugadores (pateadores) ── */
   var sprites={};
@@ -3857,23 +3894,22 @@ var Penales=(function(){
     var code=genCode();
     mpPanelHTML(
       '<p class="mp-title">SALA CREADA</p>'+
-      '<p class="mp-sub">Compartí este código con tu rival</p>'+
+      '<p class="mp-sub">Compartí el código o el link</p>'+
       '<div class="mp-code-box" id="mp-code-disp" title="Tocá para copiar">'+code+'</div>'+
       '<p class="mp-copy-hint" id="mp-copy-hint">tocá el código para copiar</p>'+
-      '<p class="mp-sub">— o compartí el link —</p>'+
       '<button class="mp-btn mp-btn-secondary" id="mp-share-link-btn">📤 COMPARTIR LINK</button>'+
-      '<div class="mp-spinner" style="margin-top:.4rem"></div>'+
-      '<p class="mp-sub" id="mp-wait-txt">Esperando rival...</p>'+
-      '<button class="mp-btn mp-btn-danger" style="margin-top:.3rem" id="mp-cancel-btn">CANCELAR</button>'
+      '<div class="mp-wait-row"><div class="mp-spinner"></div><span id="mp-wait-txt">Esperando rival...</span></div>'+
+      '<p class="mp-err-txt" id="mp-create-err"></p>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-cancel-btn">CANCELAR</button>'
     );
     document.getElementById('mp-code-disp').onclick=function(){
       navigator.clipboard&&navigator.clipboard.writeText(code);
-      document.getElementById('mp-copy-hint').textContent='¡Copiado!';
+      var h=document.getElementById('mp-copy-hint'); if(h) h.textContent='¡Copiado!';
     };
     document.getElementById('mp-share-link-btn').onclick=function(){
       var url=location.href.split('#')[0]+'#sala='+code;
       if(navigator.share){ navigator.share({title:'Tanda de penales',text:'Jugá contra mí en Playa Honda',url:url}).catch(function(){}); }
-      else { navigator.clipboard&&navigator.clipboard.writeText(url); document.getElementById('mp-copy-hint').textContent='¡Link copiado!'; }
+      else { navigator.clipboard&&navigator.clipboard.writeText(url); var h=document.getElementById('mp-copy-hint'); if(h) h.textContent='¡Link copiado!'; }
     };
     document.getElementById('mp-cancel-btn').onclick=function(){
       if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
@@ -3881,13 +3917,12 @@ var Penales=(function(){
     };
     mpIsHost=true; mpPeer=null; mpConn=null;
     try{
-      var peer=new Peer(code,{debug:0});
+      var peer=new Peer(code,{debug:0,config:MP_ICE});
       mpPeer=peer;
       peer.on('error',function(err){
-        /* código en uso → reintentar con nuevo código */
         if(err.type==='unavailable-id'){ peer.destroy(); mpStartCreate(); return; }
-        var w=document.getElementById('mp-wait-txt');
-        if(w) w.textContent='Error: '+err.message;
+        var e=document.getElementById('mp-create-err');
+        if(e) e.textContent='Error: '+err.message;
       });
       peer.on('connection',function(conn){
         mpConn=conn;
@@ -3902,8 +3937,8 @@ var Penales=(function(){
       '<p class="mp-sub">Ingresá el código de sala</p>'+
       '<input class="mp-input" id="mp-code-input" maxlength="6" placeholder="XXXXXX" value="'+prefill+'" autocomplete="off" autocorrect="off" spellcheck="false">'+
       '<button class="mp-btn mp-btn-primary" id="mp-do-join-btn">UNIRSE →</button>'+
-      '<p class="mp-sub" id="mp-join-err" style="color:#ef4444;min-height:1.1rem;"></p>'+
-      '<button class="mp-btn mp-btn-danger" id="mp-back2-btn">← VOLVER</button>'
+      '<p class="mp-err-txt" id="mp-join-err"></p>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-back2-btn">← VOLVER</button>'
     );
     var inp=document.getElementById('mp-code-input');
     inp.focus();
@@ -3921,36 +3956,58 @@ var Penales=(function(){
   }
 
   function mpDoJoin(code){
-    var errEl=document.getElementById('mp-join-err');
-    if(errEl) errEl.textContent='Conectando...';
+    function getErr(){ return document.getElementById('mp-join-err'); }
+    var e=getErr(); if(e) e.textContent='Conectando...';
     mpIsHost=false; mpConn=null;
+    if(typeof Peer==='undefined'){
+      var e2=getErr(); if(e2) e2.textContent='Error: PeerJS no cargó. Recargá la página.'; return;
+    }
+    var connOpened=false;
+    var connTimer=null;
     try{
-      var peer=new Peer(undefined,{debug:0});
+      var peer=new Peer(undefined,{debug:0,config:MP_ICE});
       mpPeer=peer;
       peer.on('open',function(){
         var conn=peer.connect(code,{reliable:true});
         mpConn=conn;
+        /* timeout: si en 15s no se abre la conexión, mostrar error */
+        connTimer=setTimeout(function(){
+          if(!connOpened){
+            peer.destroy(); mpPeer=null; mpConn=null;
+            mpPanelHTML(
+              '<p class="mp-title" style="color:#ef4444">SIN CONEXIÓN</p>'+
+              '<p class="mp-sub">No se pudo conectar con el host.<br>Verificá el código e intentá de nuevo.</p>'+
+              '<button class="mp-btn mp-btn-primary" id="mp-retry-btn">REINTENTAR</button>'+
+              '<button class="mp-btn mp-btn-ghost" id="mp-back3-btn">← VOLVER</button>'
+            );
+            document.getElementById('mp-retry-btn').onclick=function(){ showMpJoin(code); };
+            document.getElementById('mp-back3-btn').onclick=function(){ showMpMenu(); };
+          }
+        },15000);
+        conn.on('open',function(){ connOpened=true; if(connTimer){ clearTimeout(connTimer); connTimer=null; } });
         mpSetupConn(conn, false);
         conn.on('error',function(err){
-          if(errEl) errEl.textContent='No se pudo conectar: '+err.message;
+          if(connTimer){ clearTimeout(connTimer); connTimer=null; }
+          var e=getErr(); if(e) e.textContent='No se pudo conectar: '+err.message;
         });
       });
       peer.on('error',function(err){
-        if(errEl) errEl.textContent='Error: '+err.message;
+        if(connTimer){ clearTimeout(connTimer); connTimer=null; }
+        var e=getErr(); if(e) e.textContent='Error: '+err.message;
       });
-    }catch(e){ if(errEl) errEl.textContent='PeerJS no disponible'; }
+    }catch(ex){ var e=getErr(); if(e) e.textContent='Error inesperado. Recargá la página.'; }
   }
 
   function mpSetupConn(conn, isHost){
     conn.on('open',function(){
       if(isHost){
         var wt=document.getElementById('mp-wait-txt');
-        if(wt) wt.textContent='¡Rival conectado! Comenzando...';
+        if(wt) wt.textContent='¡Rival conectado!';
       }
       mpPanelHTML(
         '<p class="mp-title" style="color:#22c55e">¡CONECTADOS!</p>'+
         '<p class="mp-sub">La tanda empieza en...</p>'+
-        '<p class="mp-title" id="mp-cd-num" style="font-size:3.5rem;color:#f4c430">3</p>'
+        '<p class="mp-countdown" id="mp-cd-num">3</p>'
       );
       var n=3;
       var iv=setInterval(function(){
@@ -3974,20 +4031,20 @@ var Penales=(function(){
       if(msg.type==='pick'){
         mpOppPick=msg.zone;
         if(mpMyPick!==-1){ mpResolveRound(); }
-        /* else esperamos que el usuario local elija */
       }
       if(msg.type==='nextround'){
         mpMyPick=-1; mpOppPick=-1;
-        if(!isHost){
-          /* el guest recibe nextround del host */
-          state='choose'; idleT=0; render();
-        }
+        if(!isHost){ state='choose'; idleT=0; render(); }
       }
     });
     conn.on('close',function(){
       if(mpActive){
         mpActive=false;
-        mpPanelHTML('<p class="mp-title" style="color:#ef4444">RIVAL DESCONECTADO</p><button class="mp-btn mp-btn-danger" onclick="Penales._mpExit()">SALIR</button>');
+        mpPanelHTML(
+          '<p class="mp-title" style="color:#ef4444">RIVAL DESCONECTADO</p>'+
+          '<p class="mp-sub">La conexión se interrumpió.</p>'+
+          '<button class="mp-btn mp-btn-ghost" onclick="Penales._mpExit()">SALIR</button>'
+        );
       }
     });
     conn.on('error',function(err){ console.warn('MP conn error',err); });
@@ -4012,12 +4069,12 @@ var Penales=(function(){
     mpPanelHTML(
       '<p class="mp-title" style="color:'+winnerColor+'">'+winnerTxt+'</p>'+
       '<div class="mp-score-final">'+
-        '<div class="mp-score-side"><span>VOS</span><span>'+mpScore.me+'</span></div>'+
-        '<span class="mp-score-sep">-</span>'+
-        '<div class="mp-score-side"><span>RIVAL</span><span>'+mpScore.opp+'</span></div>'+
+        '<div class="mp-score-side"><span class="mp-slabel">VOS</span><span class="mp-snum">'+mpScore.me+'</span></div>'+
+        '<span class="mp-score-sep">—</span>'+
+        '<div class="mp-score-side"><span class="mp-slabel">RIVAL</span><span class="mp-snum">'+mpScore.opp+'</span></div>'+
       '</div>'+
       '<button class="mp-btn mp-btn-primary" id="mp-rematch-btn">REVANCHA →</button>'+
-      '<button class="mp-btn mp-btn-danger" id="mp-exit-btn">SALIR</button>'
+      '<button class="mp-btn mp-btn-ghost" id="mp-exit-btn">SALIR</button>'
     );
     document.getElementById('mp-rematch-btn').onclick=function(){
       /* revancha: nuevo juego, misma conexión, host invierte roles */
