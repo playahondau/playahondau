@@ -3033,6 +3033,15 @@ var Penales=(function(){
   var gX,gY,gW,gH,bX,bY,kCX;
   var tBX,tBY,tKX;
 
+  /* ── sprites jugadores ── */
+  var sprites={};
+  var BASE='https://playahondau.github.io/playahondau/';
+  ['titan','rodo','sica'].forEach(function(p){
+    var img=new Image();
+    img.src=BASE+(p==='sica'?'barcia':'rodo'===p?'rodo':'titan')+'-sprite.png';
+    sprites[p]=img;
+  });
+
   function setup(){
     var sz=Math.min(cv.parentElement.offsetWidth,560);
     cv.width=sz; cv.height=Math.round(sz*0.62);
@@ -3088,6 +3097,22 @@ var Penales=(function(){
   }
 
   function pateador(px,kick,playerOverride){
+    var player=playerOverride||selectedPlayer;
+    var img=sprites[player];
+    /* si el sprite ya cargó, dibujarlo escalado y recortado al jugador */
+    if(img && img.complete && img.naturalWidth>0){
+      var sprH=H*0.72;            /* altura del sprite en canvas */
+      var sprW=sprH*(img.naturalWidth/img.naturalHeight);
+      var sprX=px-sprW/2;
+      var sprY=H*1.0-sprH;        /* pies en el fondo */
+      /* sombra */
+      ctx.fillStyle='rgba(0,0,0,.22)';
+      ctx.beginPath(); ctx.ellipse(px,H*.982,sprW*.32,H*.018,0,0,Math.PI*2); ctx.fill();
+      /* sprite */
+      ctx.drawImage(img,sprX,sprY,sprW,sprH);
+      return;
+    }
+    /* fallback pixel art si el sprite aún no cargó */
     var player=playerOverride||selectedPlayer;
     var isSica=(player==='sica');
     var isRodo=(player==='rodo');
