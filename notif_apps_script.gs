@@ -13,7 +13,7 @@
  *    - Guardá y autorizá
  */
 
-var ONESIGNAL_APP_ID  = 'TU_APP_ID_AQUI';      // ← reemplazá
+var ONESIGNAL_APP_ID  = '6e4ee90d-b438-b3f3-fb88edb1c305'; // ← tu App ID
 var ONESIGNAL_REST_KEY = 'TU_REST_KEY_AQUI';    // ← reemplazá (REST API Key, no la App Key)
 
 /**
