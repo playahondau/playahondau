@@ -3078,8 +3078,7 @@ var Penales=(function(){
   }
 
   function keeper(kx, diveT, diveZone){
-    /* diveT = progreso 0-1, diveZone = 0(izq)|1(centro)|2(der) */
-    var isDiving = diveT!==undefined && diveZone!==undefined;
+    var isDiving=diveT!==undefined && diveZone!==undefined;
     var tilt=0, jmp=0;
     if(isDiving && diveZone!==1){
       var dir=diveZone===0?-1:1;
@@ -3087,101 +3086,140 @@ var Penales=(function(){
       tilt=dir*0.5*Math.min(diveT*2.2,1);
     }
 
-    if(keeperImg && keeperImg.complete && keeperImg.naturalWidth>0){
-      var kpH=gH*1.38;
-      var kpW=kpH*(keeperImg.naturalWidth/keeperImg.naturalHeight);
-      var baseY=gY+gH-kpH*0.88;
-
-      /* sombra */
-      ctx.fillStyle='rgba(0,0,0,.18)';
-      ctx.beginPath(); ctx.ellipse(kx,gY+gH+3,kpW*.28,4,0,0,Math.PI*2); ctx.fill();
-
-      ctx.save();
-      ctx.translate(kx, baseY+kpH/2+jmp);
-      ctx.rotate(tilt);
-
-      /* ── BRAZOS del portero (dibujados ANTES del sprite para quedar detrás del cuerpo) ── */
-      var shoulderY = -kpH*0.20;            /* altura de hombros relativa al centro */
-      var armThick  = kpH*0.095;            /* grosor del brazo */
-      var halfT     = armThick/2;
-      var maxArmL   = kpW*1.15;             /* longitud máxima por lado */
-      var gloveR    = kpH*0.075;            /* radio del guante */
-
-      /* longitud de cada brazo según estado */
-      var lL, rL;
-      if(!isDiving || diveT<0.08){
-        /* postura de espera: ambos brazos abiertos al máximo
-           con un leve pulso usando idleT para dar vida */
-        var pulse = 0.92 + 0.08*Math.sin(idleT*1.1);
-        lL = rL = maxArmL * pulse;
-      } else if(diveZone===1){
-        /* clavada al centro: ambos brazos se estiran hacia adelante (se reducen simétricamente) */
-        var f = Math.max(0.4, 1-diveT*0.4);
-        lL = rL = maxArmL * f;
-      } else {
-        /* clavada lateral: brazo del lado de la clavada se extiende más,
-           el otro se pliega para dar impulso */
-        var diveDir = diveZone===0?-1:1;
-        var ext = Math.min(diveT*2.0, 1);
-        if(diveDir<0){                       /* clavada izquierda */
-          lL = maxArmL*(1.0 + 0.65*ext);    /* brazo izq se estira hacia la pelota */
-          rL = maxArmL*Math.max(0.08, 1-ext*0.85); /* brazo der se recoge */
-        } else {                             /* clavada derecha */
-          rL = maxArmL*(1.0 + 0.65*ext);
-          lL = maxArmL*Math.max(0.08, 1-ext*0.85);
-        }
-      }
-
-      /* mangas (verde oscuro de portero) */
-      ctx.fillStyle='#1b5e20';
-      /* brazo izquierdo */
+    /* ── dibuja un segmento de brazo como sausage tapering ── */
+    function armSeg(ax,ay,bx,by,ra,rb){
+      var dx=bx-ax,dy=by-ay,len=Math.sqrt(dx*dx+dy*dy);
+      if(len<0.5)return;
+      var nx=dy/len,ny=-dx/len;
       ctx.beginPath();
-      ctx.moveTo(-kpW/2, shoulderY-halfT);
-      ctx.lineTo(-kpW/2-lL, shoulderY-halfT);
-      ctx.arcTo(-kpW/2-lL-halfT, shoulderY-halfT, -kpW/2-lL-halfT, shoulderY+halfT, halfT);
-      ctx.lineTo(-kpW/2, shoulderY+halfT);
-      ctx.closePath(); ctx.fill();
-      /* brazo derecho */
+      ctx.arc(ax,ay,ra,0,Math.PI*2); ctx.fill();
       ctx.beginPath();
-      ctx.moveTo(kpW/2, shoulderY-halfT);
-      ctx.lineTo(kpW/2+rL, shoulderY-halfT);
-      ctx.arcTo(kpW/2+rL+halfT, shoulderY-halfT, kpW/2+rL+halfT, shoulderY+halfT, halfT);
-      ctx.lineTo(kpW/2, shoulderY+halfT);
+      ctx.moveTo(ax+nx*ra,ay+ny*ra);
+      ctx.lineTo(bx+nx*rb,by+ny*rb);
+      ctx.lineTo(bx-nx*rb,by-ny*rb);
+      ctx.lineTo(ax-nx*ra,ay-ny*ra);
       ctx.closePath(); ctx.fill();
-
-      /* guantes (amarillo brillante) */
-      ctx.fillStyle='#fdd835';
-      ctx.beginPath(); ctx.arc(-kpW/2-lL, shoulderY, gloveR, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc( kpW/2+rL, shoulderY, gloveR, 0, Math.PI*2); ctx.fill();
-      /* detalle oscuro del guante */
-      ctx.fillStyle='rgba(0,0,0,.25)';
-      ctx.beginPath(); ctx.arc(-kpW/2-lL, shoulderY, gloveR*.55, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc( kpW/2+rL, shoulderY, gloveR*.55, 0, Math.PI*2); ctx.fill();
-
-      /* sprite del portero encima (cuerpo tapa el nacimiento de los brazos) */
-      ctx.drawImage(keeperImg,-kpW/2,-kpH/2,kpW,kpH);
-      ctx.restore();
-      return;
+      ctx.beginPath();
+      ctx.arc(bx,by,rb,0,Math.PI*2); ctx.fill();
     }
 
-    /* fallback pixel art */
-    var ky=gY+gH*.12+jmp, kw=W*.072, kh=gH*.72;
-    ctx.save(); ctx.translate(kx,ky+kh/2); ctx.rotate(tilt);
-    /* brazos extendidos (fallback) */
-    var fbArmL=kw*1.1, fbArmY=-kh*.18, fbArmH=kh*.08;
+    /* ── guante realista: palma + dedos ── */
+    function drawGlove(gx,gy,sz,ux,uy){
+      /* dirección del antebrazo para orientar el guante */
+      var gl=Math.sqrt(ux*ux+uy*uy)||1;
+      var ang=Math.atan2(uy,ux);
+      /* palma */
+      ctx.fillStyle='#fdd835';
+      ctx.save(); ctx.translate(gx,gy); ctx.rotate(ang);
+      ctx.beginPath(); ctx.ellipse(sz*.4,0,sz*.82,sz*.52,0,0,Math.PI*2); ctx.fill();
+      /* dedos: 4 cilindros pequeños */
+      ctx.fillStyle='#f9a825';
+      for(var d=-1;d<=2;d++){
+        var fy2=d*sz*.28;
+        ctx.beginPath(); ctx.ellipse(sz*.75+sz*.38,fy2,sz*.28,sz*.16,0,0,Math.PI*2); ctx.fill();
+      }
+      /* pulgar */
+      ctx.beginPath(); ctx.ellipse(sz*.3,-sz*.58,sz*.22,sz*.14,0.4,0,Math.PI*2); ctx.fill();
+      /* líneas de costura del guante */
+      ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=sz*.08;
+      ctx.beginPath(); ctx.moveTo(sz*.1,-sz*.38); ctx.lineTo(sz*.1,sz*.38); ctx.stroke();
+      ctx.restore();
+    }
+
+    /* ── interpola dos puntos (lerp) ── */
+    function lp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+
+    var doSprite = keeperImg && keeperImg.complete && keeperImg.naturalWidth>0;
+    var kpH=doSprite?gH*1.38:gH*0.90;
+    var kpW=doSprite?kpH*(keeperImg.naturalWidth/keeperImg.naturalHeight):W*.072;
+    var baseY=doSprite?(gY+gH-kpH*0.88):(gY+gH*.12);
+
+    /* sombra */
+    ctx.fillStyle='rgba(0,0,0,.18)';
+    ctx.beginPath(); ctx.ellipse(kx,gY+gH+3,kpW*.32,4,0,0,Math.PI*2); ctx.fill();
+
+    ctx.save();
+    ctx.translate(kx, baseY+kpH/2+jmp);
+    ctx.rotate(tilt);
+
+    /* ── POSES DE LOS BRAZOS ── (coordenadas relativas al pivot central del sprite) */
+    var SY   = -kpH*0.19;           /* Y del hombro */
+    var uLen = kpH*0.21;            /* longitud brazo superior */
+    var fLen = kpH*0.19;            /* longitud antebrazo */
+    var rSh  = kpH*0.058;           /* radio en hombro */
+    var rEl  = kpH*0.046;           /* radio en codo */
+    var rWr  = kpH*0.036;           /* radio en muñeca */
+    var GSZ  = kpH*0.078;           /* tamaño del guante */
+
+    /* hombros */
+    var shL={x:-kpW*0.46, y:SY}, shR={x:kpW*0.46, y:SY};
+
+    /* ── definición de poses para cada brazo (como vectores normalizados) ── */
+    /* postura IDLE: brazos abiertos clásico portero, leve curva natural
+       brazo sup: ligeramente arriba; antebrazo: cae suave → codo visible */
+    var idleUL={x:-0.96,y:-0.28}, idleFL={x:-0.92,y: 0.20};  /* izq */
+    var idleUR={x: 0.96,y:-0.28}, idleFR={x: 0.92,y: 0.20};  /* der */
+    /* pulso vivo durante la espera */
+    var pulse=Math.sin(idleT*0.9)*0.06;
+    var pulseVL={x:idleUL.x,y:idleUL.y+pulse}, pulseFVL={x:idleFL.x,y:idleFL.y+pulse};
+    var pulseVR={x:idleUR.x,y:idleUR.y+pulse}, pulseFVR={x:idleFR.x,y:idleFR.y+pulse};
+
+    /* postura CLAVADA IZQ: brazo izq se extiende abajo (hacia la pelota baja),
+       brazo der da impulso subiéndose */
+    var diveUL_L={x:-0.72,y: 0.68}, diveFL_L={x:-0.82,y: 0.52};
+    var diveUR_L={x: 0.80,y:-0.58}, diveFR_L={x: 0.76,y:-0.42};
+    /* postura CLAVADA DER (espejo) */
+    var diveUL_R={x:-0.80,y:-0.58}, diveFL_R={x:-0.76,y:-0.42};
+    var diveUR_R={x: 0.72,y: 0.68}, diveFR_R={x: 0.82,y: 0.52};
+    /* postura CENTRO */
+    var diveUL_C={x:-0.82,y:-0.10}, diveFL_C={x:-0.70,y:-0.28};
+    var diveUR_C={x: 0.82,y:-0.10}, diveFR_C={x: 0.70,y:-0.28};
+
+    /* ── seleccionar pose final e interpolar con idle ── */
+    var t2=isDiving?Math.min(diveT*1.6,1):0;
+    var UL,FL,UR,FR;
+    if(!isDiving||diveT<0.04){
+      UL=pulseVL; FL=pulseFVL; UR=pulseVR; FR=pulseFVR;
+    } else if(diveZone===0){
+      UL=lp(idleUL,diveUL_L,t2); FL=lp(idleFL,diveFL_L,t2);
+      UR=lp(idleUR,diveUR_L,t2); FR=lp(idleFR,diveFR_L,t2);
+    } else if(diveZone===2){
+      UL=lp(idleUL,diveUL_R,t2); FL=lp(idleFL,diveFL_R,t2);
+      UR=lp(idleUR,diveUR_R,t2); FR=lp(idleFR,diveFR_R,t2);
+    } else {
+      UL=lp(idleUL,diveUL_C,t2); FL=lp(idleFL,diveFL_C,t2);
+      UR=lp(idleUR,diveUR_C,t2); FR=lp(idleFR,diveFR_C,t2);
+    }
+
+    /* ── calcular puntos: codo y muñeca ── */
+    var elL={x:shL.x+UL.x*uLen, y:shL.y+UL.y*uLen};
+    var wrL={x:elL.x+FL.x*fLen, y:elL.y+FL.y*fLen};
+    var elR={x:shR.x+UR.x*uLen, y:shR.y+UR.y*uLen};
+    var wrR={x:elR.x+FR.x*fLen, y:elR.y+FR.y*fLen};
+
+    /* ── dibujar brazos (ANTES del sprite: quedan detrás del torso) ── */
     ctx.fillStyle='#1b5e20';
-    ctx.fillRect(-kw/2-fbArmL, fbArmY-fbArmH/2, fbArmL, fbArmH);
-    ctx.fillRect( kw/2,        fbArmY-fbArmH/2, fbArmL, fbArmH);
-    ctx.fillStyle='#fdd835';
-    ctx.beginPath(); ctx.arc(-kw/2-fbArmL, fbArmY, kh*.06, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc( kw/2+fbArmL, fbArmY, kh*.06, 0, Math.PI*2); ctx.fill();
-    /* cuerpo */
-    var kg=ctx.createLinearGradient(-kw/2,0,kw/2,0);
-    kg.addColorStop(0,'#1565c0'); kg.addColorStop(1,'#1e88e5');
-    ctx.fillStyle=kg; ctx.fillRect(-kw/2,-kh/2,kw,kh);
-    ctx.fillStyle='#ffcc80'; ctx.beginPath(); ctx.arc(0,-kh/2-kw*.3,kw*.33,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold '+(kw*.65)+'px "Barlow Condensed",sans-serif'; ctx.textAlign='center';
-    ctx.fillText('1',0,kh*.08);
+    armSeg(shL.x,shL.y, elL.x,elL.y, rSh,rEl);
+    armSeg(elL.x,elL.y, wrL.x,wrL.y, rEl,rWr);
+    armSeg(shR.x,shR.y, elR.x,elR.y, rSh,rEl);
+    armSeg(elR.x,elR.y, wrR.x,wrR.y, rEl,rWr);
+
+    /* ── guantes ── */
+    drawGlove(wrL.x,wrL.y,GSZ, wrL.x-elL.x,wrL.y-elL.y);
+    drawGlove(wrR.x,wrR.y,GSZ, wrR.x-elR.x,wrR.y-elR.y);
+
+    /* ── sprite (encima: tapa el nacimiento de los brazos) ── */
+    if(doSprite){
+      ctx.drawImage(keeperImg,-kpW/2,-kpH/2,kpW,kpH);
+    } else {
+      /* fallback: cuerpo simple */
+      var kg=ctx.createLinearGradient(-kpW/2,0,kpW/2,0);
+      kg.addColorStop(0,'#1565c0'); kg.addColorStop(1,'#1e88e5');
+      ctx.fillStyle=kg; ctx.fillRect(-kpW/2,-kpH/2,kpW,kpH);
+      ctx.fillStyle='#ffcc80'; ctx.beginPath(); ctx.arc(0,-kpH/2-kpW*.35,kpW*.38,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='bold '+(kpW*.72)+'px "Barlow Condensed",sans-serif'; ctx.textAlign='center';
+      ctx.fillText('1',0,kpH*.05);
+    }
     ctx.restore();
   }
 
