@@ -2995,6 +2995,8 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 }
 .mp-input::placeholder{color:rgba(255,255,255,.18);letter-spacing:.12em;}
 .mp-input:focus{border-color:#60a5fa;}
+.mp-input-name{width:100%;max-width:220px;letter-spacing:.06em;font-size:1.35rem;}
+.mp-input-name::placeholder{letter-spacing:.04em;}
 .mp-btn{
   font-family:'Bebas Neue','Barlow Condensed',sans-serif;
   font-size:1.05rem;letter-spacing:.07em;padding:.42rem 1.2rem;
@@ -3152,6 +3154,8 @@ var Penales=(function(){
   var mpRound=0, mpMaxR=10;
   var mpScore={me:0,opp:0};
   var mpMyPick=-1, mpOppPick=-1;
+  var mpMyName='', mpOppName='';
+  var mpPendingJoinCode=null;
   var mpPanel=null;
   var MP_ICE={iceServers:[
     {urls:'stun:stun.l.google.com:19302'},
@@ -3524,8 +3528,8 @@ var Penales=(function(){
       var rnd=Math.floor(mpRound/2)+1;
       var role=(mpRound%2===0)===mpIsHost?'PATEÁS':'ATAJÁS';
       ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font='bold '+(W*.038)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='left'; ctx.fillText('VOS: '+mpScore.me,W*.03,H*.965);
-      ctx.textAlign='right'; ctx.fillText('RIVAL: '+mpScore.opp,W*.97,H*.965);
+      ctx.textAlign='left'; ctx.fillText((mpMyName||'VOS')+': '+mpScore.me,W*.03,H*.965);
+      ctx.textAlign='right'; ctx.fillText((mpOppName||'RIVAL')+': '+mpScore.opp,W*.97,H*.965);
       ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.026)+'px "Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('RONDA '+rnd+'/'+mpMaxR/2+' · '+role,W/2,H*.965);
     } else {
@@ -3744,7 +3748,7 @@ var Penales=(function(){
     if(state==='intro'){
       /* detectar clic en botón multijugador */
       var bw=W*.52, bh=H*.076, bx2=(W-bw)/2, by2=H*.855;
-      if(ex>=bx2&&ex<=bx2+bw&&ey>=by2&&ey<=by2+bh){ showMpMenu(); return; }
+      if(ex>=bx2&&ex<=bx2+bw&&ey>=by2&&ey<=by2+bh){ showMpNameInput(); return; }
       state='pickplayer'; render(); return;
     }
     if(state==='over'){score=0;kicks=0;state='pickplayer';render();return;}
@@ -3891,16 +3895,43 @@ var Penales=(function(){
     mpPanel.innerHTML='';
   }
 
-  function showMpMenu(){
+  function showMpNameInput(){
+    var saved=''; try{ saved=localStorage.getItem('mp_name')||''; }catch(e){}
     mpPanelHTML(
       '<p class="mp-title">⚽ MULTIJUGADOR</p>'+
+      '<p class="mp-sub">¿Cómo te llamás?</p>'+
+      '<input class="mp-input mp-input-name" id="mp-name-inp" maxlength="16" placeholder="Tu nombre" value="'+saved+'" autocomplete="off" spellcheck="false">'+
+      '<button class="mp-btn mp-btn-primary" id="mp-name-ok">CONTINUAR →</button>'+
+      '<p class="mp-err-txt" id="mp-name-err"></p>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-name-back">CANCELAR</button>'
+    );
+    var inp=document.getElementById('mp-name-inp');
+    inp.focus(); inp.select();
+    function confirmName(){
+      var n=(inp.value||'').trim();
+      if(!n){ var e=document.getElementById('mp-name-err'); if(e) e.textContent='Ingresá tu nombre para continuar'; return; }
+      mpMyName=n.toUpperCase();
+      try{ localStorage.setItem('mp_name',n); }catch(e){}
+      if(mpPendingJoinCode){ var c=mpPendingJoinCode; mpPendingJoinCode=null; showMpJoin(c); }
+      else { showMpMenu(); }
+    }
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmName(); });
+    document.getElementById('mp-name-ok').onclick=confirmName;
+    document.getElementById('mp-name-back').onclick=function(){ hideMpPanel(); };
+  }
+
+  function showMpMenu(){
+    mpPanelHTML(
+      '<p class="mp-title">⚽ '+mpMyName+'</p>'+
       '<p class="mp-sub">Jugá contra un amigo en tiempo real</p>'+
       '<button class="mp-btn mp-btn-primary" id="mp-create-btn">CREAR SALA</button>'+
       '<button class="mp-btn mp-btn-secondary" id="mp-join-btn">UNIRSE A SALA</button>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-name-change-btn" style="font-size:.8rem;opacity:.6">✎ CAMBIAR NOMBRE</button>'+
       '<button class="mp-btn mp-btn-danger" id="mp-back-btn">← VOLVER</button>'
     );
     document.getElementById('mp-create-btn').onclick=function(){ mpStartCreate(); };
     document.getElementById('mp-join-btn').onclick=function(){ showMpJoin(''); };
+    document.getElementById('mp-name-change-btn').onclick=function(){ showMpNameInput(); };
     document.getElementById('mp-back-btn').onclick=function(){ hideMpPanel(); };
   }
 
@@ -3929,7 +3960,7 @@ var Penales=(function(){
       if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
       showMpMenu();
     };
-    mpIsHost=true; mpPeer=null; mpConn=null;
+    mpIsHost=true; mpPeer=null; mpConn=null; mpOppName='';
     try{
       var peer=new Peer(code,{debug:0,config:MP_ICE});
       mpPeer=peer;
@@ -3972,7 +4003,7 @@ var Penales=(function(){
   function mpDoJoin(code){
     function getErr(){ return document.getElementById('mp-join-err'); }
     var e=getErr(); if(e) e.textContent='Conectando...';
-    mpIsHost=false; mpConn=null;
+    mpIsHost=false; mpConn=null; mpOppName='';
     if(typeof Peer==='undefined'){
       var e2=getErr(); if(e2) e2.textContent='Error: PeerJS no cargó. Recargá la página.'; return;
     }
@@ -4014,13 +4045,15 @@ var Penales=(function(){
 
   function mpSetupConn(conn, isHost){
     conn.on('open',function(){
+      /* enviar nombre propio */
+      try{ conn.send(JSON.stringify({type:'hello',name:mpMyName})); }catch(e){}
       if(isHost){
         var wt=document.getElementById('mp-wait-txt');
         if(wt) wt.textContent='¡Rival conectado!';
       }
       mpPanelHTML(
         '<p class="mp-title" style="color:#22c55e">¡CONECTADOS!</p>'+
-        '<p class="mp-sub">La tanda empieza en...</p>'+
+        '<p class="mp-sub" id="mp-vs-sub">Esperando nombre del rival...</p>'+
         '<p class="mp-countdown" id="mp-cd-num">3</p>'
       );
       var n=3;
@@ -4042,6 +4075,14 @@ var Penales=(function(){
     });
     conn.on('data',function(raw){
       try{ var msg=JSON.parse(raw); }catch(e){ return; }
+      if(msg.type==='hello'){
+        mpOppName=(msg.name||'Rival').toUpperCase();
+        var vs=document.getElementById('mp-vs-sub');
+        if(vs) vs.textContent='vs '+mpOppName+' · empieza en...';
+        var wt=document.getElementById('mp-wait-txt');
+        if(wt) wt.textContent='¡'+mpOppName+' se conectó!';
+        return;
+      }
       if(msg.type==='pick'){
         mpOppPick=msg.zone;
         if(mpMyPick!==-1){ mpResolveRound(); }
@@ -4083,9 +4124,9 @@ var Penales=(function(){
     mpPanelHTML(
       '<p class="mp-title" style="color:'+winnerColor+'">'+winnerTxt+'</p>'+
       '<div class="mp-score-final">'+
-        '<div class="mp-score-side"><span class="mp-slabel">VOS</span><span class="mp-snum">'+mpScore.me+'</span></div>'+
+        '<div class="mp-score-side"><span class="mp-slabel">'+(mpMyName||'VOS')+'</span><span class="mp-snum">'+mpScore.me+'</span></div>'+
         '<span class="mp-score-sep">—</span>'+
-        '<div class="mp-score-side"><span class="mp-slabel">RIVAL</span><span class="mp-snum">'+mpScore.opp+'</span></div>'+
+        '<div class="mp-score-side"><span class="mp-slabel">'+(mpOppName||'RIVAL')+'</span><span class="mp-snum">'+mpScore.opp+'</span></div>'+
       '</div>'+
       '<button class="mp-btn mp-btn-primary" id="mp-rematch-btn">REVANCHA →</button>'+
       '<button class="mp-btn mp-btn-ghost" id="mp-exit-btn">SALIR</button>'
@@ -4120,9 +4161,9 @@ var Penales=(function(){
       window.addEventListener('resize',function(){
         if(document.getElementById('penales-modal').classList.contains('open')){ setup(); render(); }
       });
-      /* auto-join si la URL tiene #sala=CÓDIGO */
+      /* auto-join si la URL tiene #sala=CÓDIGO — pedir nombre primero */
       var hashMatch=(location.hash||'').match(/[#&]sala=([A-Z0-9]{4,8})/i);
-      if(hashMatch){ showMpJoin(hashMatch[1].toUpperCase()); }
+      if(hashMatch){ mpPendingJoinCode=hashMatch[1].toUpperCase(); showMpNameInput(); }
     },
     _mpExit:function(){
       if(mpPeer){ mpPeer.destroy(); mpPeer=null; } mpConn=null;
