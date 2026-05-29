@@ -2905,7 +2905,7 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 #penales-modal{display:none;position:fixed;inset:0;z-index:10003;background:rgba(0,0,0,.93);align-items:center;justify-content:center;padding:1rem;}
 #penales-modal.open{display:flex;}
 .penales-inner{display:flex;flex-direction:column;align-items:center;gap:.8rem;max-width:min(600px,96vw);width:100%;}
-#penales-canvas{border-radius:8px;cursor:pointer;max-width:100%;display:block;box-shadow:0 0 60px rgba(96,165,250,.25);}
+#penales-canvas{border-radius:8px;cursor:pointer;max-width:100%;display:block;box-shadow:0 0 60px rgba(96,165,250,.25);touch-action:manipulation;user-select:none;-webkit-user-select:none;}
 .penales-close{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.12em;padding:.4rem 2rem;cursor:pointer;border-radius:3px;}
 .penales-close:hover{color:#fff;border-color:#fff;}
 @media(min-width:660px){
@@ -2961,7 +2961,8 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 }
 
 /* ── Canvas wrap for MP overlay ── */
-#penales-canvas-wrap{position:relative;max-width:100%;display:block;line-height:0;}
+#penales-canvas-wrap{position:relative;max-width:100%;display:block;line-height:0;user-select:none;-webkit-user-select:none;}
+#penales-modal{overscroll-behavior:contain;}
 /* ── Multiplayer Panel ── */
 #mp-panel{
   display:none;position:absolute;inset:0;z-index:4;
@@ -3001,8 +3002,22 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
   font-family:'Bebas Neue','Barlow Condensed',sans-serif;
   font-size:1.05rem;letter-spacing:.07em;padding:.42rem 1.2rem;
   border:none;cursor:pointer;width:100%;max-width:190px;
-  border-radius:2px;transition:opacity .15s;
+  border-radius:2px;transition:opacity .15s;touch-action:manipulation;
 }
+/* ── Player pick cards ── */
+.mp-player-row{display:flex;gap:.45rem;justify-content:center;width:100%;}
+.mp-player-card{
+  display:flex;flex-direction:column;align-items:center;gap:.18rem;
+  padding:.4rem .25rem .35rem;border-radius:6px;cursor:pointer;flex:1;
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);
+  transition:background .12s,border-color .12s;touch-action:manipulation;
+  max-width:88px;
+}
+.mp-player-card img{height:62px;width:auto;object-fit:contain;pointer-events:none;}
+.mp-player-name{font-family:'Bebas Neue',sans-serif;font-size:.98rem;color:#fff;letter-spacing:.04em;line-height:1;}
+.mp-player-role{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;color:rgba(255,255,255,.38);letter-spacing:.06em;text-transform:uppercase;}
+.mp-player-sel{background:rgba(244,196,48,.13)!important;border-color:#f4c430!important;}
+.mp-player-sel .mp-player-name{color:#f4c430;}
 .mp-btn:hover{opacity:.8;}
 .mp-btn-primary{background:var(--dorado);color:#040812;}
 .mp-btn-secondary{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.35);color:#60a5fa;}
@@ -3155,6 +3170,7 @@ var Penales=(function(){
   var mpScore={me:0,opp:0};
   var mpMyPick=-1, mpOppPick=-1;
   var mpMyName='', mpOppName='';
+  var mpOppPlayer='feli', mpCurRoundKicking=true;
   var mpPendingJoinCode=null;
   var mpPanel=null;
   var MP_ICE={iceServers:[
@@ -3647,18 +3663,19 @@ var Penales=(function(){
       /* portero shuffle: se mueve levemente de lado a lado esperando el penal */
       idleT+=0.038;
       var swayX=kCX+Math.sin(idleT)*W*0.022;
-      keeper(swayX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
       var mpKicking=mpActive&&(mpRound%2===0)===mpIsHost;
+      /* cuando ataja el local, el sprite que corre es el pateador del rival */
+      var visPlayer=mpActive&&!mpKicking?mpOppPlayer:undefined;
+      keeper(swayX); pateador(W/2,false,visPlayer); ball(bX,bY,1); zones(); hud();
       var mpLabel=mpActive?(mpKicking?'¿DÓNDE PATEÁS?':'¿DÓNDE TE TIRÁS?'):'¿DÓNDE PATEÁS?';
       ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=10;
       ctx.fillStyle='#ffffff'; ctx.font='bold '+(W*.048)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText(mpLabel,W/2,H*.052);
       ctx.shadowBlur=0;
       if(mpActive && mpMyPick!==-1){
-        /* ya elegiste, esperando rival */
         ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=6;
         ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.032)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-        ctx.fillText('ESPERANDO AL RIVAL...',W/2,H*.052+H*.055);
+        ctx.fillText('ESPERANDO A '+mpOppName+'...',W/2,H*.052+H*.055);
         ctx.shadowBlur=0;
       }
       requestAnimationFrame(render); /* loop continuo para el shuffle */
@@ -3686,7 +3703,8 @@ var Penales=(function(){
 
       /* ── pateador: carrera de aproximación + kick ── */
       var kickPhase = tKick>0 ? tKick : false;
-      pateador(W/2, kickPhase);
+      var shootPlayer=mpActive&&!mpCurRoundKicking?mpOppPlayer:undefined;
+      pateador(W/2, kickPhase, shootPlayer);
 
       /* ── pelota: se queda en el spot hasta el pateo, luego vuela ── */
       var fE=1-Math.pow(1-tFlight,2.5);          /* ease rápido al inicio del vuelo */
@@ -3715,7 +3733,8 @@ var Penales=(function(){
       return;
     } else if(state==='result'){
       /* portero queda inclinado en posición de clavada final */
-      keeper(tKX,1,kZone); pateador(W/2,false); ball(tBX,tBY,.65); hud();
+      var resPlayer=mpActive&&!mpCurRoundKicking?mpOppPlayer:undefined;
+      keeper(tKX,1,kZone); pateador(W/2,false,resPlayer); ball(tBX,tBY,.65); hud();
       var rc=goalScored?'rgba(34,197,94,.22)':'rgba(239,68,68,.22)';
       var rt=goalScored?'GOOOOL!':'ATAJADO';
       var rcc=goalScored?'#22c55e':'#ef4444';
@@ -3900,7 +3919,7 @@ var Penales=(function(){
     mpPanelHTML(
       '<p class="mp-title">⚽ MULTIJUGADOR</p>'+
       '<p class="mp-sub">¿Cómo te llamás?</p>'+
-      '<input class="mp-input mp-input-name" id="mp-name-inp" maxlength="16" placeholder="Tu nombre" value="'+saved+'" autocomplete="off" spellcheck="false">'+
+      '<input class="mp-input mp-input-name" id="mp-name-inp" maxlength="16" placeholder="Tu nombre" value="'+saved+'" autocomplete="given-name" autocapitalize="words" inputmode="text" spellcheck="false">'+
       '<button class="mp-btn mp-btn-primary" id="mp-name-ok">CONTINUAR →</button>'+
       '<p class="mp-err-txt" id="mp-name-err"></p>'+
       '<button class="mp-btn mp-btn-ghost" id="mp-name-back">CANCELAR</button>'
@@ -3912,12 +3931,45 @@ var Penales=(function(){
       if(!n){ var e=document.getElementById('mp-name-err'); if(e) e.textContent='Ingresá tu nombre para continuar'; return; }
       mpMyName=n.toUpperCase();
       try{ localStorage.setItem('mp_name',n); }catch(e){}
-      if(mpPendingJoinCode){ var c=mpPendingJoinCode; mpPendingJoinCode=null; showMpJoin(c); }
-      else { showMpMenu(); }
+      showMpPlayerPick();
     }
     inp.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmName(); });
     document.getElementById('mp-name-ok').onclick=confirmName;
     document.getElementById('mp-name-back').onclick=function(){ hideMpPanel(); };
+  }
+
+  var PP_LIST=[{p:'titan',name:'TITAN',role:'DELANTERO'},{p:'rodo',name:'RODO',role:'DEFENSA'},{p:'feli',name:'FELI',role:'DELANTERO'}];
+
+  function showMpPlayerPick(){
+    function card(pl){
+      var sel=(selectedPlayer===pl.p)?'mp-player-card mp-player-sel':'mp-player-card';
+      return '<div class="'+sel+'" data-p="'+pl.p+'">'+
+        '<img src="'+BASE+pl.p+'-sprite.png" alt="'+pl.name+'" loading="lazy">'+
+        '<span class="mp-player-name">'+pl.name+'</span>'+
+        '<span class="mp-player-role">'+pl.role+'</span>'+
+      '</div>';
+    }
+    mpPanelHTML(
+      '<p class="mp-title">TU PATEADOR</p>'+
+      '<p class="mp-sub">¿Con quién querés jugar?</p>'+
+      '<div class="mp-player-row" id="mp-prow">'+PP_LIST.map(card).join('')+'</div>'+
+      '<button class="mp-btn mp-btn-primary" id="mp-ppick-ok">LISTO →</button>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-ppick-back">← ATRÁS</button>'
+    );
+    document.getElementById('mp-prow').addEventListener('click',function(e){
+      var c=e.target.closest('[data-p]'); if(!c)return;
+      selectedPlayer=c.dataset.p;
+      document.querySelectorAll('#mp-prow [data-p]').forEach(function(el){
+        el.className='mp-player-card'+(el.dataset.p===selectedPlayer?' mp-player-sel':'');
+        var nm=el.querySelector('.mp-player-name');
+        if(nm) nm.style.color=(el.dataset.p===selectedPlayer)?'#f4c430':'';
+      });
+    });
+    document.getElementById('mp-ppick-ok').onclick=function(){
+      if(mpPendingJoinCode){ var c=mpPendingJoinCode; mpPendingJoinCode=null; showMpJoin(c); }
+      else{ showMpMenu(); }
+    };
+    document.getElementById('mp-ppick-back').onclick=function(){ showMpNameInput(); };
   }
 
   function showMpMenu(){
@@ -3926,12 +3978,12 @@ var Penales=(function(){
       '<p class="mp-sub">Jugá contra un amigo en tiempo real</p>'+
       '<button class="mp-btn mp-btn-primary" id="mp-create-btn">CREAR SALA</button>'+
       '<button class="mp-btn mp-btn-secondary" id="mp-join-btn">UNIRSE A SALA</button>'+
-      '<button class="mp-btn mp-btn-ghost" id="mp-name-change-btn" style="font-size:.8rem;opacity:.6">✎ CAMBIAR NOMBRE</button>'+
+      '<button class="mp-btn mp-btn-ghost" id="mp-name-change-btn" style="font-size:.78rem;opacity:.55">✎ NOMBRE / PATEADOR</button>'+
       '<button class="mp-btn mp-btn-danger" id="mp-back-btn">← VOLVER</button>'
     );
     document.getElementById('mp-create-btn').onclick=function(){ mpStartCreate(); };
     document.getElementById('mp-join-btn').onclick=function(){ showMpJoin(''); };
-    document.getElementById('mp-name-change-btn').onclick=function(){ showMpNameInput(); };
+    document.getElementById('mp-name-change-btn').onclick=function(){ showMpPlayerPick(); };
     document.getElementById('mp-back-btn').onclick=function(){ hideMpPanel(); };
   }
 
@@ -3980,7 +4032,7 @@ var Penales=(function(){
     mpPanelHTML(
       '<p class="mp-title">UNIRSE</p>'+
       '<p class="mp-sub">Ingresá el código de sala</p>'+
-      '<input class="mp-input" id="mp-code-input" maxlength="6" placeholder="XXXXXX" value="'+prefill+'" autocomplete="off" autocorrect="off" spellcheck="false">'+
+      '<input class="mp-input" id="mp-code-input" maxlength="6" placeholder="XXXXXX" value="'+prefill+'" autocomplete="off" autocorrect="off" autocapitalize="characters" inputmode="text" spellcheck="false">'+
       '<button class="mp-btn mp-btn-primary" id="mp-do-join-btn">UNIRSE →</button>'+
       '<p class="mp-err-txt" id="mp-join-err"></p>'+
       '<button class="mp-btn mp-btn-ghost" id="mp-back2-btn">← VOLVER</button>'
@@ -4045,8 +4097,8 @@ var Penales=(function(){
 
   function mpSetupConn(conn, isHost){
     conn.on('open',function(){
-      /* enviar nombre propio */
-      try{ conn.send(JSON.stringify({type:'hello',name:mpMyName})); }catch(e){}
+      /* enviar nombre y pateador propio */
+      try{ conn.send(JSON.stringify({type:'hello',name:mpMyName,player:selectedPlayer})); }catch(e){}
       if(isHost){
         var wt=document.getElementById('mp-wait-txt');
         if(wt) wt.textContent='¡Rival conectado!';
@@ -4077,6 +4129,7 @@ var Penales=(function(){
       try{ var msg=JSON.parse(raw); }catch(e){ return; }
       if(msg.type==='hello'){
         mpOppName=(msg.name||'Rival').toUpperCase();
+        mpOppPlayer=msg.player||'feli';
         var vs=document.getElementById('mp-vs-sub');
         if(vs) vs.textContent='vs '+mpOppName+' · empieza en...';
         var wt=document.getElementById('mp-wait-txt');
@@ -4107,6 +4160,7 @@ var Penales=(function(){
 
   function mpResolveRound(){
     var kicking=(mpRound%2===0)===mpIsHost;
+    mpCurRoundKicking=kicking;
     if(kicking){ pZone=mpMyPick; kZone=mpOppPick; }
     else        { pZone=mpOppPick; kZone=mpMyPick; }
     goalScored=pZone!==kZone;
@@ -4152,7 +4206,10 @@ var Penales=(function(){
       setup(); ctx=cv.getContext('2d');
       if(rows&&rows.length){var f=rows[0];rival=((f.visitante||'').toLowerCase().indexOf('playa honda')!==-1)?f.local:f.visitante;}
       render();
-      function pos(e){var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height,cx=e.clientX||(e.touches&&e.touches[0].clientX)||0,cy=e.clientY||(e.touches&&e.touches[0].clientY)||0;return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};}
+      /* sx/sy mapean de CSS px a coordenadas lógicas del canvas (W,H).
+         cv.width es en píxeles físicos (incluye DPR), r.width es CSS px,
+         así que se usa W/r.width en vez de cv.width/r.width. */
+      function pos(e){var r=cv.getBoundingClientRect(),sx=W/r.width,sy=H/r.height,cx=e.clientX||(e.touches&&e.touches[0].clientX)||0,cy=e.clientY||(e.touches&&e.touches[0].clientY)||0;return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};}
       cv.addEventListener('click',function(e){var p=pos(e);click(p.x,p.y);});
       cv.addEventListener('touchend',function(e){e.preventDefault();var p=pos(e.changedTouches[0]);click(p.x,p.y);},{passive:false});
       /* fullscreen + orientación */
