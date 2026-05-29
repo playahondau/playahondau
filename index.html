@@ -2925,22 +2925,30 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 #fs-btn:hover,#fs-btn:active{background:rgba(0,0,0,.8);color:#fff;}
 #fs-btn svg{width:14px;height:14px;fill:currentColor;flex-shrink:0;}
 @media(pointer:coarse){#fs-btn{display:flex;}} /* solo en dispositivos táctiles */
-/* ── Estilos en pantalla completa (funciona con documentElement como elem FS) ── */
-:fullscreen .penales-inner,
-:-webkit-full-screen .penales-inner{
-  max-width:100%!important;width:100%;gap:.3rem;
+/* ── Fullscreen real (Android Chrome, documentElement como FS elem) ── */
+:fullscreen .penales-inner,:-webkit-full-screen .penales-inner{max-width:100%!important;width:100%;gap:.3rem;}
+:fullscreen .penales-close,:-webkit-full-screen .penales-close{display:none!important;}
+:fullscreen #penales-canvas-wrap,:-webkit-full-screen #penales-canvas-wrap{width:100%;}
+:fullscreen #penales-modal,:-webkit-full-screen #penales-modal{background:#000!important;padding:.4rem!important;}
+/* ── Fake-fs: rotación CSS 90° para iOS en portrait ──
+   Fórmula: modal CSS width=100vh, height=100vw → al rotar 90°, visual=landscape ✓
+   Centro del modal = centro de pantalla: top=50vh-50vw, left=50vw-50vh            */
+@media(orientation:portrait){
+  #penales-modal.fake-fs{
+    width:100vh!important; height:100vw!important;
+    top:calc(50vh - 50vw)!important; left:calc(50vw - 50vh)!important;
+    right:auto!important; bottom:auto!important;
+    transform:rotate(90deg); transform-origin:50% 50%;
+    overflow:hidden; padding:.3rem!important; background:#000!important;
+  }
+  #penales-modal.fake-fs .penales-close{display:none!important;}
+  #penales-modal.fake-fs .penales-inner{max-width:100%!important;width:100%;gap:.2rem;}
 }
-:fullscreen .penales-close,
-:-webkit-full-screen .penales-close{
-  display:none!important;
-}
-:fullscreen #penales-canvas-wrap,
-:-webkit-full-screen #penales-canvas-wrap{
-  width:100%;
-}
-:fullscreen #penales-modal,
-:-webkit-full-screen #penales-modal{
-  background:#000!important;padding:.4rem!important;
+/* En landscape: fake-fs solo expande sin rotar (ya está horizontal) */
+@media(orientation:landscape){
+  #penales-modal.fake-fs{padding:.3rem!important;background:#000!important;}
+  #penales-modal.fake-fs .penales-inner{max-width:100%!important;width:100%;gap:.2rem;}
+  #penales-modal.fake-fs .penales-close{display:none!important;}
 }
 
 /* ── Canvas wrap for MP overlay ── */
@@ -3117,10 +3125,20 @@ var Penales=(function(){
   var keeperImg=new Image(); keeperImg.src=BASE+'barcia-sprite.png';
 
   function setup(){
-    var inFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    var inRealFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    var modal=document.getElementById('penales-modal');
+    var inFakeFs=modal&&modal.classList.contains('fake-fs');
     var parentW=cv.parentElement.offsetWidth||cv.parentElement.clientWidth||560;
-    /* en fullscreen limitamos también por altura para que quepa en landscape */
-    var maxByH=inFs ? Math.floor(window.innerHeight*0.88/0.62) : 9999;
+    var maxByH=9999;
+    if(inRealFs){
+      /* fullscreen real: limitar por altura de pantalla */
+      maxByH=Math.floor(window.innerHeight*0.88/0.62);
+    } else if(inFakeFs){
+      /* fake-fs (iOS): el modal está rotado 90°; CSS height del modal = vw (portrait width) */
+      /* así el canvas CSS height no puede superar vw o se desborda visualmente */
+      var avail=Math.min(window.innerWidth,window.innerHeight); /* la dimensión menor = landscape height */
+      maxByH=Math.floor(avail*0.90/0.62);
+    }
     var sz=Math.min(parentW, 960, maxByH);
     cv.width=sz; cv.height=Math.round(sz*0.62);
     W=cv.width; H=cv.height;
@@ -3715,57 +3733,90 @@ var Penales=(function(){
   function setupFullscreen(){
     var fsBtn=document.getElementById('fs-btn');
     if(!fsBtn||fsBtn._fsReady) return;
-    fsBtn._fsReady=true; /* evitar doble init si init() se llama varias veces */
+    fsBtn._fsReady=true;
 
     var SVG_ENTER='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 1h5v1.6H2.6V6H1zm9 0h5v5h-1.6V2.6H10zM1 10h1.6v3.4H6V15H1zm9 3.4H13.4V10H15v5h-5z"/></svg><span>FULL</span>';
     var SVG_EXIT ='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 1v5H1V4.6h3.4V1zm4 0h1.6v3.6H15V6h-5zm-9 9h5v5H4.6v-3.4H1zm8.4 0H15v1.6h-3.4V15H10z"/></svg><span>SALIR</span>';
 
-    var de=document.documentElement; /* siempre permitido para fullscreen */
-    var fsSupported=!!(de.requestFullscreen||de.webkitRequestFullscreen||de.mozRequestFullScreen);
+    var de=document.documentElement;
+    /* ¿soporta fullscreen real? (Android Chrome sí; iOS Safari NO) */
+    var realFsApi=de.requestFullscreen||de.webkitRequestFullscreen;
 
-    function isFull(){ return !!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement); }
-    function syncIcon(){ fsBtn.innerHTML=isFull()?SVG_EXIT:SVG_ENTER; }
+    function isRealFull(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+    function modal(){ return document.getElementById('penales-modal'); }
+    function isFakeFull(){ var m=modal(); return !!(m&&m.classList.contains('fake-fs')); }
+    function isAnyFull(){ return isRealFull()||isFakeFull(); }
+    function syncIcon(){ fsBtn.innerHTML=isAnyFull()?SVG_EXIT:SVG_ENTER; }
     syncIcon();
 
+    function applyFakeFs(){
+      var m=modal(); if(!m) return;
+      m.classList.add('fake-fs');
+      syncIcon();
+      setTimeout(function(){ setup(); render(); },80);
+    }
+    function removeFakeFs(){
+      var m=modal(); if(!m) return;
+      m.classList.remove('fake-fs');
+      syncIcon();
+      setTimeout(function(){ setup(); render(); },80);
+    }
+
     function doEnter(){
-      var req=de.requestFullscreen||de.webkitRequestFullscreen||de.mozRequestFullScreen;
-      if(!req) return;
-      try{ var p=req.call(de); if(p&&p.catch) p.catch(function(){}); }catch(e){}
+      if(realFsApi){
+        /* Android Chrome / Samsung Browser: fullscreen real */
+        realFsApi.call(de)
+          .then(function(){
+            if(screen.orientation&&screen.orientation.lock){
+              screen.orientation.lock('landscape').catch(function(){});
+            }
+          })
+          .catch(function(){ applyFakeFs(); }); /* si falla → fallback CSS */
+      } else {
+        /* iOS Safari: fullscreen no disponible → rotación CSS */
+        applyFakeFs();
+      }
     }
     function doExit(){
-      try{ (document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen).call(document); }catch(e){}
+      if(isRealFull()){
+        (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+      } else {
+        removeFakeFs();
+      }
     }
 
-    /* separar touch de click para evitar doble disparo en móvil */
-    var lastTouchEnd=0;
+    /* ── Eventos: solo touchend en táctil, click en desktop ──
+       NO agregar touchstart preventDefault — eso invalida el gesto de usuario
+       en Chrome Android y hace que requestFullscreen() falle */
+    var lastTouchMs=0;
     if('ontouchstart' in window){
-      fsBtn.addEventListener('touchstart',function(e){ e.preventDefault(); e.stopPropagation(); },{passive:false});
       fsBtn.addEventListener('touchend',function(e){
-        e.preventDefault(); e.stopPropagation();
-        lastTouchEnd=Date.now();
-        isFull()?doExit():doEnter();
+        e.preventDefault(); /* evita el ghost-click posterior */
+        lastTouchMs=Date.now();
+        isAnyFull()?doExit():doEnter();
       },{passive:false});
     }
-    /* click para desktop (y como fallback en touch si touchend no disparó) */
     fsBtn.addEventListener('click',function(e){
-      if(Date.now()-lastTouchEnd<600) return; /* ghost click post-touch */
-      e.stopPropagation();
-      isFull()?doExit():doEnter();
+      if(Date.now()-lastTouchMs<600) return; /* ignorar ghost-click post-touchend */
+      isAnyFull()?doExit():doEnter();
     });
 
-    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(function(ev){
+    /* fullscreenchange: resize canvas y unlock orientation al salir */
+    ['fullscreenchange','webkitfullscreenchange'].forEach(function(ev){
       document.addEventListener(ev,function(){
         syncIcon();
-        if(isFull()){
-          if(screen.orientation&&screen.orientation.lock){
-            screen.orientation.lock('landscape').catch(function(){});
-          }
-        } else {
-          if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock();
+        if(!isRealFull()&&screen.orientation&&screen.orientation.unlock){
+          screen.orientation.unlock();
         }
-        var modal=document.getElementById('penales-modal');
-        if(modal&&modal.classList.contains('open')){ setTimeout(function(){ setup(); render(); },200); }
+        var m=modal();
+        if(m&&m.classList.contains('open')){ setTimeout(function(){ setup(); render(); },200); }
       });
+    });
+
+    /* orientationchange: si el usuario rota el teléfono → resize */
+    window.addEventListener('orientationchange',function(){
+      var m=modal();
+      if(m&&m.classList.contains('open')){ setTimeout(function(){ setup(); render(); },300); }
     });
   }
 
@@ -4017,13 +4068,13 @@ function abrirPenales(){
   Penales.init(window._fixtureRows||[]);
 }
 function cerrarPenales(){
-  /* salir de fullscreen si está activo */
   if(document.fullscreenElement||document.webkitFullscreenElement){
-    var ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen;
+    var ex=document.exitFullscreen||document.webkitExitFullscreen;
     if(ex) ex.call(document);
   }
   if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock();
-  document.getElementById('penales-modal').classList.remove('open');
+  var m=document.getElementById('penales-modal');
+  if(m){ m.classList.remove('fake-fs'); m.classList.remove('open'); }
 }
 /* Auto-abrir si URL tiene #sala= (link de invitación multijugador) */
 (function(){
