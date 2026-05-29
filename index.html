@@ -3033,14 +3033,14 @@ var Penales=(function(){
   var gX,gY,gW,gH,bX,bY,kCX;
   var tBX,tBY,tKX;
 
-  /* ── sprites jugadores ── */
+  /* ── sprites jugadores (pateadores) ── */
   var sprites={};
   var BASE='https://playahondau.github.io/playahondau/';
-  ['titan','rodo','sica'].forEach(function(p){
-    var img=new Image();
-    img.src=BASE+(p==='sica'?'barcia':'rodo'===p?'rodo':'titan')+'-sprite.png';
-    sprites[p]=img;
+  ['titan','rodo'].forEach(function(p){
+    var img=new Image(); img.src=BASE+p+'-sprite.png'; sprites[p]=img;
   });
+  /* ── sprite portero (Barcia, de frente) ── */
+  var keeperImg=new Image(); keeperImg.src=BASE+'barcia-sprite.png';
 
   function setup(){
     var sz=Math.min(cv.parentElement.offsetWidth,560);
@@ -3077,6 +3077,17 @@ var Penales=(function(){
   }
 
   function keeper(kx){
+    /* Barcia de frente — sprite real */
+    if(keeperImg && keeperImg.complete && keeperImg.naturalWidth>0){
+      var kpH=gH*1.38;
+      var kpW=kpH*(keeperImg.naturalWidth/keeperImg.naturalHeight);
+      var kpY=gY+gH-kpH*0.88;
+      ctx.fillStyle='rgba(0,0,0,.2)';
+      ctx.beginPath(); ctx.ellipse(kx,gY+gH+3,kpW*.28,4,0,0,Math.PI*2); ctx.fill();
+      ctx.drawImage(keeperImg,kx-kpW/2,kpY,kpW,kpH);
+      return;
+    }
+    /* fallback pixel art */
     var ky=gY+gH*.12, kw=W*.072, kh=gH*.72;
     var kg=ctx.createLinearGradient(kx-kw/2,0,kx+kw/2,0);
     kg.addColorStop(0,'#1565c0'); kg.addColorStop(1,'#1e88e5');
