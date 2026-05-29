@@ -2903,10 +2903,14 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 /* ── Penales Modal ── */
 #penales-modal{display:none;position:fixed;inset:0;z-index:10003;background:rgba(0,0,0,.93);align-items:center;justify-content:center;padding:1rem;}
 #penales-modal.open{display:flex;}
-.penales-inner{display:flex;flex-direction:column;align-items:center;gap:.8rem;max-width:570px;width:100%;}
-#penales-canvas{border-radius:8px;cursor:pointer;max-width:100%;display:block;box-shadow:0 0 40px rgba(96,165,250,.2);}
+.penales-inner{display:flex;flex-direction:column;align-items:center;gap:.8rem;max-width:min(600px,96vw);width:100%;}
+#penales-canvas{border-radius:8px;cursor:pointer;max-width:100%;display:block;box-shadow:0 0 60px rgba(96,165,250,.25);}
 .penales-close{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.12em;padding:.4rem 2rem;cursor:pointer;border-radius:3px;}
 .penales-close:hover{color:#fff;border-color:#fff;}
+@media(min-width:660px){
+  .penales-inner{max-width:min(940px,94vw);}
+  #penales-modal{padding:1.2rem 1.5rem;}
+}
 
 /* ── Canvas wrap for MP overlay ── */
 #penales-canvas-wrap{position:relative;max-width:100%;display:block;line-height:0;}
@@ -3082,7 +3086,7 @@ var Penales=(function(){
   var keeperImg=new Image(); keeperImg.src=BASE+'barcia-sprite.png';
 
   function setup(){
-    var sz=Math.min(cv.parentElement.offsetWidth,560);
+    var sz=Math.min(cv.parentElement.offsetWidth,960);
     cv.width=sz; cv.height=Math.round(sz*0.62);
     W=cv.width; H=cv.height;
     gW=W*0.52; gH=H*0.38;
@@ -3412,21 +3416,23 @@ var Penales=(function(){
   }
 
   function hud(){
+    ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=6;
     if(mpActive){
       var rnd=Math.floor(mpRound/2)+1;
       var role=(mpRound%2===0)===mpIsHost?'PATEÁS':'ATAJÁS';
-      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.032)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='left'; ctx.fillText('VOS: '+mpScore.me,W*.03,H*.97);
-      ctx.textAlign='right'; ctx.fillText('RIVAL: '+mpScore.opp,W*.97,H*.97);
-      ctx.fillStyle='rgba(96,165,250,.8)'; ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText('RONDA '+rnd+'/'+mpMaxR/2+' · '+role,W/2,H*.97);
+      ctx.fillStyle='rgba(255,255,255,.95)'; ctx.font='bold '+(W*.038)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='left'; ctx.fillText('VOS: '+mpScore.me,W*.03,H*.965);
+      ctx.textAlign='right'; ctx.fillText('RIVAL: '+mpScore.opp,W*.97,H*.965);
+      ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.026)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('RONDA '+rnd+'/'+mpMaxR/2+' · '+role,W/2,H*.965);
     } else {
-      ctx.fillStyle='#fff'; ctx.font='bold '+(W*.036)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='left'; ctx.fillText('GOLES: '+score+'/'+kicks,W*.03,H*.97);
-      ctx.textAlign='right'; ctx.fillText((MAXK-kicks)+' TIROS RESTANTES',W*.97,H*.97);
-      ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.97);
+      ctx.fillStyle='#fff'; ctx.font='bold '+(W*.040)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='left'; ctx.fillText('GOLES: '+score+'/'+kicks,W*.03,H*.965);
+      ctx.textAlign='right'; ctx.fillText((MAXK-kicks)+' TIROS',W*.97,H*.965);
+      ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font='bold '+(W*.026)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.965);
     }
+    ctx.shadowBlur=0;
   }
 
   function zones(){
@@ -3434,17 +3440,20 @@ var Penales=(function(){
     for(var i=0;i<3;i++){
       var zx=gX+i*gW/3;
       ctx.fillStyle='rgba(96,165,250,.1)'; ctx.fillRect(zx,gY,gW/3,gH);
-      ctx.strokeStyle='rgba(96,165,250,.5)'; ctx.lineWidth=1; ctx.strokeRect(zx+.5,gY+.5,gW/3-1,gH-1);
-      ctx.fillStyle='rgba(255,255,255,.75)'; ctx.font='bold '+(W*.022)+'px "Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText(lbl[i],zx+gW/6,gY+gH+H*.05);
+      ctx.strokeStyle='rgba(96,165,250,.6)'; ctx.lineWidth=1.5; ctx.strokeRect(zx+.75,gY+.75,gW/3-1.5,gH-1.5);
+      ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=8;
+      ctx.fillStyle='#ffffff'; ctx.font='bold '+(W*.028)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText(lbl[i],zx+gW/6,gY+gH+H*.055);
+      ctx.shadowBlur=0;
     }
   }
 
   function overlay(txt,col){
-    ctx.fillStyle=(col||'rgba(0,0,0,.5)'); ctx.fillRect(0,H*.2,W,H*.55);
-    ctx.fillStyle='#fff'; ctx.shadowColor=col||'#fff'; ctx.shadowBlur=18;
-    ctx.font='bold '+(W*.14)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-    ctx.textAlign='center'; ctx.fillText(txt,W/2,H*.56); ctx.shadowBlur=0;
+    ctx.fillStyle=(col||'rgba(0,0,0,.55)'); ctx.fillRect(0,H*.18,W,H*.58);
+    ctx.shadowColor=col&&col!=='rgba(0,0,0,.6)'?col:'rgba(0,0,0,.8)'; ctx.shadowBlur=28;
+    ctx.fillStyle='#fff';
+    ctx.font='bold '+(W*.13)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+    ctx.textAlign='center'; ctx.fillText(txt,W/2,H*.54); ctx.shadowBlur=0;
   }
 
   function render(){
@@ -3452,21 +3461,27 @@ var Penales=(function(){
     if(state==='intro'){
       keeper(kCX); pateador(W/2,false); ball(bX,bY,1);
       overlay('TANDA DE\nPENALES','rgba(0,0,0,.6)');
-      ctx.fillStyle='#60a5fa'; ctx.font=(W*.038)+'px "Barlow Condensed",sans-serif';
+      ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=8;
+      ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.042)+'px "Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('vs '+rival.toUpperCase(),W/2,H*.65);
-      ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=(W*.028)+'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle='rgba(255,255,255,.7)'; ctx.font='bold '+(W*.032)+'px "Barlow Condensed",sans-serif';
       ctx.fillText('TOCÁ PARA COMENZAR',W/2,H*.77);
+      ctx.shadowBlur=0;
       /* botón multijugador */
-      ctx.fillStyle='rgba(96,165,250,.15)'; ctx.strokeStyle='rgba(96,165,250,.4)'; ctx.lineWidth=1;
-      var bw=W*.52, bh=H*.072, bx2=(W-bw)/2, by2=H*.855;
-      ctx.fillRect(bx2,by2,bw,bh); ctx.strokeRect(bx2+.5,by2+.5,bw-1,bh-1);
-      ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.028)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.fillText('🌐 MULTIJUGADOR',W/2,by2+bh*.66);
+      ctx.fillStyle='rgba(96,165,250,.18)'; ctx.strokeStyle='rgba(96,165,250,.5)'; ctx.lineWidth=1.5;
+      var bw=W*.52, bh=H*.076, bx2=(W-bw)/2, by2=H*.855;
+      ctx.fillRect(bx2,by2,bw,bh); ctx.strokeRect(bx2+.75,by2+.75,bw-1.5,bh-1.5);
+      ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=6;
+      ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.030)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.fillText('🌐 MULTIJUGADOR',W/2,by2+bh*.67);
+      ctx.shadowBlur=0;
     } else if(state==='pickplayer'){
       keeper(kCX); ball(bX,bY,1);
-      ctx.fillStyle='rgba(255,255,255,.92)';
-      ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=10;
+      ctx.fillStyle='#ffffff';
+      ctx.font='bold '+(W*.048)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('ELEGÍ TU PATEADOR',W/2,H*.1);
+      ctx.shadowBlur=0;
       var PP=[{name:'TITAN',p:'titan',role:'DELANTERO'},{name:'RODO',p:'rodo',role:'DEFENSA'},{name:'FELI',p:'feli',role:'DELANTERO'}];
       var cw=W*.27,ch=H*.64,cy2=H*.52,xs=[W*.19,W*.5,W*.81];
       var sprZone=ch*.72; /* 72% superior de la card = zona del sprite */
@@ -3506,16 +3521,20 @@ var Penales=(function(){
         tg.addColorStop(0,'rgba(0,0,0,0)'); tg.addColorStop(.3,'rgba(0,0,20,.82)'); tg.addColorStop(1,'rgba(0,0,20,.95)');
         ctx.fillStyle=tg; ctx.fillRect(rx,txtY-ch*.08,cw,ch*(1-.72)+ch*.08);
         /* nombre */
+        ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=8;
         ctx.fillStyle='#ffffff';
-        ctx.font='bold '+(W*.052)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+        ctx.font='bold '+(W*.054)+'px "Bebas Neue","Barlow Condensed",sans-serif';
         ctx.textAlign='center'; ctx.fillText(pp.name,cx,ry+ch*.84);
         /* rol / estado */
-        ctx.fillStyle=sel?'#60a5fa':'rgba(255,255,255,.55)';
-        ctx.font=(W*.022)+'px "Barlow Condensed",sans-serif';
+        ctx.fillStyle=sel?'#60a5fa':'rgba(255,255,255,.65)';
+        ctx.font='bold '+(W*.026)+'px "Barlow Condensed",sans-serif';
         ctx.fillText(sel?'✓ TOCÁ PARA PATEAR':pp.role,cx,ry+ch*.94);
+        ctx.shadowBlur=0;
       });
-      ctx.fillStyle='rgba(255,255,255,.28)'; ctx.font=(W*.021)+'px "Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText('1er TOQUE: ELEGIR · 2do TOQUE: PATEAR',W/2,H*.975);
+      ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=6;
+      ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='bold '+(W*.025)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText('1er TOQUE: ELEGIR  ·  2do TOQUE: PATEAR',W/2,H*.975);
+      ctx.shadowBlur=0;
     } else if(state==='choose'){
       /* portero shuffle: se mueve levemente de lado a lado esperando el penal */
       idleT+=0.038;
@@ -3523,12 +3542,16 @@ var Penales=(function(){
       keeper(swayX); pateador(W/2,false); ball(bX,bY,1); zones(); hud();
       var mpKicking=mpActive&&(mpRound%2===0)===mpIsHost;
       var mpLabel=mpActive?(mpKicking?'¿DÓNDE PATEÁS?':'¿DÓNDE TE TIRÁS?'):'¿DÓNDE PATEÁS?';
-      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold '+(W*.042)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.fillText(mpLabel,W/2,H*.045);
+      ctx.shadowColor='rgba(0,0,0,.95)'; ctx.shadowBlur=10;
+      ctx.fillStyle='#ffffff'; ctx.font='bold '+(W*.048)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.textAlign='center'; ctx.fillText(mpLabel,W/2,H*.052);
+      ctx.shadowBlur=0;
       if(mpActive && mpMyPick!==-1){
         /* ya elegiste, esperando rival */
-        ctx.fillStyle='rgba(96,165,250,.85)'; ctx.font='bold '+(W*.030)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-        ctx.fillText('ESPERANDO AL RIVAL...',W/2,H*.045+H*.05);
+        ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=6;
+        ctx.fillStyle='#60a5fa'; ctx.font='bold '+(W*.032)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+        ctx.fillText('ESPERANDO AL RIVAL...',W/2,H*.052+H*.055);
+        ctx.shadowBlur=0;
       }
       requestAnimationFrame(render); /* loop continuo para el shuffle */
     } else if(state==='shoot'){
@@ -3585,35 +3608,38 @@ var Penales=(function(){
     } else if(state==='result'){
       /* portero queda inclinado en posición de clavada final */
       keeper(tKX,1,kZone); pateador(W/2,false); ball(tBX,tBY,.65); hud();
-      var rc=goalScored?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)';
+      var rc=goalScored?'rgba(34,197,94,.22)':'rgba(239,68,68,.22)';
       var rt=goalScored?'GOOOOL!':'ATAJADO';
-      var rcc=goalScored?'rgba(34,197,94,.9)':'rgba(239,68,68,.9)';
+      var rcc=goalScored?'#22c55e':'#ef4444';
       overlay(rt,rc);
       ctx.fillStyle=rcc; ctx.font='bold '+(W*.14)+'px "Bebas Neue","Barlow Condensed",sans-serif';
-      ctx.textAlign='center'; ctx.shadowColor=rcc; ctx.shadowBlur=24;
+      ctx.textAlign='center'; ctx.shadowColor=rcc; ctx.shadowBlur=30;
       ctx.fillText(rt,W/2,H*.57); ctx.shadowBlur=0;
     } else if(state==='over'){
       keeper(kCX); pateador(W/2,false); ball(bX,bY,1);
-      ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(0,0,W,H);
       var pct=score/MAXK;
       var rat=pct>=.8?'¡CRACK!':pct>=.6?'¡BUEN RESULTADO!':pct>=.4?'REGULAR':'A ENTRENAR MÁS';
       var ratC=pct>=.8?'#f4c430':pct>=.6?'#22c55e':pct>=.4?'#f59e0b':'#ef4444';
-      ctx.fillStyle='#fff'; ctx.font='bold '+(W*.055)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=8;
+      ctx.fillStyle='#fff'; ctx.font='bold '+(W*.058)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.textAlign='center'; ctx.fillText('RESULTADO FINAL',W/2,H*.28);
-      ctx.fillStyle=ratC; ctx.shadowColor=ratC; ctx.shadowBlur=16;
+      ctx.fillStyle=ratC; ctx.shadowColor=ratC; ctx.shadowBlur=20;
       ctx.font='bold '+(W*.19)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.fillText(score+'/'+MAXK,W/2,H*.55); ctx.shadowBlur=0;
-      ctx.font='bold '+(W*.055)+'px "Bebas Neue","Barlow Condensed",sans-serif';
+      ctx.shadowColor='rgba(0,0,0,.85)'; ctx.shadowBlur=6;
+      ctx.fillStyle=ratC; ctx.font='bold '+(W*.058)+'px "Bebas Neue","Barlow Condensed",sans-serif';
       ctx.fillText(rat,W/2,H*.67);
-      ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font=(W*.028)+'px "Barlow Condensed",sans-serif';
+      ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='bold '+(W*.030)+'px "Barlow Condensed",sans-serif';
       ctx.fillText('TOCÁ PARA JUGAR DE NUEVO',W/2,H*.82);
+      ctx.shadowBlur=0;
     }
   }
 
   function click(ex,ey){
     if(state==='intro'){
       /* detectar clic en botón multijugador */
-      var bw=W*.52, bh=H*.072, bx2=(W-bw)/2, by2=H*.855;
+      var bw=W*.52, bh=H*.076, bx2=(W-bw)/2, by2=H*.855;
       if(ex>=bx2&&ex<=bx2+bw&&ey>=by2&&ey<=by2+bh){ showMpMenu(); return; }
       state='pickplayer'; render(); return;
     }
