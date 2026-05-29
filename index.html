@@ -3197,59 +3197,75 @@ var Penales=(function(){
       ctx.translate(px,H-yOff);
       ctx.scale(sc,sc);
       ctx.rotate(tilt);
-      ctx.drawImage(img,sx,sy,sw,sh,-tW/2,-tH,tW,tH);
-
-      /* ── Pierna pateadora animada ────────────────────────────────────────
-       *  Derecha del jugador (izquierda del espectador mirando desde atrás).
-       *  Se dibuja encima del sprite para cubrir la pierna estática.
-       *  Eje Y: 0=pies, negativo=arriba. Eje X: negativo=izquierda.
-       * ─────────────────────────────────────────────────────────────────── */
+      /* ── helper: ángulos de la patada (compartido por ambas ramas) ── */
+      var hA=0, kA=0;
       if(t>0){
-        var lW =tW*0.140;               /* grosor del trazo de pierna        */
-        var uL =tH*0.230;               /* longitud muslo                    */
-        var lLe=tH*0.205;               /* longitud pantorrilla               */
-        var bHt=tH*0.080;               /* altura del botín                  */
-        var hpX=-tW*0.115, hpY=-tH*0.435; /* pivot en la cadera             */
-
-        var hA,kA;   /* ángulo cadera desde vertical, ángulo rodilla adicional */
-        if(t<0.30){
-          /* Fase 1 – carrera: pierna empieza a retrasar levemente */
-          var p=t/0.30;
-          hA=-0.16*p; kA=0.22*p;
-        } else if(t<0.46){
-          /* Fase 2 – plant: pierna en máximo backswing, rodilla doblada */
-          var p=(t-0.30)/0.16;
-          hA=-0.16-0.38*p; kA=0.22+0.53*p;
-        } else if(t<0.72){
-          /* Fase 3 – golpe: barrido explosivo hacia adelante, rodilla estira */
-          var p=(t-0.46)/0.26, eK=1-Math.pow(1-p,2);
-          hA=-0.54+1.65*eK; kA=0.75-0.80*eK;
-        } else {
-          /* Fase 4 – follow-through: pierna continúa hacia arriba */
-          var p=(t-0.72)/0.28;
-          hA=1.11+0.42*p; kA=0.0;
-        }
-
-        /* posición rodilla y pie */
-        var kpX=hpX+Math.sin(hA)*uL,  kpY=hpY+Math.cos(hA)*uL;
-        var fpX=kpX+Math.sin(hA+kA)*lLe, fpY=kpY+Math.cos(hA+kA)*lLe;
-
-        /* ── dibujo: muslo + pantorrilla ── */
-        ctx.save();
-        ctx.strokeStyle='#091630'; ctx.lineWidth=lW; ctx.lineCap='round';
-        ctx.beginPath(); ctx.moveTo(hpX,hpY); ctx.lineTo(kpX,kpY); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(kpX,kpY); ctx.lineTo(fpX,fpY); ctx.stroke();
-
-        /* ── botín: elipse orientada en la dirección del pie ── */
-        ctx.translate(fpX,fpY);
-        ctx.rotate(Math.atan2(fpY-kpY, fpX-kpX)+Math.PI*0.5);
-        ctx.fillStyle='#c89018';
-        ctx.beginPath(); ctx.ellipse(0,bHt*0.40,lW*0.50,bHt,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#e8b830';
-        ctx.beginPath(); ctx.ellipse(0,0,lW*0.36,bHt*0.36,0,0,Math.PI*2); ctx.fill();
-        ctx.restore();
+        if(t<0.30){      var p=t/0.30;          hA=-0.16*p;            kA=0.22*p; }
+        else if(t<0.46){ var p=(t-0.30)/0.16;   hA=-0.16-0.38*p;       kA=0.22+0.53*p; }
+        else if(t<0.72){ var p=(t-0.46)/0.26, eK=1-Math.pow(1-p,2);
+                         hA=-0.54+1.65*eK;       kA=0.75-0.80*eK; }
+        else {           var p=(t-0.72)/0.28;    hA=1.11+0.42*p;        kA=0.0; }
       }
-      /* ─────────────────────────────────────────────────────────────────── */
+
+      if(player==='feli' && t>0){
+        /* ══════════════════════════════════════════════════════════════════
+         *  FELI — pierna pateadora con PÍXELES REALES del sprite.
+         *
+         *  Sprite feli-sprite.png: 260×680 px.
+         *  Cover-crop aplicado: sx≈24, sw≈213 → scX=tW/213, scY=tH/680.
+         *  Pierna derecha (player's right = viewer's left en visión trasera):
+         *    X fuente ≈ 55-125, Y fuente: muslo 400→530, pantorrilla 530→665.
+         *  Técnica: even-odd clip borra la pierna estática del sprite y
+         *  se redibujan esos píxeles en la posición animada (2 segmentos).
+         * ══════════════════════════════════════════════════════════════════ */
+        var legSX=55,  legSW=70;
+        var dW  = legSW*(tW/213);          /* ancho display del segmento    */
+        var dHU = 130*(tH/680);            /* muslo: y=400→530              */
+        var dHL = 135*(tH/680);            /* pantorrilla+botín: y=530→665  */
+        var hipX=-tW*0.190, hipY=-tH*0.412;
+        var erX =-tW*0.354, erH=-hipY+tH*0.015;
+
+        /* cuerpo sin la pierna derecha */
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(-tW*4,-tH*2,tW*9,tH*4);   /* rect exterior     */
+        ctx.rect(erX,hipY,dW,erH);           /* hueco de la pierna */
+        ctx.clip('evenodd');
+        ctx.drawImage(img,sx,sy,sw,sh,-tW/2,-tH,tW,tH);
+        ctx.restore();
+
+        /* pierna animada (píxeles del sprite) */
+        ctx.save();
+        ctx.translate(hipX,hipY); ctx.rotate(hA);
+        ctx.drawImage(img,legSX,400,legSW,130,-dW/2,0,dW,dHU);   /* muslo       */
+        ctx.translate(0,dHU);     ctx.rotate(kA);
+        ctx.drawImage(img,legSX,530,legSW,135,-dW/2,0,dW,dHL);   /* pantorrilla */
+        ctx.restore();
+
+      } else {
+        /* ══════════════════════════════════════════════════════════════════
+         *  OTROS JUGADORES — sprite completo + pierna de canvas cuando patean
+         * ══════════════════════════════════════════════════════════════════ */
+        ctx.drawImage(img,sx,sy,sw,sh,-tW/2,-tH,tW,tH);
+
+        if(t>0){
+          var lW=tW*0.140, uL=tH*0.230, lLe=tH*0.205, bHt=tH*0.080;
+          var hpX=-tW*0.115, hpY=-tH*0.435;
+          var kpX2=hpX+Math.sin(hA)*uL,  kpY2=hpY+Math.cos(hA)*uL;
+          var fpX2=kpX2+Math.sin(hA+kA)*lLe, fpY2=kpY2+Math.cos(hA+kA)*lLe;
+          ctx.save();
+          ctx.strokeStyle='#091630'; ctx.lineWidth=lW; ctx.lineCap='round';
+          ctx.beginPath(); ctx.moveTo(hpX,hpY);  ctx.lineTo(kpX2,kpY2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(kpX2,kpY2); ctx.lineTo(fpX2,fpY2); ctx.stroke();
+          ctx.translate(fpX2,fpY2);
+          ctx.rotate(Math.atan2(fpY2-kpY2,fpX2-kpX2)+Math.PI*0.5);
+          ctx.fillStyle='#c89018';
+          ctx.beginPath(); ctx.ellipse(0,bHt*0.40,lW*0.50,bHt,0,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle='#e8b830';
+          ctx.beginPath(); ctx.ellipse(0,0,lW*0.36,bHt*0.36,0,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+      }
 
       ctx.restore();
       return;
