@@ -14,7 +14,7 @@
  */
 
 var ONESIGNAL_APP_ID  = '6e3ee90d-b438-b3f3-fb88edb1c305'; // ← tu App ID
-var ONESIGNAL_REST_KEY = 'TU_REST_KEY_AQUI';    // ← reemplazá (REST API Key, no la App Key)
+var ONESIGNAL_REST_KEY = 'os_v2_app_nzhosdnubhf45m7t7oeo3modavrk52lknatua2edfxhcdnncwh4muburgbxrqkixto36uafxsmcghacqkjrhmul4drjg7w4sqr7uhq';
 
 /**
  * Se dispara automáticamente cada vez que alguien edita la planilla.
