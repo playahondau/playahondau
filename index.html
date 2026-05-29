@@ -2863,8 +2863,9 @@ function initCountdown(rows){
     <div id="penales-canvas-wrap">
       <canvas id="penales-canvas"></canvas>
       <div id="mp-panel"></div>
+      <button id="fs-btn" title="Pantalla completa horizontal"></button>
     </div>
-    <button class="penales-close" onclick="document.getElementById('penales-modal').classList.remove('open')">✕ CERRAR</button>
+    <button class="penales-close" onclick="cerrarPenales()">✕ CERRAR</button>
   </div>
 </div>
 
@@ -2910,6 +2911,36 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 @media(min-width:660px){
   .penales-inner{max-width:min(940px,94vw);}
   #penales-modal{padding:1.2rem 1.5rem;}
+}
+/* ── Botón pantalla completa (solo táctil) ── */
+#fs-btn{
+  position:absolute;bottom:10px;right:10px;z-index:6;
+  display:none;align-items:center;justify-content:center;gap:.35rem;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.28);
+  color:rgba(255,255,255,.82);
+  font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:.85rem;letter-spacing:.08em;
+  padding:.32rem .55rem;cursor:pointer;border-radius:4px;line-height:1;
+  transition:background .15s,color .15s;
+}
+#fs-btn:hover,#fs-btn:active{background:rgba(0,0,0,.8);color:#fff;}
+#fs-btn svg{width:14px;height:14px;fill:currentColor;flex-shrink:0;}
+@media(pointer:coarse){#fs-btn{display:flex;}} /* solo en dispositivos táctiles */
+/* ── Estilos en pantalla completa ── */
+#penales-modal:fullscreen,
+#penales-modal:-webkit-full-screen{
+  background:#000;padding:.4rem;
+}
+#penales-modal:fullscreen .penales-inner,
+#penales-modal:-webkit-full-screen .penales-inner{
+  max-width:100%!important;width:100%;gap:.3rem;
+}
+#penales-modal:fullscreen .penales-close,
+#penales-modal:-webkit-full-screen .penales-close{
+  display:none!important; /* se sale con el botón fs */
+}
+#penales-modal:fullscreen #penales-canvas-wrap,
+#penales-modal:-webkit-full-screen #penales-canvas-wrap{
+  width:100%;
 }
 
 /* ── Canvas wrap for MP overlay ── */
@@ -3086,7 +3117,11 @@ var Penales=(function(){
   var keeperImg=new Image(); keeperImg.src=BASE+'barcia-sprite.png';
 
   function setup(){
-    var sz=Math.min(cv.parentElement.offsetWidth,960);
+    var inFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    var parentW=cv.parentElement.offsetWidth||cv.parentElement.clientWidth||560;
+    /* en fullscreen limitamos también por altura para que quepa en landscape */
+    var maxByH=inFs ? Math.floor(window.innerHeight*0.88/0.62) : 9999;
+    var sz=Math.min(parentW, 960, maxByH);
     cv.width=sz; cv.height=Math.round(sz*0.62);
     W=cv.width; H=cv.height;
     gW=W*0.52; gH=H*0.38;
@@ -3675,6 +3710,49 @@ var Penales=(function(){
   }
 
   /* ════════════════════════════════════════════════════
+     FULLSCREEN / LANDSCAPE (móvil)
+  ════════════════════════════════════════════════════ */
+  function setupFullscreen(){
+    var fsBtn=document.getElementById('fs-btn');
+    if(!fsBtn) return;
+
+    /* íconos SVG: expand / compress */
+    var SVG_ENTER='<svg viewBox="0 0 16 16"><path d="M1 1h5v1.6H2.6V6H1zm9 0h5v5h-1.6V2.6H10zM1 10h1.6v3.4H6V15H1zm9 3.4H13.4V10H15v5h-5z"/></svg><span>FULL</span>';
+    var SVG_EXIT ='<svg viewBox="0 0 16 16"><path d="M6 1v5H1V4.6h3.4V1zm4 0h1.6v3.6H15V6h-5zm-9 9h5v5H4.6v-3.4H1zm8.4 0H15v1.6h-3.4V15H10z"/></svg><span>SALIR</span>';
+
+    function isFull(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+    function syncIcon(){ fsBtn.innerHTML = isFull()?SVG_EXIT:SVG_ENTER; }
+    syncIcon();
+
+    fsBtn.addEventListener('click',function(){
+      var modal=document.getElementById('penales-modal');
+      if(!isFull()){
+        var req=modal.requestFullscreen||modal.webkitRequestFullscreen||modal.mozRequestFullScreen;
+        if(req){
+          req.call(modal).then(function(){
+            if(screen.orientation&&screen.orientation.lock){
+              screen.orientation.lock('landscape').catch(function(){});
+            }
+            setTimeout(function(){ setup(); render(); },200);
+          }).catch(function(e){ console.warn('FS bloqueado',e); });
+        }
+      } else {
+        (document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen).call(document);
+      }
+    });
+
+    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(function(ev){
+      document.addEventListener(ev,function(){
+        syncIcon();
+        if(!isFull()&&screen.orientation&&screen.orientation.unlock){ screen.orientation.unlock(); }
+        if(document.getElementById('penales-modal').classList.contains('open')){
+          setTimeout(function(){ setup(); render(); },180);
+        }
+      });
+    });
+  }
+
+  /* ════════════════════════════════════════════════════
      MULTIPLAYER — PeerJS WebRTC
   ════════════════════════════════════════════════════ */
   function genCode(){
@@ -3897,6 +3975,12 @@ var Penales=(function(){
       function pos(e){var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height,cx=e.clientX||(e.touches&&e.touches[0].clientX)||0,cy=e.clientY||(e.touches&&e.touches[0].clientY)||0;return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};}
       cv.addEventListener('click',function(e){var p=pos(e);click(p.x,p.y);});
       cv.addEventListener('touchend',function(e){e.preventDefault();var p=pos(e.changedTouches[0]);click(p.x,p.y);},{passive:false});
+      /* fullscreen + orientación */
+      setupFullscreen();
+      /* resize */
+      window.addEventListener('resize',function(){
+        if(document.getElementById('penales-modal').classList.contains('open')){ setup(); render(); }
+      });
       /* auto-join si la URL tiene #sala=CÓDIGO */
       var hashMatch=(location.hash||'').match(/[#&]sala=([A-Z0-9]{4,8})/i);
       if(hashMatch){ showMpJoin(hashMatch[1].toUpperCase()); }
@@ -3914,6 +3998,15 @@ function abrirPenales(){
   var m=document.getElementById('penales-modal');
   m.classList.add('open');
   Penales.init(window._fixtureRows||[]);
+}
+function cerrarPenales(){
+  /* salir de fullscreen si está activo */
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    var ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen;
+    if(ex) ex.call(document);
+  }
+  if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock();
+  document.getElementById('penales-modal').classList.remove('open');
 }
 /* Auto-abrir si URL tiene #sala= (link de invitación multijugador) */
 (function(){
