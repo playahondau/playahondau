@@ -37,6 +37,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
   <!-- Preload crítico del loader -->
   <link rel="preload" href="escudo.png" as="image" />
+  <link rel="preload" href="trapos-hero.jpg" as="image" />
   <link rel="preload" href="loader1.jpg" as="image" />
   <link rel="preload" href="loader2.jpg" as="image" />
   <link rel="preload" href="loader3.jpg" as="image" />
@@ -58,8 +59,8 @@
     .nav-ig{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;color:var(--dorado);text-decoration:none;border:1px solid var(--dorado);padding:.35rem .8rem;border-radius:2px;transition:background .2s,color .2s;}
     .nav-ig:hover{background:var(--dorado);color:var(--negro);}
     .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4rem 5rem;position:relative;overflow:hidden;}
-    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 70% 40%,rgba(0,45,98,.55) 0%,transparent 65%),linear-gradient(160deg,#080c14 0%,#020610 100%);}
-    .hero-pitch{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,.8) 79px,rgba(255,255,255,.8) 80px);}
+    .hero-bg{position:absolute;inset:-80px -0px;background:linear-gradient(to bottom,rgba(4,8,20,.58) 0%,rgba(4,8,20,.72) 50%,rgba(4,8,20,.95) 100%),radial-gradient(ellipse 80% 55% at 50% 50%,rgba(0,45,98,.4) 0%,transparent 70%),url('trapos-hero.jpg') center 40%/cover no-repeat;}
+    .hero-pitch{position:absolute;inset:0;opacity:.025;background-image:repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,.8) 79px,rgba(255,255,255,.8) 80px);}
     .hero-escudo-bg{position:absolute;right:6%;top:50%;transform:translateY(-50%);width:480px;height:480px;object-fit:contain;opacity:.08;filter:grayscale(30%);}
     .hero-escudo-glow{position:absolute;right:6%;top:50%;transform:translateY(-50%);width:480px;height:480px;border-radius:50%;box-shadow:0 0 120px rgba(0,45,98,.5);animation:pulse 4s ease-in-out infinite;}
     @keyframes pulse{0%,100%{box-shadow:0 0 80px rgba(0,45,98,.4)}50%{box-shadow:0 0 140px rgba(0,63,138,.6)}}
