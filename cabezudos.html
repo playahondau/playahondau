@@ -783,74 +783,79 @@ function drawPlayerSprite(pl) {
   ctx.translate(pl.x, pl.y);
   if (!pl.facingR) ctx.scale(-1, 1);
 
-  // Sombra en el suelo
-  const shadowFactor = Math.min(1, (GROUND_Y - pl.y) / 180);
-  ctx.fillStyle = `rgba(0,0,0,${0.22 * (1 - shadowFactor * 0.5)})`;
+  const spr    = sprites[pl.key];
+  const hasSpr = !!(spr && spr.complete && spr.naturalWidth);
+
+  // ── Sombra en el piso ──
+  const distG = GROUND_Y - pl.y;
+  const sf    = Math.max(0.3, 1 - distG / 200);
+  ctx.fillStyle = `rgba(0,0,0,${0.2 * sf})`;
   ctx.beginPath();
-  ctx.ellipse(0, GROUND_Y - pl.y + HEAD_R * 0.7, HEAD_R * 0.7 * (1 - shadowFactor * 0.5), 7, 0, 0, Math.PI*2);
+  ctx.ellipse(0, distG + HEAD_R * 0.55, HEAD_R * 0.68 * sf, 6 * sf, 0, 0, Math.PI*2);
   ctx.fill();
 
-  // Piernas (cabezudo = cabeza enorme, piernitas pequeñas)
-  const legY  = HEAD_R + 2;
-  const legW  = 11, legH = 20;
-  const offL  = HEAD_R * 0.3;
-  ctx.fillStyle = pl.color;
-  // Pierna izquierda
-  ctx.beginPath(); ctx.roundRect(-offL - legW/2, legY, legW, legH, 3); ctx.fill();
-  // Pierna derecha
-  ctx.beginPath(); ctx.roundRect( offL - legW/2, legY, legW, legH, 3); ctx.fill();
-
-  // Zapatillas
-  ctx.fillStyle = '#1a1a1a';
-  ctx.beginPath(); ctx.ellipse(-offL,       legY + legH + 2, legW * 0.9, 5, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse( offL + 2.5, legY + legH + 2, legW * 0.9, 5, 0.25, 0, Math.PI*2); ctx.fill();
-
-  // Flash de patada (onda expansiva)
+  // ── Flash de patada (onda) ──
   if (pl.kickFlash > 0) {
     const alpha  = pl.kickFlash / 14;
-    const radius = HEAD_R + 8 + (14 - pl.kickFlash) * 2.2;
+    const radius = HEAD_R + 8 + (14 - pl.kickFlash) * 2.4;
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(255,180,30,${alpha})`;
+    ctx.strokeStyle = `rgba(255,190,30,${alpha})`;
     ctx.lineWidth   = 3.5;
     ctx.stroke();
   }
 
-  // Borde coloreado de la cabeza (club color)
-  ctx.beginPath();
-  ctx.arc(0, 0, HEAD_R + 3.5, 0, Math.PI*2);
-  ctx.fillStyle = pl.color;
-  ctx.fill();
-
-  // Sprite clipeado a la cabeza
-  const spr = sprites[pl.key];
-  ctx.beginPath();
-  ctx.arc(0, 0, HEAD_R, 0, Math.PI*2);
-  ctx.clip();
-
-  if (spr && spr.complete && spr.naturalWidth) {
-    // Mostrar zona cabeza/hombros (top ~55% del sprite)
+  if (hasSpr) {
+    // ── Sprite cabezudo completo (sin recortar a círculo) ──
+    // El sprite ya tiene la forma cabezudo: cabeza gigante + cuerpo pequeño.
+    // Dibujamos el personaje entero; la cabeza de la imagen se alinea con
+    // el círculo de colisión (HEAD_R).
     const sw = spr.naturalWidth, sh = spr.naturalHeight;
-    const frac = 0.54;
-    const dH = HEAD_R * 2.3;
-    const dW = (sw / (sh * frac)) * dH;
-    ctx.drawImage(spr, 0, 0, sw, sh * frac, -dW/2, -HEAD_R, dW, dH);
+
+    // Ancho del personaje: la cabeza ocupa ~65% del ancho del sprite → ajustar
+    // para que la cabeza coincida con HEAD_R * 2
+    const charW = HEAD_R * 3.1;           // ancho total del sprite en canvas
+    const charH = charW * sh / sw;        // alto proporcional
+
+    // Centro visual de la cabeza está aprox en el 32% del alto del sprite
+    const headCY = charH * 0.32;
+
+    ctx.drawImage(spr, -charW / 2, -headCY, charW, charH);
+
   } else {
-    // Fallback: cara básica
+    // ── Fallback: círculo + piernas dibujados ──
+    ctx.beginPath();
+    ctx.arc(0, 0, HEAD_R + 3.5, 0, Math.PI*2);
+    ctx.fillStyle = pl.color; ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, HEAD_R, 0, Math.PI*2);
+    ctx.clip();
     ctx.fillStyle = '#c8956c';
-    ctx.fillRect(-HEAD_R, -HEAD_R, HEAD_R*2, HEAD_R*2);
+    ctx.fillRect(-HEAD_R, -HEAD_R, HEAD_R * 2, HEAD_R * 2);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(pl.x, pl.y);
+    if (!pl.facingR) ctx.scale(-1, 1);
+
+    const legH = 22, offL = HEAD_R * 0.3, legW = 11;
+    ctx.fillStyle = pl.color;
+    ctx.fillRect(-offL - legW/2, HEAD_R - 4, legW, legH);
+    ctx.fillRect( offL - legW/2, HEAD_R - 4, legW, legH);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.ellipse(-offL, HEAD_R + legH - 2, 9, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse( offL, HEAD_R + legH - 2, 9, 5, 0, 0, Math.PI*2); ctx.fill();
   }
 
-  ctx.restore();
-
-  // Nombre sobre la cabeza
-  ctx.save();
+  // ── Nombre sobre la cabeza ──
+  const nameOffY = hasSpr ? -(HEAD_R * 2.15) : -(HEAD_R + 6);
   ctx.font = 'bold 10px Barlow Condensed, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(0,0,0,.55)';
-  ctx.fillText(pl.name.toUpperCase(), pl.x + 1, pl.y - HEAD_R - 5);
+  ctx.fillStyle = 'rgba(0,0,0,.6)';
+  ctx.fillText(pl.name.toUpperCase(), 1, nameOffY + 1);
   ctx.fillStyle = '#fff';
-  ctx.fillText(pl.name.toUpperCase(), pl.x, pl.y - HEAD_R - 6);
+  ctx.fillText(pl.name.toUpperCase(), 0, nameOffY);
+
   ctx.restore();
 }
 
