@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Cabezudos — Playa Honda</title>
+  <link rel="icon" href="favicon.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #060c14;
+      font-family: 'Barlow Condensed', sans-serif;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      gap: 10px;
+    }
+
+    #cv-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.75);
+    }
+
+    /* ── Overlay ── */
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6,12,20,.88);
+      border-radius: 10px;
+      z-index: 10;
+      gap: 4px;
+    }
+    #overlay.hidden { display: none; }
+
+    .ov-logo {
+      width: 54px; height: 54px;
+      object-fit: contain;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+    }
+    .ov-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 9vw, 4rem);
+      color: #fff;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+    .ov-sub {
+      font-size: clamp(.8rem, 2.8vw, 1rem);
+      color: rgba(255,255,255,.45);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .ov-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .ov-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1rem, 3.5vw, 1.4rem);
+      letter-spacing: 1.5px;
+      padding: .45em 1.5em;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .12s, background .15s;
+    }
+    .ov-btn:hover  { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,0,0,.45); }
+    .ov-btn:active { transform: translateY(0); }
+    .ov-btn-primary   { background: #1a3a7a; color: #fff; }
+    .ov-btn-secondary { background: rgba(255,255,255,.12); color: #fff; }
+    .ov-btn-danger    { background: #7a1a1a; color: #fff; }
+
+    /* Player picker */
+    .pick-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 8px 0 14px;
+    }
+    .pick-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background: rgba(255,255,255,.06);
+      transition: border-color .15s, background .15s;
+    }
+    .pick-card img { width: 52px; height: 70px; object-fit: contain; pointer-events: none; }
+    .pick-card span { font-size: .85rem; color: rgba(255,255,255,.7); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+    .pick-card.sel { border-color: #4a90e2; background: rgba(74,144,226,.18); }
+    .pick-card:hover:not(.sel) { background: rgba(255,255,255,.1); }
+
+    .ov-pick-label {
+      font-size: clamp(.75rem, 2.5vw, .9rem);
+      color: rgba(255,255,255,.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    /* Score results */
+    .ov-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      color: rgba(255,255,255,.85);
+      letter-spacing: 4px;
+      margin-bottom: 14px;
+    }
+    .ov-winner {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      color: #ffd700;
+      letter-spacing: 2px;
+      margin-bottom: 2px;
+    }
+
+    /* ── Touch controls ── */
+    #touch-controls {
+      display: none;
+      width: 100%;
+      max-width: 660px;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+    @media (pointer: coarse) {
+      #touch-controls { display: flex; }
+    }
+
+    .tc-side {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .tc-btn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tc-btn.jump {
+      width: 58px; height: 58px;
+      background: rgba(26,58,122,.45);
+      border-color: rgba(74,144,226,.5);
+      font-size: 1.5rem;
+    }
+    .tc-btn:active { background: rgba(255,255,255,.22); }
+
+    /* ── Back link ── */
+    .back-link {
+      position: fixed;
+      top: 10px; left: 14px;
+      color: rgba(255,255,255,.35);
+      font-size: .85rem;
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      z-index: 30;
+      transition: color .2s;
+    }
+    .back-link:hover { color: rgba(255,255,255,.7); }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="index.html">← Volver</a>
+
+  <div id="wrap">
+    <div id="cv-wrap">
+      <canvas id="cv"></canvas>
+
+      <!-- Overlay principal (menú / picker / gameover) -->
+      <div id="overlay">
+        <img class="ov-logo" src="escudo.png" alt="PH">
+        <div class="ov-title">CABEZUDOS</div>
+        <div class="ov-sub">Playa Honda Universitario</div>
+        <div class="ov-btns">
+          <button class="ov-btn ov-btn-primary"   id="btn-cpu">▶ 1 Jugador (vs CPU)</button>
+          <button class="ov-btn ov-btn-secondary" id="btn-2p">👥 2 Jugadores</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles táctiles -->
+    <div id="touch-controls">
+      <div class="tc-side">
+        <div class="tc-btn" id="tc1l">◀</div>
+        <div class="tc-btn jump" id="tc1u">▲</div>
+        <div class="tc-btn" id="tc1r">▶</div>
+      </div>
+      <div class="tc-side" id="tc-p2-side">
+        <div class="tc-btn" id="tc2l">◀</div>
+        <div class="tc-btn jump" id="tc2u">▲</div>
+        <div class="tc-btn" id="tc2r">▶</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CABEZUDOS — Playa Honda  ·  v1.0
+═══════════════════════════════════════════════════════════ */
+
+const cv      = document.getElementById('cv');
+const ctx     = cv.getContext('2d');
+const overlay = document.getElementById('overlay');
+
+// ── Dimensiones lógicas fijas ─────────────────────────────
+const LW = 800, LH = 450;   // logical width/height
+let dpr = 1;
+
+function resizeCanvas() {
+  const maxW  = Math.min(window.innerWidth  - 8,  960);
+  const maxH  = window.innerHeight - (isTouchDevice() ? 80 : 20) - 20;
+  let cw = maxW;
+  let ch = Math.round(cw * LH / LW);
+  if (ch > maxH) { ch = maxH; cw = Math.round(ch * LW / LH); }
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.style.width  = cw + 'px';
+  cv.style.height = ch + 'px';
+  cv.width  = Math.round(cw * dpr);
+  cv.height = Math.round(ch * dpr);
+}
+
+function isTouchDevice() { return window.matchMedia('(pointer: coarse)').matches; }
+
+resizeCanvas();
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  renderFrame();
+}, { passive: true });
+
+// ── Constantes de juego ───────────────────────────────────
+const GRAVITY    = 0.46;
+const BALL_R     = 14;
+const HEAD_R     = 37;
+const GROUND_Y   = LH - 58;
+const GOAL_W     = 72;      // profundidad del arco
+const GOAL_H     = 112;     // altura del arco
+const POST_R     = 5;
+const GOAL_LINE  = GOAL_W - 4;   // disparador de gol
+const WIN_GOALS  = 5;
+const GOAL_PAUSE = 2400;     // ms pausa post-gol
+const P_SPEED    = 4.7;
+const JUMP_V     = -12;
+const MAX_FALL   = 16;
+
+// ── Sprites ───────────────────────────────────────────────
+const PLAYERS_DATA = [
+  { key: 'feli',   name: 'Feli',   color: '#1a3a7a' },
+  { key: 'titan',  name: 'Titan',  color: '#2a6e2a' },
+  { key: 'barcia', name: 'Barcia', color: '#7a1a1a' },
+  { key: 'rodo',   name: 'Rodo',   color: '#5a3a00' }
+];
+
+const sprites = {};
+let spritesReady = 0;
+PLAYERS_DATA.forEach(p => {
+  const img = new Image();
+  img.onload = img.onerror = () => { sprites[p.key] = img; spritesReady++; };
+  img.src = p.key + '-sprite.png';
+});
+
+const escudoImg = new Image();
+escudoImg.src = 'escudo.png';
+
+// ── Estado global ─────────────────────────────────────────
+let state      = 'menu';   // menu | pick1 | pick2 | countdown | playing | goal | gameover
+let mode       = 'cpu';    // cpu | local
+let raf        = 0;
+let goalTimer  = 0;
+let goalFlash  = 0;
+let confetti   = [];
+let goalSide   = 0;        // 0=p1 scored, 1=p2 scored
+let countdownN = 3;
+let countdownT = 0;
+let p1sel      = 'feli';
+let p2sel      = 'barcia';
+
+// ── Jugadores y pelota ────────────────────────────────────
+let p1, p2, ball;
+
+function makePlayer(side, key) {
+  const data = PLAYERS_DATA.find(p => p.key === key);
+  return {
+    x: side === 0 ? 160 : LW - 160,
+    y: GROUND_Y - HEAD_R,
+    vx: 0, vy: 0,
+    side,
+    key,
+    name:    data ? data.name  : key,
+    color:   data ? data.color : '#1a3a7a',
+    score:   0,
+    facingR: side === 0,
+    onGround: false,
+    jumpUsed: 0
+  };
+}
+
+function resetBall(toSide) {
+  ball = {
+    x: LW / 2,
+    y: GROUND_Y - 180,
+    vx: (toSide === 0 ? -2.5 : 2.5),
+    vy: -1.5
+  };
+}
+
+function resetPositions() {
+  p1.x = 160;          p1.y = GROUND_Y - HEAD_R;
+  p1.vx = 0; p1.vy = 0; p1.onGround = false; p1.jumpUsed = 0;
+  p2.x = LW - 160;    p2.y = GROUND_Y - HEAD_R;
+  p2.vx = 0; p2.vy = 0; p2.onGround = false; p2.jumpUsed = 0;
+}
+
+// ── Input teclado ─────────────────────────────────────────
+const keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+}, { passive: false });
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// Edge-trigger para salto (evita saltar continuamente)
+const prevJump = { p1: false, p2: false };
+function edgeJump(now, prev) { const e = now && !prev; return e; }
+
+// ── Touch controls ────────────────────────────────────────
+const TC = { p1l:0, p1r:0, p1u:0, p2l:0, p2r:0, p2u:0 };
+
+function bindTC(id, prop) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('touchstart',  e => { e.preventDefault(); TC[prop] = 1; }, { passive: false });
+  el.addEventListener('touchend',    e => { e.preventDefault(); TC[prop] = 0; }, { passive: false });
+  el.addEventListener('touchcancel', () => { TC[prop] = 0; });
+}
+bindTC('tc1l','p1l'); bindTC('tc1r','p1r'); bindTC('tc1u','p1u');
+bindTC('tc2l','p2l'); bindTC('tc2r','p2r'); bindTC('tc2u','p2u');
+
+// Ocultar controles P2 en modo CPU
+function syncTouchUI() {
+  const p2side = document.getElementById('tc-p2-side');
+  if (p2side) p2side.style.visibility = (mode === 'cpu') ? 'hidden' : 'visible';
+}
+
+// ── Física: jugador ───────────────────────────────────────
+function updatePlayer(pl, left, right, jumpEdge) {
+  // Horizontal
+  if (left)  { pl.vx -= 1.3; pl.facingR = false; }
+  if (right) { pl.vx += 1.3; pl.facingR = true;  }
+  if (!left && !right) pl.vx *= 0.76;
+  pl.vx = Math.max(-P_SPEED, Math.min(P_SPEED, pl.vx));
+
+  // Salto (máx 2 saltos aéreos)
+  if (jumpEdge && pl.jumpUsed < 2) {
+    pl.vy = pl.jumpUsed === 0 ? JUMP_V : JUMP_V * 0.72;
+    pl.jumpUsed++;
+    pl.onGround = false;
+  }
+
+  // Gravedad
+  pl.vy = Math.min(pl.vy + GRAVITY, MAX_FALL);
+
+  // Mover
+  pl.x += pl.vx;
+  pl.y += pl.vy;
+
+  // Límites laterales (permite entrar al arco)
+  if (pl.x < HEAD_R + 1)      { pl.x = HEAD_R + 1;      pl.vx = 0; }
+  if (pl.x > LW - HEAD_R - 1) { pl.x = LW - HEAD_R - 1; pl.vx = 0; }
+
+  // Piso
+  if (pl.y >= GROUND_Y - HEAD_R) {
+    pl.y = GROUND_Y - HEAD_R;
+    pl.vy = 0;
+    pl.onGround = true;
+    pl.jumpUsed = 0;
+  } else {
+    pl.onGround = false;
+  }
+
+  // Techo
+  if (pl.y - HEAD_R < 0) { pl.y = HEAD_R; pl.vy = Math.abs(pl.vy) * 0.3; }
+}
+
+// ── Física: pelota ────────────────────────────────────────
+function updateBall() {
+  ball.vy = Math.min(ball.vy + GRAVITY * 0.84, MAX_FALL);
+  ball.vx *= 0.993;
+  ball.x  += ball.vx;
+  ball.y  += ball.vy;
+
+  // Piso
+  if (ball.y + BALL_R > GROUND_Y) {
+    ball.y  = GROUND_Y - BALL_R;
+    ball.vy *= -0.56;
+    ball.vx *= 0.93;
+    if (Math.abs(ball.vy) < 1.2) ball.vy = 0;
+  }
+  // Techo
+  if (ball.y - BALL_R < 0) { ball.y = BALL_R; ball.vy = Math.abs(ball.vy) * 0.7; }
+
+  // Pared izquierda (parte que NO es el arco)
+  if (ball.x - BALL_R < 0) {
+    ball.x = BALL_R;
+    ball.vx = Math.abs(ball.vx) * 0.45; // efecto red
+  }
+  // Pared derecha
+  if (ball.x + BALL_R > LW) {
+    ball.x = LW - BALL_R;
+    ball.vx = -Math.abs(ball.vx) * 0.45;
+  }
+
+  // Rebotar en el poste vertical (x=GOAL_W, x=LW-GOAL_W)
+  bouncePost(GOAL_W,      GROUND_Y - GOAL_H); // post top izquierdo
+  bouncePost(LW - GOAL_W, GROUND_Y - GOAL_H); // post top derecho
+}
+
+function bouncePost(px, py) {
+  // Colisión pelota-poste (esfera-punto)
+  const dx = ball.x - px, dy = ball.y - py;
+  const d  = Math.sqrt(dx*dx + dy*dy);
+  const md = BALL_R + POST_R;
+  if (d < md && d > 0.01) {
+    const nx = dx/d, ny = dy/d;
+    ball.x = px + nx * md;
+    ball.y = py + ny * md;
+    const dot = ball.vx*nx + ball.vy*ny;
+    ball.vx -= 2*dot*nx * 0.65;
+    ball.vy -= 2*dot*ny * 0.65;
+  }
+}
+
+// ── Colisión pelota-cabeza ────────────────────────────────
+function collideBallHead(pl) {
+  const dx = ball.x - pl.x, dy = ball.y - pl.y;
+  const d  = Math.sqrt(dx*dx + dy*dy);
+  const md = BALL_R + HEAD_R;
+  if (d < md && d > 0.01) {
+    const nx = dx/d, ny = dy/d;
+    // Separar
+    const ov = md - d;
+    ball.x += nx * ov * 0.85;
+    ball.y += ny * ov * 0.85;
+    pl.x   -= nx * ov * 0.15;
+    // Velocidad relativa sobre la normal
+    const rvx = ball.vx - pl.vx;
+    const rvy = ball.vy - pl.vy;
+    const vn  = rvx*nx + rvy*ny;
+    if (vn < 0) {
+      const imp = -(1 + 0.72) * vn;
+      ball.vx += imp * nx;
+      ball.vy += imp * ny;
+      pl.vx   -= imp * nx * 0.14;
+    }
+  }
+}
+
+// ── Colisión jugador-jugador ──────────────────────────────
+function collidePlayerPlayer() {
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const d  = Math.sqrt(dx*dx + dy*dy);
+  const md = HEAD_R * 2;
+  if (d < md && d > 0.01) {
+    const nx = dx/d, ny = dy/d;
+    const ov = (md - d) * 0.5;
+    p1.x -= nx * ov; p1.y -= ny * ov;
+    p2.x += nx * ov; p2.y += ny * ov;
+    const rvx = p2.vx - p1.vx, rvy = p2.vy - p1.vy;
+    const vn  = rvx*nx + rvy*ny;
+    if (vn < 0) {
+      const imp = -(1 + 0.35) * vn * 0.5;
+      p1.vx -= imp*nx; p1.vy -= imp*ny;
+      p2.vx += imp*nx; p2.vy += imp*ny;
+    }
+  }
+}
+
+// ── Detección de gol ──────────────────────────────────────
+function checkGoal() {
+  const inLeft  = ball.x < GOAL_LINE     && ball.y > GROUND_Y - GOAL_H + 5 && ball.y < GROUND_Y;
+  const inRight = ball.x > LW - GOAL_LINE && ball.y > GROUND_Y - GOAL_H + 5 && ball.y < GROUND_Y;
+  if (inLeft)  { p2.score++; goalSide = 1; triggerGoal(); }
+  if (inRight) { p1.score++; goalSide = 0; triggerGoal(); }
+}
+
+function triggerGoal() {
+  if (state !== 'playing') return;
+  state     = 'goal';
+  goalFlash = 1;
+  spawnConfetti();
+  setTimeout(() => {
+    if (p1.score >= WIN_GOALS || p2.score >= WIN_GOALS) {
+      state = 'gameover';
+      showGameover();
+    } else {
+      resetBall(goalSide === 0 ? 0 : 1);
+      resetPositions();
+      state = 'playing';
+    }
+  }, GOAL_PAUSE);
+}
+
+// ── CPU AI ────────────────────────────────────────────────
+let cpuJumpCooldown = 0;
+
+function getInputCPU() {
+  const bx  = ball.x, by = ball.y;
+  const bvx = ball.vx, bvy = ball.vy;
+  const px  = p2.x,   py  = p2.y;
+
+  // Predicción posición pelota en N frames
+  const N   = 16;
+  let pbx   = bx + bvx * N;
+  let pby   = by + bvy * N + 0.5 * GRAVITY * 0.84 * N * N;
+
+  // Objetivo: posicionarse un poco detrás de la pelota (desde el lado del CPU)
+  let targetX = bx + (LW * 0.5 - bx) * 0.08;
+
+  // Jugar un poco agresivo si la pelota está en lado del CPU
+  if (bx > LW * 0.52) {
+    targetX = bx - 28;   // acercarse para golpear
+  } else {
+    targetX = LW * 0.62; // retroceder a posición neutral
+  }
+
+  // Ruido para que no sea perfecto
+  targetX += (Math.sin(Date.now() * 0.003) * 20);
+
+  const diff  = targetX - px;
+  const left  = diff < -10;
+  const right = diff > 10;
+
+  cpuJumpCooldown = Math.max(0, cpuJumpCooldown - 1);
+  const wantsJump = by < py - 55 && Math.abs(bx - px) < 130 && cpuJumpCooldown === 0;
+  if (wantsJump) cpuJumpCooldown = 22;
+
+  return { left, right, jumpNow: wantsJump };
+}
+
+// ── Confeti ───────────────────────────────────────────────
+function spawnConfetti() {
+  confetti = [];
+  const cols = ['#1a3a7a','#ffffff','#cc2222','#ffd700','#00bb55','#4a90e2'];
+  for (let i = 0; i < 90; i++) {
+    confetti.push({
+      x:    LW/2 + (Math.random()-.5)*240,
+      y:    LH/2 - 60,
+      vx:   (Math.random()-.5) * 9,
+      vy:   Math.random() * -9 - 2,
+      r:    3.5 + Math.random() * 5.5,
+      col:  cols[Math.floor(Math.random()*cols.length)],
+      rot:  Math.random()*Math.PI*2,
+      rotv: (Math.random()-.5) * 0.28,
+      rect: Math.random() > 0.5
+    });
+  }
+}
+
+function updateConfetti() {
+  confetti.forEach(c => {
+    c.x += c.vx; c.y += c.vy; c.vy += 0.21; c.vx *= 0.988; c.rot += c.rotv;
+  });
+  confetti = confetti.filter(c => c.y < LH + 30);
+}
+
+// ── Dibujado ──────────────────────────────────────────────
+function drawField() {
+  // Cielo/fondo
+  const bgGr = ctx.createLinearGradient(0, 0, 0, LH * 0.7);
+  bgGr.addColorStop(0, '#0a1f0a');
+  bgGr.addColorStop(1, '#112511');
+  ctx.fillStyle = bgGr;
+  ctx.fillRect(0, 0, LW, LH);
+
+  // Franjas de pasto
+  for (let i = 0; i < LW; i += 50) {
+    ctx.fillStyle = i % 100 === 0 ? 'rgba(255,255,255,.025)' : 'rgba(0,0,0,.018)';
+    ctx.fillRect(i, 0, 50, GROUND_Y);
+  }
+
+  // Línea central (punteada)
+  ctx.save();
+  ctx.setLineDash([7, 7]);
+  ctx.strokeStyle = 'rgba(255,255,255,.2)';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(LW/2, 0); ctx.lineTo(LW/2, GROUND_Y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Círculo central
+  ctx.beginPath();
+  ctx.arc(LW/2, GROUND_Y - 95, 78, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,.16)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // Punto central
+  ctx.beginPath();
+  ctx.arc(LW/2, GROUND_Y - 95, 4, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,.22)';
+  ctx.fill();
+
+  // Arcos
+  drawGoal(0); drawGoal(1);
+
+  // Piso (césped)
+  ctx.fillStyle = '#1e6b1e';
+  ctx.fillRect(0, GROUND_Y, LW, LH - GROUND_Y);
+
+  // Línea de piso (brillante)
+  const grassGr = ctx.createLinearGradient(0, GROUND_Y, 0, GROUND_Y + 5);
+  grassGr.addColorStop(0, '#5ad45a');
+  grassGr.addColorStop(1, '#1e6b1e');
+  ctx.fillStyle = grassGr;
+  ctx.fillRect(0, GROUND_Y - 2, LW, 7);
+}
+
+function drawGoal(side) {
+  const gx = side === 0 ? 0 : LW - GOAL_W;
+  const gy = GROUND_Y - GOAL_H;
+
+  // Red (fondo translúcido)
+  ctx.fillStyle = 'rgba(255,255,255,.03)';
+  ctx.fillRect(gx, gy, GOAL_W, GOAL_H);
+
+  // Líneas de red
+  ctx.strokeStyle = 'rgba(255,255,255,.08)';
+  ctx.lineWidth   = 0.7;
+  for (let x = gx; x <= gx + GOAL_W; x += 11) {
+    ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, GROUND_Y); ctx.stroke();
+  }
+  for (let y = gy; y <= GROUND_Y; y += 11) {
+    ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + GOAL_W, y); ctx.stroke();
+  }
+
+  // Postes
+  const postX  = side === 0 ? GOAL_W : LW - GOAL_W;
+  const backX  = side === 0 ? 0 : LW;
+  const lineW  = POST_R * 2;
+
+  ctx.lineCap     = 'round';
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth   = lineW;
+
+  // Poste vertical (frente)
+  ctx.beginPath(); ctx.moveTo(postX, gy); ctx.lineTo(postX, GROUND_Y); ctx.stroke();
+  // Poste vertical (fondo)
+  ctx.beginPath(); ctx.moveTo(backX, gy); ctx.lineTo(backX, GROUND_Y); ctx.stroke();
+  // Travesaño
+  ctx.beginPath(); ctx.moveTo(backX, gy); ctx.lineTo(postX, gy); ctx.stroke();
+
+  // Círculo en el poste superior (ángulo)
+  ctx.beginPath();
+  ctx.arc(postX, gy, POST_R + 1, 0, Math.PI*2);
+  ctx.fillStyle = '#f0f0f0';
+  ctx.fill();
+}
+
+function drawPlayerSprite(pl) {
+  ctx.save();
+  ctx.translate(pl.x, pl.y);
+  if (!pl.facingR) ctx.scale(-1, 1);
+
+  // Sombra en el suelo
+  const shadowFactor = Math.min(1, (GROUND_Y - pl.y) / 180);
+  ctx.fillStyle = `rgba(0,0,0,${0.22 * (1 - shadowFactor * 0.5)})`;
+  ctx.beginPath();
+  ctx.ellipse(0, GROUND_Y - pl.y + HEAD_R * 0.7, HEAD_R * 0.7 * (1 - shadowFactor * 0.5), 7, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Piernas (cabezudo = cabeza enorme, piernitas pequeñas)
+  const legY  = HEAD_R + 2;
+  const legW  = 11, legH = 20;
+  const offL  = HEAD_R * 0.3;
+  ctx.fillStyle = pl.color;
+  // Pierna izquierda
+  ctx.beginPath(); ctx.roundRect(-offL - legW/2, legY, legW, legH, 3); ctx.fill();
+  // Pierna derecha
+  ctx.beginPath(); ctx.roundRect( offL - legW/2, legY, legW, legH, 3); ctx.fill();
+
+  // Zapatillas
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.ellipse(-offL,       legY + legH + 2, legW * 0.9, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse( offL + 2.5, legY + legH + 2, legW * 0.9, 5, 0.25, 0, Math.PI*2); ctx.fill();
+
+  // Borde coloreado de la cabeza (club color)
+  ctx.beginPath();
+  ctx.arc(0, 0, HEAD_R + 3.5, 0, Math.PI*2);
+  ctx.fillStyle = pl.color;
+  ctx.fill();
+
+  // Sprite clipeado a la cabeza
+  const spr = sprites[pl.key];
+  ctx.beginPath();
+  ctx.arc(0, 0, HEAD_R, 0, Math.PI*2);
+  ctx.clip();
+
+  if (spr && spr.complete && spr.naturalWidth) {
+    // Mostrar zona cabeza/hombros (top ~55% del sprite)
+    const sw = spr.naturalWidth, sh = spr.naturalHeight;
+    const frac = 0.54;
+    const dH = HEAD_R * 2.3;
+    const dW = (sw / (sh * frac)) * dH;
+    ctx.drawImage(spr, 0, 0, sw, sh * frac, -dW/2, -HEAD_R, dW, dH);
+  } else {
+    // Fallback: cara básica
+    ctx.fillStyle = '#c8956c';
+    ctx.fillRect(-HEAD_R, -HEAD_R, HEAD_R*2, HEAD_R*2);
+  }
+
+  ctx.restore();
+
+  // Nombre sobre la cabeza
+  ctx.save();
+  ctx.font = 'bold 10px Barlow Condensed, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(0,0,0,.55)';
+  ctx.fillText(pl.name.toUpperCase(), pl.x + 1, pl.y - HEAD_R - 5);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(pl.name.toUpperCase(), pl.x, pl.y - HEAD_R - 6);
+  ctx.restore();
+}
+
+function drawBallSprite() {
+  const bx = ball.x, by = ball.y;
+
+  // Sombra proyectada en el piso
+  const dist = GROUND_Y - by;
+  const sf   = Math.max(0.25, 1 - dist / 280);
+  ctx.fillStyle = `rgba(0,0,0,${0.28 * sf})`;
+  ctx.beginPath();
+  ctx.ellipse(bx, GROUND_Y, BALL_R * sf, BALL_R * 0.36 * sf, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Pelota
+  ctx.save();
+  ctx.translate(bx, by);
+
+  const gr = ctx.createRadialGradient(-BALL_R*.3, -BALL_R*.35, 1, 0, 0, BALL_R);
+  gr.addColorStop(0, '#ffffff');
+  gr.addColorStop(1, '#c0c0c0');
+
+  ctx.beginPath();
+  ctx.arc(0, 0, BALL_R, 0, Math.PI*2);
+  ctx.fillStyle = gr;
+  ctx.fill();
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Patrón de fútbol (pentágonos simplificados)
+  ctx.fillStyle = '#222';
+  hexPatch(0, 0, BALL_R * 0.37);
+  const pa = (Math.PI * 2) / 5;
+  for (let i = 0; i < 5; i++) {
+    const a = i * pa - Math.PI/2;
+    hexPatch(Math.cos(a)*BALL_R*0.65, Math.sin(a)*BALL_R*0.65, BALL_R*0.26);
+  }
+
+  ctx.restore();
+}
+
+function hexPatch(cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const a = i * Math.PI / 3;
+    i === 0 ? ctx.moveTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r)
+             : ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawHUD() {
+  // Barra superior semitransparente
+  ctx.fillStyle = 'rgba(0,0,0,.6)';
+  ctx.fillRect(0, 0, LW, 44);
+
+  ctx.font = 'bold 26px Bebas Neue, sans-serif';
+
+  // P1
+  ctx.textAlign = 'left';
+  ctx.fillStyle = p1.color;
+  ctx.fillText(p1.name, 14, 31);
+  ctx.fillStyle = '#fff';
+  const p1nw = ctx.measureText(p1.name).width;
+  ctx.fillText('  ' + p1.score, 14 + p1nw, 31);
+
+  // P2
+  ctx.textAlign = 'right';
+  ctx.fillStyle = p2.color;
+  const p2txt = p2.score + '  ';
+  const p2sw  = ctx.measureText(p2txt).width;
+  ctx.fillStyle = '#fff';
+  ctx.fillText(p2.score + '  ', LW - 14, 31);
+  ctx.fillStyle = p2.color;
+  ctx.fillText(p2.name, LW - 14 - p2sw, 31);
+
+  // Separador central
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.font = '18px Barlow Condensed, sans-serif';
+  ctx.fillText('—', LW/2, 28);
+
+  // Mini hint controles (solo en PC)
+  if (!isTouchDevice()) {
+    ctx.font = '10px Barlow Condensed, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.25)';
+    ctx.textAlign = 'left';
+    ctx.fillText('P1: A D  W/Space', 8, LH - 5);
+    if (mode === 'local') {
+      ctx.textAlign = 'right';
+      ctx.fillText('P2: ← →  ↑', LW - 8, LH - 5);
+    }
+  }
+}
+
+function drawGoalFlash() {
+  if (goalFlash <= 0) return;
+  ctx.fillStyle = `rgba(255,255,255,${goalFlash * 0.32})`;
+  ctx.fillRect(0, 0, LW, LH);
+  goalFlash = Math.max(0, goalFlash - 0.055);
+}
+
+function drawGoalText() {
+  if (state !== 'goal') return;
+  const scorer = goalSide === 0 ? p1 : p2;
+
+  ctx.save();
+  // Sombra
+  ctx.font = 'bold 82px Bebas Neue, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(0,0,0,.5)';
+  ctx.fillText('¡GOL!', LW/2 + 3, LH/2 + 4);
+  // Texto
+  ctx.fillStyle = scorer.color;
+  ctx.fillText('¡GOL!', LW/2, LH/2);
+  // Sub
+  ctx.font = '600 20px Barlow Condensed, sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(scorer.name + ' anotó!', LW/2, LH/2 + 38);
+  ctx.restore();
+}
+
+function drawCountdown() {
+  if (state !== 'countdown') return;
+  ctx.save();
+  ctx.font = 'bold 100px Bebas Neue, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.fillText(countdownN, LW/2 + 3, LH/2 + 36 + 4);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(countdownN, LW/2, LH/2 + 36);
+  ctx.restore();
+}
+
+function drawConfetti() {
+  confetti.forEach(c => {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.fillStyle = c.col;
+    if (c.rect) {
+      ctx.fillRect(-c.r/2, -c.r/4, c.r, c.r * 0.45);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, c.r * 0.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+// ── Render principal ──────────────────────────────────────
+function renderFrame() {
+  ctx.save();
+  const sx = cv.width / LW, sy = cv.height / LH;
+  ctx.setTransform(sx, 0, 0, sy, 0, 0);
+
+  drawField();
+
+  if (state === 'playing' || state === 'goal') {
+    drawBallSprite();
+    drawPlayerSprite(p1);
+    drawPlayerSprite(p2);
+    drawHUD();
+    drawGoalFlash();
+    drawConfetti();
+    drawGoalText();
+  }
+
+  if (state === 'countdown') {
+    drawBallSprite();
+    drawPlayerSprite(p1);
+    drawPlayerSprite(p2);
+    drawHUD();
+    drawCountdown();
+  }
+
+  ctx.restore();
+}
+
+// ── Game loop ─────────────────────────────────────────────
+let prevJumpP1 = false, prevJumpP2 = false;
+
+function loop() {
+  if (state === 'playing') {
+    const ljP1 = keys['KeyW'] || keys['Space'] || !!TC.p1u;
+    const ljP2 = keys['ArrowUp'] || !!TC.p2u;
+
+    const jP1 = ljP1 && !prevJumpP1;
+    const jP2 = ljP2 && !prevJumpP2;
+    prevJumpP1 = ljP1;
+    prevJumpP2 = ljP2;
+
+    const lP1 = !!(keys['KeyA'] || TC.p1l);
+    const rP1 = !!(keys['KeyD'] || TC.p1r);
+    updatePlayer(p1, lP1, rP1, jP1);
+
+    if (mode === 'cpu') {
+      const ci = getInputCPU();
+      const ljC = ci.jumpNow, jC = ljC && !prevJumpP2;
+      prevJumpP2 = ljC;
+      updatePlayer(p2, ci.left, ci.right, jC);
+    } else {
+      const lP2 = !!(keys['ArrowLeft'] || TC.p2l);
+      const rP2 = !!(keys['ArrowRight'] || TC.p2r);
+      updatePlayer(p2, lP2, rP2, jP2);
+    }
+
+    updateBall();
+    collideBallHead(p1);
+    collideBallHead(p2);
+    collidePlayerPlayer();
+    checkGoal();
+    renderFrame();
+  } else if (state === 'goal' || state === 'countdown') {
+    updateConfetti();
+    goalFlash = Math.max(0, goalFlash - 0.04);
+    renderFrame();
+  } else if (state === 'menu' || state === 'pick1' || state === 'pick2') {
+    renderFrame(); // solo campo de fondo
+  }
+
+  raf = requestAnimationFrame(loop);
+}
+
+// Arrancar el loop inmediatamente (fondo visible detrás del overlay)
+raf = requestAnimationFrame(loop);
+
+// ── UI: menú principal ────────────────────────────────────
+document.getElementById('btn-cpu').addEventListener('click', () => showPick('cpu'));
+document.getElementById('btn-2p').addEventListener('click',  () => showPick('local'));
+
+function showOverlay(html) {
+  overlay.classList.remove('hidden');
+  overlay.innerHTML = html;
+}
+
+function showPick(m) {
+  mode = m;
+  // En modo CPU, p2 es CPU con Barcia fijo; el jugador solo elige su personaje
+  if (m === 'cpu') {
+    p1sel = 'feli';
+    p2sel = 'barcia';
+    showPickP1(true);
+  } else {
+    p1sel = 'feli';
+    p2sel = 'barcia';
+    showPickP1(false);
+  }
+}
+
+function playerCardsHTML(selectedKey, idPrefix) {
+  return PLAYERS_DATA.map(p =>
+    `<div class="pick-card${p.key === selectedKey ? ' sel' : ''}" data-key="${p.key}" onclick="pickCard(this,'${idPrefix}')">
+       <img src="${p.key}-sprite.png" alt="${p.name}">
+       <span>${p.name}</span>
+     </div>`
+  ).join('');
+}
+
+function showPickP1(cpuMode) {
+  showOverlay(`
+    <img class="ov-logo" src="escudo.png" alt="PH">
+    <div class="ov-title" style="font-size:clamp(1.8rem,6vw,2.8rem)">ELEGÍ TU JUGADOR</div>
+    <div class="ov-pick-label">${cpuMode ? 'Tu personaje' : 'Jugador 1'}</div>
+    <div class="pick-grid" id="pg1">${playerCardsHTML(p1sel,'p1')}</div>
+    <div class="ov-btns">
+      <button class="ov-btn ov-btn-primary" onclick="${cpuMode ? 'launchGame()' : 'showPickP2()'}">
+        ${cpuMode ? '▶ Jugar' : 'Siguiente →'}
+      </button>
+      <button class="ov-btn ov-btn-secondary" onclick="showMenu()">Atrás</button>
+    </div>
+  `);
+}
+
+function showPickP2() {
+  showOverlay(`
+    <img class="ov-logo" src="escudo.png" alt="PH">
+    <div class="ov-title" style="font-size:clamp(1.8rem,6vw,2.8rem)">JUGADOR 2</div>
+    <div class="ov-pick-label">Elegí tu personaje</div>
+    <div class="pick-grid" id="pg2">${playerCardsHTML(p2sel,'p2')}</div>
+    <div class="ov-btns">
+      <button class="ov-btn ov-btn-primary" onclick="launchGame()">▶ Jugar</button>
+      <button class="ov-btn ov-btn-secondary" onclick="showPickP1(false)">← Atrás</button>
+    </div>
+  `);
+}
+
+function pickCard(el, prefix) {
+  const key = el.dataset.key;
+  if (prefix === 'p1') p1sel = key;
+  else                  p2sel = key;
+  el.closest('.pick-grid').querySelectorAll('.pick-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function launchGame() {
+  p1 = makePlayer(0, p1sel);
+  p2 = makePlayer(1, mode === 'cpu' ? 'barcia' : p2sel);
+  resetBall(Math.random() > 0.5 ? 0 : 1);
+  confetti   = [];
+  goalFlash  = 0;
+  prevJumpP1 = false;
+  prevJumpP2 = false;
+  state      = 'playing';
+  syncTouchUI();
+  overlay.classList.add('hidden');
+}
+
+function showGameover() {
+  const winner  = p1.score >= WIN_GOALS ? p1 : p2;
+  const loser   = p1.score >= WIN_GOALS ? p2 : p1;
+  const isCPU   = mode === 'cpu' && winner === p2;
+  const titleTx = isCPU ? '¡PERDISTE!' : `¡${winner.name.toUpperCase()} GANÓ!`;
+  showOverlay(`
+    <img class="ov-logo" src="escudo.png" alt="PH">
+    <div class="ov-title" style="font-size:clamp(1.6rem,6vw,2.8rem)">${titleTx}</div>
+    <div class="ov-score">${p1.score} — ${p2.score}</div>
+    <div class="ov-btns">
+      <button class="ov-btn ov-btn-primary"   onclick="launchGame()">▶ Revancha</button>
+      <button class="ov-btn ov-btn-secondary" onclick="showMenu()">Menú</button>
+    </div>
+  `);
+}
+
+function showMenu() {
+  state = 'menu';
+  showOverlay(`
+    <img class="ov-logo" src="escudo.png" alt="PH">
+    <div class="ov-title">CABEZUDOS</div>
+    <div class="ov-sub">Playa Honda Universitario</div>
+    <div class="ov-btns">
+      <button class="ov-btn ov-btn-primary"   id="btn-cpu">▶ 1 Jugador (vs CPU)</button>
+      <button class="ov-btn ov-btn-secondary" id="btn-2p">👥 2 Jugadores</button>
+    </div>
+  `);
+  document.getElementById('btn-cpu').addEventListener('click', () => showPick('cpu'));
+  document.getElementById('btn-2p').addEventListener('click',  () => showPick('local'));
+}
+
+// Tecla Escape = menú
+document.addEventListener('keydown', e => {
+  if (e.code === 'Escape' && (state === 'playing' || state === 'goal')) showMenu();
+});
+</script>
+</body>
+</html>
