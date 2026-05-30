@@ -183,6 +183,12 @@
       border-color: rgba(74,144,226,.5);
       font-size: 1.5rem;
     }
+    .tc-btn.kick {
+      width: 58px; height: 58px;
+      background: rgba(122,30,10,.55);
+      border-color: rgba(220,80,30,.65);
+      font-size: 1.35rem;
+    }
     .tc-btn:active { background: rgba(255,255,255,.22); }
 
     /* ── Back link ── */
@@ -225,8 +231,10 @@
         <div class="tc-btn" id="tc1l">◀</div>
         <div class="tc-btn jump" id="tc1u">▲</div>
         <div class="tc-btn" id="tc1r">▶</div>
+        <div class="tc-btn kick" id="tc1k">⚽</div>
       </div>
       <div class="tc-side" id="tc-p2-side">
+        <div class="tc-btn kick" id="tc2k">⚽</div>
         <div class="tc-btn" id="tc2l">◀</div>
         <div class="tc-btn jump" id="tc2u">▲</div>
         <div class="tc-btn" id="tc2r">▶</div>
@@ -328,10 +336,12 @@ function makePlayer(side, key) {
     key,
     name:    data ? data.name  : key,
     color:   data ? data.color : '#1a3a7a',
-    score:   0,
-    facingR: side === 0,
-    onGround: false,
-    jumpUsed: 0
+    score:        0,
+    facingR:      side === 0,
+    onGround:     false,
+    jumpUsed:     0,
+    kickCooldown: 0,
+    kickFlash:    0
   };
 }
 
@@ -364,7 +374,7 @@ const prevJump = { p1: false, p2: false };
 function edgeJump(now, prev) { const e = now && !prev; return e; }
 
 // ── Touch controls ────────────────────────────────────────
-const TC = { p1l:0, p1r:0, p1u:0, p2l:0, p2r:0, p2u:0 };
+const TC = { p1l:0, p1r:0, p1u:0, p1k:0, p2l:0, p2r:0, p2u:0, p2k:0 };
 
 function bindTC(id, prop) {
   const el = document.getElementById(id);
@@ -373,8 +383,8 @@ function bindTC(id, prop) {
   el.addEventListener('touchend',    e => { e.preventDefault(); TC[prop] = 0; }, { passive: false });
   el.addEventListener('touchcancel', () => { TC[prop] = 0; });
 }
-bindTC('tc1l','p1l'); bindTC('tc1r','p1r'); bindTC('tc1u','p1u');
-bindTC('tc2l','p2l'); bindTC('tc2r','p2r'); bindTC('tc2u','p2u');
+bindTC('tc1l','p1l'); bindTC('tc1r','p1r'); bindTC('tc1u','p1u'); bindTC('tc1k','p1k');
+bindTC('tc2l','p2l'); bindTC('tc2r','p2r'); bindTC('tc2u','p2u'); bindTC('tc2k','p2k');
 
 // Ocultar controles P2 en modo CPU
 function syncTouchUI() {
@@ -396,6 +406,10 @@ function updatePlayer(pl, left, right, jumpEdge) {
     pl.jumpUsed++;
     pl.onGround = false;
   }
+
+  // Cooldowns
+  pl.kickCooldown = Math.max(0, pl.kickCooldown - 1);
+  pl.kickFlash    = Math.max(0, pl.kickFlash    - 1);
 
   // Gravedad
   pl.vy = Math.min(pl.vy + GRAVITY, MAX_FALL);
@@ -540,6 +554,35 @@ function triggerGoal() {
   }, GOAL_PAUSE);
 }
 
+// ── Patada ────────────────────────────────────────────────
+const KICK_DASH   = 8.8;   // impulso horizontal al patear
+const KICK_CD     = 30;    // frames de cooldown
+const KICK_REACH  = HEAD_R + BALL_R + 22; // distancia máxima para golpear
+
+function tryKick(pl) {
+  if (pl.kickCooldown > 0) return;
+  const dir = pl.facingR ? 1 : -1;
+
+  // Lanzarse hacia adelante
+  pl.vx += dir * KICK_DASH;
+  pl.vy  = Math.min(pl.vy, -2); // pequeño salto al patear
+
+  // ¿La pelota está al alcance?
+  const dx   = ball.x - pl.x;
+  const dy   = ball.y - pl.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  if (dist < KICK_REACH) {
+    // Golpe fuerte en la dirección que enfrenta el jugador
+    ball.vx  = dir * 13 + pl.vx * 0.4;
+    ball.vy  = -6 + pl.vy * 0.3;
+    pl.kickFlash = 14;
+  } else {
+    pl.kickFlash = 7; // anim de intento fallido
+  }
+  pl.kickCooldown = KICK_CD;
+}
+
 // ── CPU AI ────────────────────────────────────────────────
 let cpuJumpCooldown = 0;
 
@@ -655,6 +698,43 @@ function drawField() {
   grassGr.addColorStop(1, '#1e6b1e');
   ctx.fillStyle = grassGr;
   ctx.fillRect(0, GROUND_Y - 2, LW, 7);
+
+  // ── Cartel "Parque Cupra" en la tribuna (detrás del HUD) ──
+  const signW = 200, signH = 24, signX = LW/2 - 100, signY = 46;
+  // Panel de fondo
+  ctx.fillStyle = 'rgba(0,8,30,.78)';
+  ctx.beginPath();
+  ctx.roundRect(signX, signY, signW, signH, 4);
+  ctx.fill();
+  // Borde dorado
+  ctx.strokeStyle = 'rgba(255,215,0,.5)';
+  ctx.lineWidth   = 1.2;
+  ctx.stroke();
+  // Texto
+  ctx.font        = 'bold 14px Bebas Neue, sans-serif';
+  ctx.textAlign   = 'center';
+  ctx.fillStyle   = '#ffd700';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('PARQUE CUPRA', LW/2, signY + 16);
+  ctx.letterSpacing = '0px';
+
+  // ── Tableros publicitarios en el piso ──
+  const adBoards = [
+    { text: 'PARQUE CUPRA',  bg: '#002654', fg: '#ffd700' },
+    { text: 'PLAYA HONDA U', bg: '#1a3a7a', fg: '#ffffff' },
+    { text: 'PARQUE CUPRA',  bg: '#002654', fg: '#ffd700' },
+    { text: 'PHU',           bg: '#1a3a7a', fg: '#ffffff' },
+  ];
+  const adH = 18, adY = GROUND_Y + 6;
+  const adBw = LW / adBoards.length;
+  adBoards.forEach((b, i) => {
+    ctx.fillStyle = b.bg;
+    ctx.fillRect(i * adBw, adY, adBw - 1, adH);
+    ctx.font      = 'bold 11px Bebas Neue, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = b.fg;
+    ctx.fillText(b.text, i * adBw + adBw / 2, adY + 13);
+  });
 }
 
 function drawGoal(side) {
@@ -724,6 +804,17 @@ function drawPlayerSprite(pl) {
   ctx.fillStyle = '#1a1a1a';
   ctx.beginPath(); ctx.ellipse(-offL,       legY + legH + 2, legW * 0.9, 5, 0, 0, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.ellipse( offL + 2.5, legY + legH + 2, legW * 0.9, 5, 0.25, 0, Math.PI*2); ctx.fill();
+
+  // Flash de patada (onda expansiva)
+  if (pl.kickFlash > 0) {
+    const alpha  = pl.kickFlash / 14;
+    const radius = HEAD_R + 8 + (14 - pl.kickFlash) * 2.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(255,180,30,${alpha})`;
+    ctx.lineWidth   = 3.5;
+    ctx.stroke();
+  }
 
   // Borde coloreado de la cabeza (club color)
   ctx.beginPath();
@@ -849,10 +940,10 @@ function drawHUD() {
     ctx.font = '10px Barlow Condensed, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,.25)';
     ctx.textAlign = 'left';
-    ctx.fillText('P1: A D  W/Space', 8, LH - 5);
+    ctx.fillText('P1: A D  W=salto  S=patada', 8, LH - 5);
     if (mode === 'local') {
       ctx.textAlign = 'right';
-      ctx.fillText('P2: ← →  ↑', LW - 8, LH - 5);
+      ctx.fillText('P2: ← →  ↑=salto  ↓=patada', LW - 8, LH - 5);
     }
   }
 }
@@ -944,11 +1035,12 @@ function renderFrame() {
 
 // ── Game loop ─────────────────────────────────────────────
 let prevJumpP1 = false, prevJumpP2 = false;
+let prevKickP1 = false, prevKickP2 = false;
 
 function loop() {
   if (state === 'playing') {
-    const ljP1 = keys['KeyW'] || keys['Space'] || !!TC.p1u;
-    const ljP2 = keys['ArrowUp'] || !!TC.p2u;
+    const ljP1 = !!(keys['KeyW'] || keys['Space'] || TC.p1u);
+    const ljP2 = !!(keys['ArrowUp'] || TC.p2u);
 
     const jP1 = ljP1 && !prevJumpP1;
     const jP2 = ljP2 && !prevJumpP2;
@@ -959,8 +1051,13 @@ function loop() {
     const rP1 = !!(keys['KeyD'] || TC.p1r);
     updatePlayer(p1, lP1, rP1, jP1);
 
+    // Patada P1: S / ShiftLeft / botón táctil
+    const kP1Now = !!(keys['KeyS'] || keys['ShiftLeft'] || TC.p1k);
+    if (kP1Now && !prevKickP1) tryKick(p1);
+    prevKickP1 = kP1Now;
+
     if (mode === 'cpu') {
-      const ci = getInputCPU();
+      const ci  = getInputCPU();
       const ljC = ci.jumpNow, jC = ljC && !prevJumpP2;
       prevJumpP2 = ljC;
       updatePlayer(p2, ci.left, ci.right, jC);
@@ -968,6 +1065,11 @@ function loop() {
       const lP2 = !!(keys['ArrowLeft'] || TC.p2l);
       const rP2 = !!(keys['ArrowRight'] || TC.p2r);
       updatePlayer(p2, lP2, rP2, jP2);
+
+      // Patada P2: ↓ / ShiftRight / botón táctil
+      const kP2Now = !!(keys['ArrowDown'] || keys['ShiftRight'] || TC.p2k);
+      if (kP2Now && !prevKickP2) tryKick(p2);
+      prevKickP2 = kP2Now;
     }
 
     updateBall();
