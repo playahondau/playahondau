@@ -293,10 +293,9 @@ const MAX_FALL   = 16;
 
 // ── Sprites ───────────────────────────────────────────────
 const PLAYERS_DATA = [
-  { key: 'feli',   name: 'Feli',   color: '#1a3a7a' },
-  { key: 'titan',  name: 'Titan',  color: '#2a6e2a' },
-  { key: 'barcia', name: 'Barcia', color: '#7a1a1a' },
-  { key: 'rodo',   name: 'Rodo',   color: '#5a3a00' }
+  { key: 'feli',  name: 'Feli',  color: '#1a3a7a' },
+  { key: 'rodo',  name: 'Rodo',  color: '#1a3a7a' },
+  { key: 'titan', name: 'Titan', color: '#1a3a7a' },
 ];
 
 const sprites = {};
@@ -321,7 +320,7 @@ let goalSide   = 0;        // 0=p1 scored, 1=p2 scored
 let countdownN = 3;
 let countdownT = 0;
 let p1sel      = 'feli';
-let p2sel      = 'barcia';
+let p2sel      = 'titan';
 
 // ── Jugadores y pelota ────────────────────────────────────
 let p1, p2, ball;
@@ -1167,7 +1166,7 @@ function pickCard(el, prefix) {
 
 function launchGame() {
   p1 = makePlayer(0, p1sel);
-  p2 = makePlayer(1, mode === 'cpu' ? 'barcia' : p2sel);
+  p2 = makePlayer(1, mode === 'cpu' ? 'titan' : p2sel);
   resetBall(Math.random() > 0.5 ? 0 : 1);
   confetti   = [];
   goalFlash  = 0;
