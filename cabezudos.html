@@ -204,10 +204,102 @@
       transition: color .2s;
     }
     .back-link:hover { color: rgba(255,255,255,.7); }
+
+    /* ── Botón pantalla completa ── */
+    #btn-fullscreen {
+      display: none;
+      position: fixed;
+      top: 10px; right: 14px;
+      z-index: 40;
+      background: rgba(0,0,0,.52);
+      border: 1px solid rgba(255,255,255,.22);
+      color: rgba(255,255,255,.72);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: .35em .9em;
+      border-radius: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+    }
+    #btn-fullscreen:active { background: rgba(255,255,255,.18); }
+    @media (pointer: coarse) {
+      #btn-fullscreen { display: block; }
+    }
+
+    /* ── Layout horizontal (landscape móvil) ── */
+    @media (pointer: coarse) and (orientation: landscape) {
+      /* Disuelve el wrapper → los .tc-side participan directamente en el flex de #wrap */
+      #touch-controls { display: contents; }
+
+      #wrap {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      /* El canvas ocupa el espacio central disponible */
+      #cv-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* P1 a la izquierda, P2 a la derecha del canvas */
+      .tc-side:first-child { order: -1; }
+      #tc-p2-side          { order:  1; }
+
+      /* Panel lateral: cuadrícula 2×2  fila-1: ▲ ⚽  /  fila-2: ◀ ▶ */
+      .tc-side {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        align-content: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 12px 8px;
+        width: 92px;
+        flex-shrink: 0;
+        background: rgba(0,0,0,.28);
+      }
+
+      /* Orden de botones dentro del grid */
+      #tc1u { order: 1; }  /* ▲ salto   – posición (1,1) */
+      #tc1k { order: 2; }  /* ⚽ patada – posición (1,2) */
+      #tc1l { order: 3; }  /* ◀ izq    – posición (2,1) */
+      #tc1r { order: 4; }  /* ▶ der    – posición (2,2) */
+
+      #tc2u { order: 1; }
+      #tc2k { order: 2; }
+      #tc2l { order: 3; }
+      #tc2r { order: 4; }
+
+      /* Botones más compactos para landscape */
+      .tc-btn      { width: 36px; height: 36px; font-size: 1rem;   }
+      .tc-btn.jump { width: 36px; height: 36px; font-size: 1.1rem; }
+      .tc-btn.kick { width: 36px; height: 36px; font-size: 1.05rem;}
+
+      /* Ocultar "← Volver" en landscape (el botón FS cumple esa función de salida) */
+      .back-link { display: none; }
+
+      /* Centrar el botón FS sobre el canvas */
+      #btn-fullscreen {
+        top: 4px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: .68rem;
+        padding: .28em .65em;
+      }
+    }
   </style>
 </head>
 <body>
   <a class="back-link" href="index.html">← Volver</a>
+  <button id="btn-fullscreen" aria-label="Pantalla completa">⛶ Pantalla completa</button>
 
   <div id="wrap">
     <div id="cv-wrap">
@@ -256,8 +348,12 @@ const LW = 800, LH = 450;   // logical width/height
 let dpr = 1;
 
 function resizeCanvas() {
-  const maxW  = Math.min(window.innerWidth  - 8,  960);
-  const maxH  = window.innerHeight - (isTouchDevice() ? 80 : 20) - 20;
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const isTouch     = isTouchDevice();
+  const SIDE_W      = 92; // ancho de cada panel lateral (sync con CSS)
+  const sidePad     = (isTouch && isLandscape) ? SIDE_W * 2 : 0;
+  const maxW  = Math.min(window.innerWidth  - sidePad - 8, 960);
+  const maxH  = window.innerHeight - (isTouch && !isLandscape ? 80 : 20) - (isLandscape ? 0 : 20);
   let cw = maxW;
   let ch = Math.round(cw * LH / LW);
   if (ch > maxH) { ch = maxH; cw = Math.round(ch * LW / LH); }
@@ -1437,6 +1533,31 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Escape' && (state === 'playing' || state === 'goal')) showMenu();
   if (e.code === 'KeyR') xaxaComment();
 });
+
+// ── Pantalla completa landscape (móvil) ──────────────────
+(function () {
+  const btn = document.getElementById('btn-fullscreen');
+
+  async function enterFS() {
+    try { await document.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch(e) {}
+    try { if (screen.orientation?.lock) await screen.orientation.lock('landscape'); } catch(e) {}
+  }
+  async function exitFS() {
+    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch(e) {}
+    try { screen.orientation?.unlock?.(); } catch(e) {}
+  }
+
+  btn.addEventListener('click', () => {
+    if (document.fullscreenElement) exitFS(); else enterFS();
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    const isFS = !!document.fullscreenElement;
+    btn.textContent = isFS ? '✕ Salir' : '⛶ Pantalla completa';
+    resizeCanvas();
+    renderFrame();
+  });
+})();
 </script>
 </body>
 </html>
