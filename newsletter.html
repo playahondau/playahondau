@@ -37,13 +37,16 @@ body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-s
 .dr-body{font-family:'Georgia',serif;font-size:.82rem;line-height:1.75;color:#333;}
 .dr-goles-main{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:#1a3a8f;margin-top:.7rem;letter-spacing:.04em;border-top:1px dotted #ccc;padding-top:.5rem;}
 
+/* ── Sub-grid dentro de columna derecha: resultados | fixture ── */
+.dr-results-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start;}
+
 /* ── Tarjetas de resultados (protagonistas) ── */
 .dr-cat{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:.1rem;}
-.dr-result-card{padding:.55rem .75rem;margin-bottom:.4rem;border-left:4px solid #ccc;border-radius:0 4px 4px 0;}
+.dr-result-card{padding:.42rem .55rem;margin-bottom:.35rem;border-left:4px solid #ccc;border-radius:0 4px 4px 0;}
 .dr-result-win {border-left-color:#1a6b1a;background:#f0faf0;}
 .dr-result-draw{border-left-color:#9a6f00;background:#fefce8;}
 .dr-result-loss{border-left-color:#a00000;background:#fff5f5;}
-.dr-score-big{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;line-height:1.2;}
+.dr-score-big{font-family:'Barlow Condensed',sans-serif;font-size:.97rem;font-weight:700;line-height:1.2;}
 .dr-result-meta{font-size:.67rem;color:#777;margin-top:.15rem;}
 .dr-goles{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:#1a3a8f;margin-top:.2rem;}
 
@@ -54,6 +57,7 @@ body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-s
 
 @media(max-width:620px){
   .dr-grid{grid-template-columns:1fr;}
+  .dr-results-grid{grid-template-columns:1fr;}
   .dr-col-cron{border-right:none;padding-right:0;border-bottom:1px solid #ccc;padding-bottom:1.2rem;margin-bottom:.2rem;}
   .dr-top{flex-wrap:wrap;gap:.3rem;justify-content:center;}
   .dr-meta{flex:none;width:100%;text-align:center!important;}
@@ -241,12 +245,18 @@ function renderDiario(resultados, fixture) {
         '<p class="dr-body">'+cronica+'</p>'+
         (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
       '</div>'+
-      /* Columna derecha: resultados + fixture protagonistas */
+      /* Columna derecha: resultados | fixture en sub-grid */
       '<div class="dr-col dr-col-main">'+
-        '<h4 class="dr-sh">Resultados del finde</h4>'+
-        resHtml+
-        '<h4 class="dr-sh" style="margin-top:1.4rem">Pr&oacute;ximos partidos</h4>'+
-        fixHtml+
+        '<div class="dr-results-grid">'+
+          '<div>'+
+            '<h4 class="dr-sh">Resultados del finde</h4>'+
+            resHtml+
+          '</div>'+
+          '<div>'+
+            '<h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+
+            fixHtml+
+          '</div>'+
+        '</div>'+
       '</div>'+
     '</div>';
 }
