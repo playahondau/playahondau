@@ -316,9 +316,8 @@ let xaxaCanvas = null; // versión sin fondo, generada al cargar
 
 xaxaImg.onload = function() {
   try {
-    // Procesar a 300px para velocidad
     const oW = xaxaImg.naturalWidth, oH = xaxaImg.naturalHeight;
-    const S  = 300, SH = Math.round(S * oH / oW);
+    const S = 420, SH = Math.round(S * oH / oW);
     const tmp = document.createElement('canvas');
     tmp.width = S; tmp.height = SH;
     const tc = tmp.getContext('2d');
@@ -326,30 +325,38 @@ xaxaImg.onload = function() {
     const id = tc.getImageData(0, 0, S, SH);
     const px = id.data;
     const vis = new Uint8Array(S * SH);
+    const q = []; // BFS multi-origen
+    const TOL = 52; // tolerancia de color entre píxeles adyacentes
 
-    // Flood-fill desde las 4 esquinas con tolerancia de color
-    function flood(x0, y0) {
-      const si = (y0*S+x0)*4;
-      const sr=px[si], sg=px[si+1], sb=px[si+2];
-      const q = [[x0,y0]];
-      while (q.length) {
-        const [x,y] = q.pop();
-        if (x<0||x>=S||y<0||y>=SH) continue;
-        const i = y*S+x; if (vis[i]) continue;
-        const p = i*4;
-        if (Math.abs(px[p]-sr)+Math.abs(px[p+1]-sg)+Math.abs(px[p+2]-sb) > 68) continue;
-        vis[i]=1; px[p+3]=0; // transparente
-        q.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+    // Sembrar desde TODOS los píxeles del borde perimetral
+    function seed(x, y) {
+      const i = y*S+x; if (vis[i]) return;
+      vis[i]=1; px[i*4+3]=0; q.push(x, y);
+    }
+    for (let x=0; x<S; x++) { seed(x, 0); seed(x, SH-1); }
+    for (let y=1; y<SH-1; y++) { seed(0, y); seed(S-1, y); }
+
+    // BFS: expande a vecinos con color similar al pixel actual
+    // (comparación entre adyacentes, no contra un color fijo)
+    let qi = 0;
+    while (qi < q.length) {
+      const x=q[qi++], y=q[qi++];
+      const p=(y*S+x)*4, r=px[p], g=px[p+1], b=px[p+2];
+      const dirs=[1,0, -1,0, 0,1, 0,-1];
+      for (let d=0; d<8; d+=2) {
+        const nx=x+dirs[d], ny=y+dirs[d+1];
+        if (nx<0||nx>=S||ny<0||ny>=SH) continue;
+        const ni=ny*S+nx; if (vis[ni]) continue;
+        const np=ni*4;
+        if (Math.abs(px[np]-r)+Math.abs(px[np+1]-g)+Math.abs(px[np+2]-b) <= TOL) {
+          vis[ni]=1; px[np+3]=0; q.push(nx, ny);
+        }
       }
     }
-    flood(0,0); flood(S-1,0); flood(0,SH-1); flood(S-1,SH-1);
 
     tc.putImageData(id, 0, 0);
     xaxaCanvas = tmp;
-  } catch(e) {
-    // Fallback: usar imagen original si hay problema de CORS
-    xaxaCanvas = null;
-  }
+  } catch(e) { xaxaCanvas = null; }
 };
 
 // ── Estado global ─────────────────────────────────────────
