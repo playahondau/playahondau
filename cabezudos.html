@@ -778,6 +778,14 @@ function drawField() {
   // Eucaliptos laterales
   eucalipto(310, 110); eucalipto(760, 100); eucalipto(780, 85);
 
+  // ── XAXA: cabezudo en las gradas (se dibuja ANTES del alambrado para quedar detrás) ──
+  if (xaxaImg.complete && xaxaImg.naturalWidth) {
+    const xH = 64;
+    const xW = xH * xaxaImg.naturalWidth / xaxaImg.naturalHeight;
+    const xX = 710;
+    ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - 44 - xH, xW, xH);
+  }
+
   // ── ALAMBRADO / TEJIDO METÁLICO (perímetro del complejo) ──
   ctx.save(); ctx.globalAlpha = 0.30;
   ctx.strokeStyle = '#888';
@@ -810,15 +818,6 @@ function drawField() {
     // Cabeza
     ctx.beginPath(); ctx.arc(sx+4, GROUND_Y - sh2 - 12, 5, 0, Math.PI*2);
     ctx.fillStyle = '#d4a07a'; ctx.fill();
-  }
-
-  // ── XAXA: cabezudo viendo el partido desde el costado ──
-  if (xaxaImg.complete && xaxaImg.naturalWidth) {
-    const xSrc = xaxaImg;
-    const xH = SPRITE_H;
-    const xW = xH * xSrc.naturalWidth / xSrc.naturalHeight;
-    const xX = LW * 0.60; // lateral derecho
-    ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - xH, xW, xH);
   }
 
   // ── ARCOS ──
