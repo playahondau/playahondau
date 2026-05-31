@@ -310,8 +310,48 @@ PLAYERS_DATA.forEach(p => {
 const escudoImg = new Image();
 escudoImg.src = 'escudo.png';
 
-const xaxaImg = new Image();
-xaxaImg.src = 'img/xaxa-cabezudo.jpg';
+// ── XAXA: espectador con remoción de fondo en canvas ─────
+const XAXA_COMMENTS = [
+  '¡Dale Playa Honda!', '¡Qué golazo!', '¡Árbitro vendido!',
+  '¡Eso! ¡Así se juega!', 'Estaba en offside...', '¡No puede ser eso!',
+  '¡Fuera! ¡Fuera!', '¡Vamos vamos!', '¡Atajá ésa!',
+  '¡Era penal!', '¡Campeones!', 'Eso lo para cualquiera...',
+  '¡Dale, mete otro!', '¡Metele vamos!', '¡Qué pelotazo!'
+];
+const xaxaSpectator = { x: 340, comment: '', commentTimer: 0 };
+let xaxaBgImg = null;
+
+function removeXaxaBg(img) {
+  const W = 400, H = 400;
+  const tc = document.createElement('canvas');
+  tc.width = W; tc.height = H;
+  const tctx = tc.getContext('2d', { willReadFrequently: true });
+  tctx.drawImage(img, 0, 0, W, H);
+  const id = tctx.getImageData(0, 0, W, H);
+  const d = id.data;
+  const visited = new Uint8Array(W * H);
+  // Semillas: esquinas + borde superior
+  const seeds = [[0,0],[W-1,0],[0,H-1],[W-1,H-1],[W>>1,0],[W>>2,0],[(W*3)>>2,0]];
+  const bgS = seeds.map(([x,y])=>{ const i=(y*W+x)*4; return [d[i],d[i+1],d[i+2]]; });
+  const queue = [];
+  seeds.forEach(([x,y])=>{ const p=y*W+x; if(!visited[p]){visited[p]=1;queue.push(p);} });
+  function distBg(p){ const i=p*4,r=d[i],g=d[i+1],b=d[i+2]; let m=9999; for(const[br,bg,bb]of bgS){const v=Math.abs(r-br)+Math.abs(g-bg)+Math.abs(b-bb);if(v<m)m=v;} return m; }
+  let qi=0;
+  while(qi<queue.length){
+    const p=queue[qi++]; d[p*4+3]=0;
+    const x=p%W,y=(p/W)|0;
+    if(x>0   &&!visited[p-1]&&distBg(p-1)<62){visited[p-1]=1;queue.push(p-1);}
+    if(x<W-1 &&!visited[p+1]&&distBg(p+1)<62){visited[p+1]=1;queue.push(p+1);}
+    if(y>0   &&!visited[p-W]&&distBg(p-W)<62){visited[p-W]=1;queue.push(p-W);}
+    if(y<H-1 &&!visited[p+W]&&distBg(p+W)<62){visited[p+W]=1;queue.push(p+W);}
+  }
+  tctx.putImageData(id,0,0);
+  const r=new Image(); r.src=tc.toDataURL(); return r;
+}
+
+const xaxaRawImg = new Image();
+xaxaRawImg.onload = () => { xaxaBgImg = removeXaxaBg(xaxaRawImg); };
+xaxaRawImg.src = 'img/xaxa-cabezudo.jpg';
 
 
 // ── Estado global ─────────────────────────────────────────
@@ -586,6 +626,7 @@ function triggerGoal() {
   state     = 'goal';
   goalFlash = 1;
   spawnConfetti();
+  xaxaComment();
   setTimeout(() => {
     if (p1.score >= WIN_GOALS || p2.score >= WIN_GOALS) {
       state = 'gameover';
@@ -778,12 +819,10 @@ function drawField() {
   // Eucaliptos laterales
   eucalipto(310, 110); eucalipto(760, 100); eucalipto(780, 85);
 
-  // ── XAXA: cabezudo en las gradas (se dibuja ANTES del alambrado para quedar detrás) ──
-  if (xaxaImg.complete && xaxaImg.naturalWidth) {
-    const xH = 70;
-    const xW = xH * xaxaImg.naturalWidth / xaxaImg.naturalHeight;
-    const xX = 180;
-    ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - 44 - xH, xW, xH);
+  // ── XAXA: espectador en gradas (antes del alambrado = queda detrás de la reja) ──
+  if (xaxaBgImg && xaxaBgImg.complete && xaxaBgImg.naturalWidth) {
+    const xH = SPRITE_H;
+    ctx.drawImage(xaxaBgImg, xaxaSpectator.x - xH/2, GROUND_Y - 44 - xH, xH, xH);
   }
 
   // ── ALAMBRADO / TEJIDO METÁLICO (perímetro del complejo) ──
@@ -1080,7 +1119,7 @@ function drawHUD() {
     ctx.font = '10px Barlow Condensed, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,.25)';
     ctx.textAlign = 'left';
-    ctx.fillText('P1: A D  W=salto  S=patada', 8, LH - 5);
+    ctx.fillText('P1: A D  W=salto  S=patada  |  Xaxa: Q/E=mover  R=comentar', 8, LH - 5);
     if (mode === 'local') {
       ctx.textAlign = 'right';
       ctx.fillText('P2: ← →  ↑=salto  ↓=patada', LW - 8, LH - 5);
@@ -1144,6 +1183,50 @@ function drawConfetti() {
   });
 }
 
+// ── Xaxa: update y diálogo ───────────────────────────────
+function updateXaxa() {
+  const sp = 3.2;
+  if (keys['KeyQ']) xaxaSpectator.x = Math.max(90,  xaxaSpectator.x - sp);
+  if (keys['KeyE']) xaxaSpectator.x = Math.min(710, xaxaSpectator.x + sp);
+  if (xaxaSpectator.commentTimer > 0) xaxaSpectator.commentTimer--;
+}
+
+function xaxaComment() {
+  xaxaSpectator.comment = XAXA_COMMENTS[Math.floor(Math.random()*XAXA_COMMENTS.length)];
+  xaxaSpectator.commentTimer = 220;
+}
+
+function drawSpeechBubble() {
+  if (!xaxaBgImg || xaxaSpectator.commentTimer <= 0) return;
+  const xH = SPRITE_H;
+  const cx  = xaxaSpectator.x;
+  const cy  = GROUND_Y - 44 - xH - 2;
+  const txt = xaxaSpectator.comment;
+  ctx.save();
+  ctx.font = 'bold 11px Barlow Condensed, sans-serif';
+  const tw = ctx.measureText(txt).width;
+  const pad = 7, bw = tw + pad*2, bh = 20;
+  let bx = cx - bw/2;
+  bx = Math.max(4, Math.min(LW - bw - 4, bx)); // no salir del canvas
+  const by = cy - bh - 9;
+  // Burbuja
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4); else ctx.rect(bx, by, bw, bh);
+  ctx.fill(); ctx.stroke();
+  // Cola
+  ctx.beginPath();
+  ctx.moveTo(cx-5, by+bh); ctx.lineTo(cx, by+bh+9); ctx.lineTo(cx+5, by+bh);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.fill();
+  ctx.strokeStyle = '#222'; ctx.stroke();
+  // Texto
+  ctx.fillStyle = '#111'; ctx.textAlign = 'center';
+  ctx.fillText(txt, cx, by + bh - 5);
+  ctx.restore();
+}
+
 // ── Render principal ──────────────────────────────────────
 function renderFrame() {
   ctx.save();
@@ -1160,6 +1243,7 @@ function renderFrame() {
     drawGoalFlash();
     drawConfetti();
     drawGoalText();
+    drawSpeechBubble();
   }
 
   if (state === 'countdown') {
@@ -1168,6 +1252,7 @@ function renderFrame() {
     drawPlayerSprite(p2);
     drawHUD();
     drawCountdown();
+    drawSpeechBubble();
   }
 
   ctx.restore();
@@ -1219,6 +1304,7 @@ function loop() {
     collideBallHead(p2);
     collidePlayerPlayer();
     checkGoal();
+    updateXaxa();
     renderFrame();
   } else if (state === 'goal' || state === 'countdown') {
     updateConfetti();
@@ -1346,9 +1432,10 @@ function showMenu() {
   document.getElementById('btn-2p').addEventListener('click',  () => showPick('local'));
 }
 
-// Tecla Escape = menú
+// Tecla Escape = menú | R = Xaxa comenta
 document.addEventListener('keydown', e => {
   if (e.code === 'Escape' && (state === 'playing' || state === 'goal')) showMenu();
+  if (e.code === 'KeyR') xaxaComment();
 });
 </script>
 </body>
