@@ -688,145 +688,159 @@ function updateConfetti() {
 
 // ── Dibujado ──────────────────────────────────────────────
 function drawField() {
-  // ── CIELO (azul celeste uruguayo) ──
-  const skyGr = ctx.createLinearGradient(0, 0, 0, GROUND_Y * 0.78);
-  skyGr.addColorStop(0,   '#3d82c8');
-  skyGr.addColorStop(0.5, '#7db8e0');
-  skyGr.addColorStop(1,   '#b8d8f0');
+  // ── CIELO típico Nicolich: plomizo con algo de celeste ──
+  const skyGr = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  skyGr.addColorStop(0,   '#6080a8');
+  skyGr.addColorStop(0.45,'#8eaacc');
+  skyGr.addColorStop(1,   '#a8c0d4');
   ctx.fillStyle = skyGr;
   ctx.fillRect(0, 0, LW, GROUND_Y);
 
-  // ── NUBES ──
+  // ── NUBES (grises, cielo cubierto tipo invierno uruguayo) ──
   function cloud(cx, cy, r, a) {
-    ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = '#fff';
-    [[0,0,1],[.75,-.3,.65],[-.65,-.12,.55],[.4,.1,.48],[-.38,.05,.42]].forEach(([dx,dy,f])=>{
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.fillStyle = '#d8dce2';
+    [[0,0,1],[.8,-.25,.7],[-.72,-.1,.62],[.42,.12,.52],[-.4,.06,.46]].forEach(([dx,dy,f])=>{
       ctx.beginPath(); ctx.arc(cx+dx*r, cy+dy*r, r*f, 0, Math.PI*2); ctx.fill();
     });
     ctx.restore();
   }
-  cloud(110, 48, 28, .78); cloud(310, 30, 18, .72); cloud(520, 52, 22, .76);
-  cloud(700, 36, 15, .68); cloud(780, 62, 12, .60);
+  cloud(80,  42, 32, .70); cloud(280, 28, 22, .65);
+  cloud(500, 38, 26, .68); cloud(680, 22, 18, .62); cloud(760, 50, 14, .58);
 
-  // ── TRIBUNA (gradas de hormigón con hinchas) ──
-  const triTop = 55, triBot = GROUND_Y - 10;
-  const triH   = triBot - triTop;
-
-  // Estructura de hormigón
-  const triGr = ctx.createLinearGradient(0, triTop, 0, triBot);
-  triGr.addColorStop(0,   '#8898a6');
-  triGr.addColorStop(0.35,'#9aaab4');
-  triGr.addColorStop(1,   '#6a7c88');
-  ctx.fillStyle = triGr;
-  ctx.fillRect(0, triTop, LW, triH);
-
-  // Divisoria horizontal de las filas
-  const ROWS = 9;
-  const rowH = triH / ROWS;
-  const SEAT_COLORS = ['#c41818','#1a3a8f','#f0f0f0','#228a3c','#e8c010','#7020b0','#e06820','#0f7cc0','#c86010'];
-  for (let r = 0; r < ROWS; r++) {
-    const ry = triTop + r * rowH;
-    // Sombra de escalón
-    ctx.fillStyle = 'rgba(0,0,0,.12)';
-    ctx.fillRect(0, ry, LW, 2);
-    // Hinchas (bloques de color)
-    const sW = 7 - r * 0.25;
-    const sH = rowH * 0.72;
-    const count = Math.ceil(LW / sW);
-    for (let s = 0; s < count; s++) {
-      const seed = Math.sin(s * 5.3 + r * 8.7) * 43758.5453;
-      const rand = seed - Math.floor(seed);
-      if (rand > 0.18) { // dejar algunos asientos vacíos
-        ctx.fillStyle = SEAT_COLORS[(Math.floor(rand * 97) + r * 3 + s) % SEAT_COLORS.length];
-        ctx.fillRect(s * sW + .5, ry + rowH * .15, sW * .82, sH);
-      }
-    }
-  }
-
-  // ── EUCALIPTOS a los costados ──
-  function tree(x, h, lean) {
-    ctx.save();
-    ctx.globalAlpha = 0.82;
-    // Tronco
-    ctx.fillStyle = '#7a5030';
-    ctx.fillRect(x - 4, GROUND_Y - h * .4, 8, h * .42);
-    // Copa (varias elipses superpuestas)
-    [[0,-.55,.36,.5],[-.18,-.62,.26,.42],[.2,-.60,.26,.40],[0,-.72,.22,.36]].forEach(([dx,dy,rx,ry2])=>{
-      ctx.fillStyle = dx === 0 && ry2 === .5 ? '#2c6c2a' : '#387a34';
-      ctx.beginPath();
-      ctx.ellipse(x + dx*h + lean, GROUND_Y + dy*h, rx*h, ry2*h, lean*.15, 0, Math.PI*2);
-      ctx.fill();
-    });
-    ctx.restore();
-  }
-  tree(28,  160, -0.05); tree(770, 150, 0.05);
-  tree(12,  110, -0.03); tree(788, 105, 0.04);
-
-  // ── BANQUILLO de suplentes (lateral derecho) ──
-  const bx = LW * 0.72, by = GROUND_Y - 28, bw = 90, bh = 18;
-  // Banco
-  ctx.fillStyle = '#5a3c1a';
-  ctx.fillRect(bx, by, bw, 6);
-  // Patas
-  for (let p = 0; p < 4; p++) {
-    ctx.fillRect(bx + p * (bw/3.2) + 4, by + 6, 5, bh - 6);
-  }
-  // Personas sentadas (suplentes)
-  for (let p = 0; p < 5; p++) {
-    const px2 = bx + 8 + p * 16;
-    ctx.fillStyle = '#1a3a8f';
-    ctx.fillRect(px2, by - 14, 10, 14); // cuerpo
-    ctx.beginPath();
-    ctx.arc(px2 + 5, by - 18, 5, 0, Math.PI*2);
-    ctx.fillStyle = '#d4a07a';
-    ctx.fill();
-  }
-  // Entrenador de pie
-  ctx.fillStyle = '#222';
-  ctx.fillRect(bx + bw + 8, by - 22, 10, 22);
+  // ── MONTAÑAS DE BASURA (basurero de Nicolich, al fondo izquierda) ──
+  // Siluetas de cerros de residuos
+  const tH = GROUND_Y; // shorthand
+  ctx.save(); ctx.globalAlpha = 0.78;
+  // Cerro 1 (grande)
+  ctx.fillStyle = '#7a7255';
   ctx.beginPath();
-  ctx.arc(bx + bw + 13, by - 27, 6, 0, Math.PI*2);
-  ctx.fillStyle = '#d4a07a'; ctx.fill();
+  ctx.moveTo(0, tH - 30);
+  ctx.bezierCurveTo(20, tH-110, 80, tH-145, 140, tH-130);
+  ctx.bezierCurveTo(190, tH-155, 240, tH-120, 270, tH-60);
+  ctx.lineTo(270, tH); ctx.lineTo(0, tH); ctx.closePath(); ctx.fill();
+  // Cerro 2 (detrás)
+  ctx.fillStyle = '#8a8060';
+  ctx.beginPath();
+  ctx.moveTo(0, tH-20);
+  ctx.bezierCurveTo(30, tH-90, 100, tH-125, 170, tH-105);
+  ctx.bezierCurveTo(210, tH-120, 250, tH-90, 290, tH-40);
+  ctx.lineTo(290, tH); ctx.lineTo(0, tH); ctx.closePath(); ctx.fill();
+  // Textura de residuos: manchitas de colores
+  const trashColors = ['#c8b840','#a04820','#60a048','#c84040','#40608a','#e0e0d0'];
+  for (let i = 0; i < 38; i++) {
+    const tx = 10 + (Math.sin(i*7.3)*0.5+0.5)*240;
+    const ty = tH - 20 - (Math.sin(i*3.7)*0.5+0.5) * 100;
+    ctx.fillStyle = trashColors[i % trashColors.length];
+    ctx.beginPath(); ctx.arc(tx, ty, 3+Math.sin(i*2.1)*1.5, 0, Math.PI*2); ctx.fill();
+  }
+  // Humo/vapor del basurero
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#c8c0b0';
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.arc(50+i*38, tH-130-i*12, 14+i*4, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // ── GAVIOTAS sobrevolando el basurero ──
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1.2;
+  [[55,95],[90,80],[130,105],[70,118],[110,90]].forEach(([gx, gy2]) => {
+    ctx.beginPath();
+    ctx.moveTo(gx-6, gy2); ctx.quadraticCurveTo(gx, gy2-5, gx+6, gy2);
+    ctx.stroke();
+  });
+
+  // ── EUCALIPTOS (hilera al fondo, típico del complejo) ──
+  function eucalipto(x, h) {
+    // Tronco delgado y alto
+    ctx.fillStyle = '#7a6040';
+    ctx.fillRect(x-3, GROUND_Y - h, 6, h * 0.55);
+    // Copa: forma alargada vertical (eucalipto)
+    ctx.fillStyle = '#3a6830';
+    ctx.beginPath();
+    ctx.ellipse(x, GROUND_Y - h*0.72, 10, h*0.32, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#4a7c3a';
+    ctx.beginPath();
+    ctx.ellipse(x-4, GROUND_Y - h*0.78, 7, h*0.22, -0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x+4, GROUND_Y - h*0.76, 7, h*0.22, 0.2, 0, Math.PI*2); ctx.fill();
+  }
+  // Hilera central de eucaliptos al fondo
+  [340,380,420,460,500,540,580,620,660,700,740].forEach((x,i) => {
+    eucalipto(x, 95 + Math.sin(i*1.8)*15);
+  });
+  // Eucaliptos laterales
+  eucalipto(310, 110); eucalipto(760, 100); eucalipto(780, 85);
+
+  // ── ALAMBRADO / TEJIDO METÁLICO (perímetro del complejo) ──
+  ctx.save(); ctx.globalAlpha = 0.30;
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 0.8;
+  // Postes
+  for (let px = 0; px <= LW; px += 55) {
+    ctx.beginPath();
+    ctx.moveTo(px, GROUND_Y - 45); ctx.lineTo(px, GROUND_Y - 2); ctx.stroke();
+  }
+  // Tejido horizontal
+  for (let ly = GROUND_Y - 42; ly < GROUND_Y - 2; ly += 10) {
+    ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(LW, ly); ctx.stroke();
+  }
+  // Diagonales (rombo)
+  for (let px = -20; px < LW; px += 14) {
+    ctx.beginPath(); ctx.moveTo(px, GROUND_Y-2); ctx.lineTo(px+28, GROUND_Y-44); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px+14, GROUND_Y-2); ctx.lineTo(px-14, GROUND_Y-44); ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── GENTE DE PIE (público sin tribuna, costado del campo) ──
+  const spectColors = ['#1a3a8f','#c02020','#f0f0f0','#228840','#222222','#8840c0'];
+  for (let i = 0; i < 18; i++) {
+    const sx = 30 + i * 42 + Math.sin(i*3.7)*6;
+    const sh2 = 22 + Math.sin(i*2.3)*4;
+    const col = spectColors[i % spectColors.length];
+    // Cuerpo
+    ctx.fillStyle = col;
+    ctx.fillRect(sx, GROUND_Y - sh2 - 8, 9, sh2);
+    // Cabeza
+    ctx.beginPath(); ctx.arc(sx+4, GROUND_Y - sh2 - 12, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#d4a07a'; ctx.fill();
+  }
 
   // ── ARCOS ──
   drawGoal(0); drawGoal(1);
 
-  // ── CÉSPED (franja jugable) ──
-  // Franjas alternadas de pasto
+  // ── CÉSPED franjeado ──
   for (let i = 0; i < LW; i += 46) {
-    ctx.fillStyle = i % 92 === 0 ? '#1e7220' : '#1a6a1c';
+    ctx.fillStyle = i % 92 === 0 ? '#1e7220' : '#196618';
     ctx.fillRect(i, GROUND_Y, 46, LH - GROUND_Y);
   }
-  // Línea de césped brillante
-  const grassGr = ctx.createLinearGradient(0, GROUND_Y - 2, 0, GROUND_Y + 5);
-  grassGr.addColorStop(0, '#60e060');
-  grassGr.addColorStop(1, '#1a6a1c');
+  const grassGr = ctx.createLinearGradient(0, GROUND_Y-2, 0, GROUND_Y+5);
+  grassGr.addColorStop(0, '#5ad85a'); grassGr.addColorStop(1, '#196618');
   ctx.fillStyle = grassGr;
-  ctx.fillRect(0, GROUND_Y - 2, LW, 7);
+  ctx.fillRect(0, GROUND_Y-2, LW, 7);
 
-  // ── LÍNEA CENTRAL y CÍRCULO ──
+  // ── LÍNEA CENTRAL Y CÍRCULO ──
   ctx.save();
-  ctx.setLineDash([6, 6]);
-  ctx.strokeStyle = 'rgba(255,255,255,.22)';
-  ctx.lineWidth = 1.6;
-  ctx.beginPath(); ctx.moveTo(LW/2, triBot); ctx.lineTo(LW/2, GROUND_Y); ctx.stroke();
+  ctx.setLineDash([6,6]);
+  ctx.strokeStyle = 'rgba(255,255,255,.20)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(LW/2, GROUND_Y-80); ctx.lineTo(LW/2, GROUND_Y); ctx.stroke();
   ctx.setLineDash([]); ctx.restore();
-
-  ctx.beginPath();
-  ctx.arc(LW/2, GROUND_Y - 88, 75, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,.18)';
-  ctx.lineWidth = 1.6; ctx.stroke();
-
-  ctx.beginPath(); ctx.arc(LW/2, GROUND_Y - 88, 4, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(LW/2, GROUND_Y-80, 72, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,.17)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(LW/2, GROUND_Y-80, 3, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,.24)'; ctx.fill();
 
   // ── CARTEL "PARQUE CUPRA" ──
-  const signW = 180, signH = 22, signX = LW/2 - 90, signY = 62;
-  ctx.fillStyle = 'rgba(0,8,30,.80)';
+  const signW = 170, signH = 20, signX = LW/2-85, signY = 28;
+  ctx.fillStyle = 'rgba(0,8,30,.78)';
   ctx.beginPath(); ctx.roundRect(signX, signY, signW, signH, 3); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,215,0,.55)'; ctx.lineWidth = 1.1; ctx.stroke();
-  ctx.font = 'bold 13px Bebas Neue, sans-serif';
+  ctx.strokeStyle = 'rgba(255,215,0,.5)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.font = 'bold 12px Bebas Neue, sans-serif';
   ctx.textAlign = 'center'; ctx.fillStyle = '#ffd700';
-  ctx.fillText('PARQUE CUPRA', LW/2, signY + 15);
+  ctx.fillText('PARQUE CUPRA — FELIPE CARDOZO', LW/2, signY+14);
 
   // ── TABLEROS PUBLICITARIOS ──
   const adBoards = [
@@ -835,13 +849,13 @@ function drawField() {
     { text: 'PARQUE CUPRA',  bg: '#002654', fg: '#ffd700' },
     { text: 'PHU',           bg: '#1a3a7a', fg: '#ffffff' },
   ];
-  const adH = 17, adY = GROUND_Y + 6, adBw = LW / adBoards.length;
-  adBoards.forEach((b, i) => {
+  const adH = 16, adY = GROUND_Y+6, adBw = LW/adBoards.length;
+  adBoards.forEach((b,i) => {
     ctx.fillStyle = b.bg;
-    ctx.fillRect(i * adBw, adY, adBw - 1, adH);
+    ctx.fillRect(i*adBw, adY, adBw-1, adH);
     ctx.font = 'bold 11px Bebas Neue, sans-serif';
     ctx.textAlign = 'center'; ctx.fillStyle = b.fg;
-    ctx.fillText(b.text, i * adBw + adBw / 2, adY + 12);
+    ctx.fillText(b.text, i*adBw+adBw/2, adY+11);
   });
 }
 
