@@ -310,6 +310,9 @@ PLAYERS_DATA.forEach(p => {
 const escudoImg = new Image();
 escudoImg.src = 'escudo.png';
 
+const xaxaImg = new Image();
+xaxaImg.src = 'img/xaxa-cabezudo.jpg';
+
 // ── Estado global ─────────────────────────────────────────
 let state      = 'menu';   // menu | pick1 | pick2 | countdown | playing | goal | gameover
 let mode       = 'cpu';    // cpu | local
@@ -806,6 +809,22 @@ function drawField() {
     // Cabeza
     ctx.beginPath(); ctx.arc(sx+4, GROUND_Y - sh2 - 12, 5, 0, Math.PI*2);
     ctx.fillStyle = '#d4a07a'; ctx.fill();
+  }
+
+  // ── XAXA: cabezudo viendo el partido desde el costado ──
+  if (xaxaImg.complete && xaxaImg.naturalWidth) {
+    const xH = 52; // altura en px del canvas
+    const xW = xH * xaxaImg.naturalWidth / xaxaImg.naturalHeight;
+    const xX = LW * 0.58; // posición horizontal: lateral derecho
+    const xY = GROUND_Y - xH;
+    ctx.drawImage(xaxaImg, xX - xW / 2, xY, xW, xH);
+    // Nombre encima
+    ctx.font = 'bold 9px Barlow Condensed, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
+    ctx.fillText('XAXA', xX + 1, xY - 3);
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText('XAXA', xX, xY - 4);
   }
 
   // ── ARCOS ──
