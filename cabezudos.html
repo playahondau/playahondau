@@ -311,7 +311,7 @@ const escudoImg = new Image();
 escudoImg.src = 'escudo.png';
 
 const xaxaImg = new Image();
-xaxaImg.src = 'img/xaxa-cabezudo.png'; // PNG con fondo transparente
+xaxaImg.src = 'img/xaxa-cabezudo.jpg';
 
 
 // ── Estado global ─────────────────────────────────────────
@@ -780,9 +780,9 @@ function drawField() {
 
   // ── XAXA: cabezudo en las gradas (se dibuja ANTES del alambrado para quedar detrás) ──
   if (xaxaImg.complete && xaxaImg.naturalWidth) {
-    const xH = 64;
+    const xH = 70;
     const xW = xH * xaxaImg.naturalWidth / xaxaImg.naturalHeight;
-    const xX = 710;
+    const xX = 180;
     ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - 44 - xH, xW, xH);
   }
 
