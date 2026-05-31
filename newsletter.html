@@ -8,31 +8,53 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{margin:0;padding:0;background:#ffffff;font-family:'Barlow',Helvetica,sans-serif;}
+body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-serif;}
 
-#diario{background:#ffffff;color:#1a1a1a;padding:3rem 1rem;}
-.dr-wrap{max-width:900px;margin:0 auto;padding:2rem;border-radius:12px;border:5px solid transparent;background:#ffffff padding-box,repeating-linear-gradient(90deg,#1a3a8f 0px,#1a3a8f 14px,transparent 14px,transparent 28px) border-box;}
+#diario{background:#f0f2f5;color:#1a1a1a;padding:3rem 1rem;}
+.dr-wrap{max-width:960px;margin:0 auto;padding:2rem;border-radius:12px;border:5px solid transparent;background:#ffffff padding-box,repeating-linear-gradient(90deg,#1a3a8f 0px,#1a3a8f 14px,transparent 14px,transparent 28px) border-box;}
+
+/* ── Cabecera ── */
 .dr-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-top:3px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:.4rem 0;margin-bottom:.2rem;}
 .dr-top img{mix-blend-mode:multiply;width:44px;height:44px;object-fit:contain;display:block;}
 .dr-name{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.8rem,5.5vw,3.8rem);font-weight:700;letter-spacing:.04em;line-height:1;text-align:center;color:#1a3a8f;padding:0 1rem;}
 .dr-meta{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;color:#555;letter-spacing:.06em;text-align:right;}
-.dr-tagline{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;color:#ffffff;background:#1a3a8f;padding:.35rem .6rem;border-radius:3px;}
-.dr-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.4rem;}
-.dr-col-main{border-right:1px solid #aaa;padding-right:1.4rem;}
-.dr-kicker{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#1a3a8f;margin-bottom:.3rem;}
-.dr-titular{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.3rem,2.8vw,2rem);font-weight:700;line-height:1.18;margin-bottom:.5rem;}
-.dr-subtit{font-family:'Barlow',sans-serif;font-size:.85rem;color:#1a3a8f;border-bottom:1px dotted #aaa;padding-bottom:.5rem;margin-bottom:.7rem;}
-.dr-body{font-family:'Georgia',serif;font-size:.86rem;line-height:1.7;color:#1a3a8f;}
-.dr-sh{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-top:2px solid #1a1a1a;border-bottom:1px solid #aaa;padding:.22rem 0;margin-bottom:.5rem;}
-.dr-item{display:flex;flex-direction:column;gap:.08rem;padding:.32rem 0;border-bottom:1px dotted #ccc;font-family:'Barlow Condensed',sans-serif;}
-.dr-cat{font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#8b0000;}
-.dr-score{font-size:.9rem;font-weight:700;}
-.dr-goles{font-size:.72rem;color:#1a3a8f;letter-spacing:.04em;}
-.dr-goles-main{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;color:#1a3a8f;margin-top:.5rem;letter-spacing:.04em;}
-@media(max-width:600px){
+.dr-tagline{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.2rem;color:#fff;background:#1a3a8f;padding:.35rem .6rem;border-radius:3px;}
+
+/* ── Titular destacado ancho completo ── */
+.dr-featured{border-bottom:2px solid #1a3a8f;padding-bottom:.9rem;margin-bottom:1.2rem;}
+.dr-kicker{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#8b0000;margin-bottom:.3rem;}
+.dr-titular{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.4rem,3vw,2.1rem);font-weight:700;line-height:1.15;margin-bottom:.4rem;}
+.dr-subtit{font-family:'Barlow',sans-serif;font-size:.85rem;color:#444;margin:0;}
+
+/* ── Grid: crónica izquierda (secundaria) | resultados+fixture derecha (protagonista) ── */
+.dr-grid{display:grid;grid-template-columns:1fr 2fr;gap:1.8rem;align-items:start;}
+.dr-col-cron{border-right:1px solid #ccc;padding-right:1.8rem;}
+.dr-sh{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-top:2px solid #1a1a1a;border-bottom:1px solid #ccc;padding:.22rem 0;margin-bottom:.7rem;}
+.dr-sh-sec{color:#555;}
+
+/* ── Crónica (secundaria) ── */
+.dr-cron-label{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:.4rem;}
+.dr-body{font-family:'Georgia',serif;font-size:.82rem;line-height:1.75;color:#333;}
+.dr-goles-main{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:#1a3a8f;margin-top:.7rem;letter-spacing:.04em;border-top:1px dotted #ccc;padding-top:.5rem;}
+
+/* ── Tarjetas de resultados (protagonistas) ── */
+.dr-cat{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:.1rem;}
+.dr-result-card{padding:.55rem .75rem;margin-bottom:.4rem;border-left:4px solid #ccc;border-radius:0 4px 4px 0;}
+.dr-result-win {border-left-color:#1a6b1a;background:#f0faf0;}
+.dr-result-draw{border-left-color:#9a6f00;background:#fefce8;}
+.dr-result-loss{border-left-color:#a00000;background:#fff5f5;}
+.dr-score-big{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;line-height:1.2;}
+.dr-result-meta{font-size:.67rem;color:#777;margin-top:.15rem;}
+.dr-goles{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:#1a3a8f;margin-top:.2rem;}
+
+/* ── Tarjetas de próximos partidos ── */
+.dr-next-card{padding:.5rem .75rem;margin-bottom:.35rem;border-left:3px solid #1a3a8f;background:#f4f6fb;border-radius:0 4px 4px 0;}
+.dr-next-match{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;color:#1a1a1a;line-height:1.2;}
+.dr-next-meta{font-size:.68rem;color:#666;margin-top:.12rem;}
+
+@media(max-width:620px){
   .dr-grid{grid-template-columns:1fr;}
-  .dr-col-main{border-right:none;padding-right:0;}
-  .dr-body{column-count:1;}
+  .dr-col-cron{border-right:none;padding-right:0;border-bottom:1px solid #ccc;padding-bottom:1.2rem;margin-bottom:.2rem;}
   .dr-top{flex-wrap:wrap;gap:.3rem;justify-content:center;}
   .dr-meta{flex:none;width:100%;text-align:center!important;}
 }
@@ -169,46 +191,62 @@ function renderDiario(resultados, fixture) {
   }
 
   var resHtml = resultados.slice(0,6).map(function(rv) {
-    var col   = rv.estado==='victoria'?'#1a5c1a':rv.estado==='empate'?'#7a5800':'#8b0000';
-    var badge = rv.estado==='victoria'?'▲':rv.estado==='empate'?'▬':'▼';
-    var loc   = parseLoc(rv.localia);
+    var cardCls = rv.estado==='victoria'?'dr-result-win':rv.estado==='empate'?'dr-result-draw':'dr-result-loss';
+    var col     = rv.estado==='victoria'?'#1a6b1a':rv.estado==='empate'?'#9a6f00':'#a00000';
+    var badge   = rv.estado==='victoria'?'▲ ':rv.estado==='empate'?'▬ ':'▼ ';
+    var loc     = parseLoc(rv.localia);
     var golesHtml = rv.goleadores
-      ? '<span class="dr-goles">&#9917; '+rv.goleadores.split(';').map(function(g){return g.trim();}).join(' · ')+'</span>'
+      ? '<div class="dr-goles">&#9917; '+rv.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</div>'
       : '';
-    return '<div class="dr-item">'+
-      '<span class="dr-cat">'+rv.categoria+'</span>'+
-      '<span class="dr-score" style="color:'+col+'">'+badge+' Playa Honda '+rv.score+' '+rv.rival+'</span>'+
-      '<span style="font-size:.68rem;color:#666;">'+rv.dia+' &middot; '+rv.fecha+' &middot; '+loc.lado+(loc.cancha?' &middot; &#128205; '+loc.cancha:'')+'</span>'+
+    return '<div class="dr-result-card '+cardCls+'">'+
+      '<div class="dr-cat">'+rv.categoria+'</div>'+
+      '<div class="dr-score-big" style="color:'+col+'">'+badge+'Playa Honda '+rv.score+' '+rv.rival+'</div>'+
+      '<div class="dr-result-meta">'+rv.dia+' &middot; '+rv.fecha+' &middot; '+loc.lado+(loc.cancha?' &middot; &#128205; '+loc.cancha:'')+'</div>'+
       golesHtml+
     '</div>';
   }).join('');
 
-  var fixHtml = fixture.slice(0,5).map(function(f) {
-    return '<div class="dr-item">'+
-      '<span class="dr-cat">'+f.categoria+'</span>'+
-      '<span>'+f.local+' vs '+f.visitante+'</span>'+
-      '<span style="font-size:.72rem;color:#666">'+f.dia_hora+(f.lugar?' · '+f.lugar:'')+'</span>'+
-    '</div>';
-  }).join('');
+  var fixHtml = (fixture.length
+    ? fixture.slice(0,6).map(function(f) {
+        return '<div class="dr-next-card">'+
+          '<div class="dr-cat">'+f.categoria+'</div>'+
+          '<div class="dr-next-match">'+f.local+' vs '+f.visitante+'</div>'+
+          '<div class="dr-next-meta">'+f.dia_hora+(f.lugar?' &middot; '+f.lugar:'')+'</div>'+
+        '</div>';
+      }).join('')
+    : '<p style="font-size:.78rem;color:#888;font-family:\'Barlow Condensed\',sans-serif;">Sin fixture disponible.</p>'
+  );
+
+  var loc0 = parseLoc(r.localia);
 
   sec.innerHTML =
+    /* ── Cabecera ── */
     '<div class="dr-top">'+
       '<img src="https://playahondau.github.io/playahondau/escudo.png" style="width:44px;height:44px;object-fit:contain;display:block;" alt="Escudo">'+
       '<h2 class="dr-name">FINDE DEL PLAYA</h2>'+
       '<span class="dr-meta">'+fechaStr+'</span>'+
     '</div>'+
-    '<p class="dr-tagline">Playa Honda Universitario · Liga Universitaria del Uruguay · Desde 1964</p>'+
+    '<p class="dr-tagline">Playa Honda Universitario &middot; Liga Universitaria del Uruguay &middot; Desde 1964</p>'+
+    /* ── Titular ancho completo ── */
+    '<div class="dr-featured">'+
+      '<p class="dr-kicker">'+cat+' &middot; '+r.dia+' '+r.fecha+' &middot; '+loc0.lado+(loc0.cancha?' &middot; &#128205; '+loc0.cancha:'')+'</p>'+
+      '<h3 class="dr-titular">'+titular+'</h3>'+
+      '<p class="dr-subtit">'+subtit+'</p>'+
+    '</div>'+
+    /* ── Grid: crónica (1fr) | resultados+fixture (2fr) ── */
     '<div class="dr-grid">'+
-      '<div class="dr-col dr-col-main">'+
-        (function(){ var loc=parseLoc(r.localia); return '<p class="dr-kicker">'+cat+' &middot; '+r.dia+' '+r.fecha+' &middot; '+loc.lado+(loc.cancha?' &middot; &#128205; '+loc.cancha:'')+'</p>'; })()+
-        '<h3 class="dr-titular">'+titular+'</h3>'+
-        '<p class="dr-subtit">'+subtit+'</p>'+
+      /* Columna izquierda: crónica secundaria */
+      '<div class="dr-col dr-col-cron">'+
+        '<h4 class="dr-sh dr-sh-sec">Cr&oacute;nica</h4>'+
         '<p class="dr-body">'+cronica+'</p>'+
         (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
       '</div>'+
-      '<div class="dr-col dr-col-side">'+
-        '<h4 class="dr-sh">Resultados</h4>'+resHtml+
-        '<h4 class="dr-sh" style="margin-top:1rem">Próximos partidos</h4>'+fixHtml+
+      /* Columna derecha: resultados + fixture protagonistas */
+      '<div class="dr-col dr-col-main">'+
+        '<h4 class="dr-sh">Resultados del finde</h4>'+
+        resHtml+
+        '<h4 class="dr-sh" style="margin-top:1.4rem">Pr&oacute;ximos partidos</h4>'+
+        fixHtml+
       '</div>'+
     '</div>';
 }
