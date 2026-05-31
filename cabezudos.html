@@ -466,6 +466,35 @@ function updateBall() {
   // Rebotar en el poste vertical (x=GOAL_W, x=LW-GOAL_W)
   bouncePost(GOAL_W,      GROUND_Y - GOAL_H); // post top izquierdo
   bouncePost(LW - GOAL_W, GROUND_Y - GOAL_H); // post top derecho
+
+  // Rebotar en los travesaños horizontales
+  bounceCrossbar();
+}
+
+function bounceCrossbar() {
+  var cy = GROUND_Y - GOAL_H; // y del travesaño
+
+  // Arco izquierdo: travesaño de x=0 a x=GOAL_W
+  if (ball.x > BALL_R && ball.x < GOAL_W) {
+    var dy = ball.y - cy;
+    if (Math.abs(dy) < BALL_R + POST_R) {
+      var sign = dy < 0 ? -1 : 1;
+      ball.y  = cy + sign * (BALL_R + POST_R);
+      ball.vy = -ball.vy * 0.55;
+      ball.vx *= 0.80;
+    }
+  }
+
+  // Arco derecho: travesaño de x=LW-GOAL_W a x=LW
+  if (ball.x > LW - GOAL_W && ball.x < LW - BALL_R) {
+    var dy2 = ball.y - cy;
+    if (Math.abs(dy2) < BALL_R + POST_R) {
+      var sign2 = dy2 < 0 ? -1 : 1;
+      ball.y  = cy + sign2 * (BALL_R + POST_R);
+      ball.vy = -ball.vy * 0.55;
+      ball.vx *= 0.80;
+    }
+  }
 }
 
 function bouncePost(px, py) {
