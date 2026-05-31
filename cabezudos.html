@@ -350,7 +350,8 @@ function resetBall(toSide) {
     x: LW / 2,
     y: GROUND_Y - 180,
     vx: (toSide === 0 ? -2.5 : 2.5),
-    vy: -1.5
+    vy: -1.5,
+    prevY: GROUND_Y - 180
   };
 }
 
@@ -437,7 +438,15 @@ function updatePlayer(pl, left, right, jumpEdge) {
 }
 
 // ── Física: pelota ────────────────────────────────────────
+const MAX_BALL_V = 16; // clamp velocidad máxima para evitar tunneling
+
 function updateBall() {
+  ball.prevY = ball.y; // guardar posición anterior para CCD del travesaño
+
+  // Clampear velocidad máxima (previene que la pelota atraviese jugadores)
+  ball.vx = Math.max(-MAX_BALL_V, Math.min(MAX_BALL_V, ball.vx));
+  ball.vy = Math.max(-MAX_BALL_V, Math.min(MAX_BALL_V, ball.vy));
+
   ball.vy = Math.min(ball.vy + GRAVITY * 0.84, MAX_FALL);
   ball.vx *= 0.993;
   ball.x  += ball.vx;
@@ -475,27 +484,29 @@ function updateBall() {
 function bounceCrossbar() {
   var cy = GROUND_Y - GOAL_H; // y del travesaño
 
-  // Arco izquierdo: travesaño de x=0 a x=GOAL_W
-  if (ball.x > BALL_R && ball.x < GOAL_W) {
-    var dy = ball.y - cy;
-    if (Math.abs(dy) < BALL_R + POST_R) {
-      var sign = dy < 0 ? -1 : 1;
-      ball.y  = cy + sign * (BALL_R + POST_R);
-      ball.vy = -ball.vy * 0.55;
+  function checkCrossbar() {
+    // CCD: ¿la pelota cruzó de arriba hacia abajo este frame?
+    // (prevY por encima o en el travesaño, ahora por debajo)
+    if (ball.prevY <= cy + BALL_R && ball.y + BALL_R > cy) {
+      // Vino desde arriba → devolver por encima del travesaño (NO es gol)
+      ball.y  = cy - BALL_R - 1;
+      ball.vy = -Math.abs(ball.vy) * 0.55;
+      ball.vx *= 0.75;
+      return;
+    }
+    // Underside: pelota dentro del arco golpeando el travesaño desde abajo
+    if (ball.y - BALL_R < cy + POST_R && ball.y > cy && ball.vy < 0) {
+      ball.y  = cy + BALL_R + POST_R;
+      ball.vy = Math.abs(ball.vy) * 0.55;
       ball.vx *= 0.80;
     }
   }
 
+  // Arco izquierdo: travesaño de x=0 a x=GOAL_W
+  if (ball.x < GOAL_W + BALL_R && ball.x > -BALL_R) checkCrossbar();
+
   // Arco derecho: travesaño de x=LW-GOAL_W a x=LW
-  if (ball.x > LW - GOAL_W && ball.x < LW - BALL_R) {
-    var dy2 = ball.y - cy;
-    if (Math.abs(dy2) < BALL_R + POST_R) {
-      var sign2 = dy2 < 0 ? -1 : 1;
-      ball.y  = cy + sign2 * (BALL_R + POST_R);
-      ball.vy = -ball.vy * 0.55;
-      ball.vx *= 0.80;
-    }
-  }
+  if (ball.x > LW - GOAL_W - BALL_R && ball.x < LW + BALL_R) checkCrossbar();
 }
 
 function bouncePost(px, py) {
@@ -1108,6 +1119,8 @@ function loop() {
 
     updateBall();
     collideBallHead(p1);
+    collideBallHead(p2);
+    collideBallHead(p1); // segunda pasada: resuelve overlaps profundos por velocidad alta
     collideBallHead(p2);
     collidePlayerPlayer();
     checkGoal();
