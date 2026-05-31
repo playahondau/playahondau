@@ -283,6 +283,7 @@ const HEAD_R     = 37;
 const GROUND_Y   = LH - 58;
 const GOAL_W     = 72;      // profundidad del arco
 const GOAL_H     = 112;     // altura del arco
+const BODY_BELOW = Math.round(GOAL_H * 0.72); // px desde centro de cabeza hasta pies (visual)
 const POST_R     = 5;
 const GOAL_LINE  = GOAL_W - 4;   // disparador de gol
 const WIN_GOALS  = 5;
@@ -329,7 +330,7 @@ function makePlayer(side, key) {
   const data = PLAYERS_DATA.find(p => p.key === key);
   return {
     x: side === 0 ? 160 : LW - 160,
-    y: GROUND_Y - HEAD_R,
+    y: GROUND_Y - BODY_BELOW,
     vx: 0, vy: 0,
     side,
     key,
@@ -354,9 +355,9 @@ function resetBall(toSide) {
 }
 
 function resetPositions() {
-  p1.x = 160;          p1.y = GROUND_Y - HEAD_R;
+  p1.x = 160;          p1.y = GROUND_Y - BODY_BELOW;
   p1.vx = 0; p1.vy = 0; p1.onGround = false; p1.jumpUsed = 0;
-  p2.x = LW - 160;    p2.y = GROUND_Y - HEAD_R;
+  p2.x = LW - 160;    p2.y = GROUND_Y - BODY_BELOW;
   p2.vx = 0; p2.vy = 0; p2.onGround = false; p2.jumpUsed = 0;
 }
 
@@ -422,8 +423,8 @@ function updatePlayer(pl, left, right, jumpEdge) {
   if (pl.x > LW - HEAD_R - 1) { pl.x = LW - HEAD_R - 1; pl.vx = 0; }
 
   // Piso
-  if (pl.y >= GROUND_Y - HEAD_R) {
-    pl.y = GROUND_Y - HEAD_R;
+  if (pl.y >= GROUND_Y - BODY_BELOW) {
+    pl.y = GROUND_Y - BODY_BELOW;
     pl.vy = 0;
     pl.onGround = true;
     pl.jumpUsed = 0;
@@ -819,7 +820,7 @@ function drawPlayerSprite(pl) {
   const sf    = Math.max(0.3, 1 - distG / 200);
   ctx.fillStyle = `rgba(0,0,0,${0.2 * sf})`;
   ctx.beginPath();
-  ctx.ellipse(0, distG + HEAD_R * 0.55, HEAD_R * 0.68 * sf, 6 * sf, 0, 0, Math.PI*2);
+  ctx.ellipse(0, distG, BODY_BELOW * 0.45 * sf, 6 * sf, 0, 0, Math.PI*2);
   ctx.fill();
 
   // ── Flash de patada (onda) ──
@@ -840,13 +841,13 @@ function drawPlayerSprite(pl) {
     // el círculo de colisión (HEAD_R).
     const sw = spr.naturalWidth, sh = spr.naturalHeight;
 
-    // Ancho del personaje: la cabeza ocupa ~65% del ancho del sprite → ajustar
-    // para que la cabeza coincida con HEAD_R * 2
-    const charW = HEAD_R * 3.1;           // ancho total del sprite en canvas
-    const charH = charW * sh / sw;        // alto proporcional
-
-    // Centro visual de la cabeza está aprox en el 32% del alto del sprite
-    const headCY = charH * 0.32;
+    // Tamaño derivado de BODY_BELOW y GOAL_H:
+    // headFrac = fracción del sprite donde está el centro visual de la cabeza
+    // charH se calcula para que los pies (bottom del sprite) caigan en GROUND_Y
+    const headFrac = 0.32;
+    const charH    = BODY_BELOW / (1 - headFrac);  // ~115px ≈ GOAL_H
+    const charW    = charH * (sw / sh);
+    const headCY   = charH * headFrac;
 
     ctx.drawImage(spr, -charW / 2, -headCY, charW, charH);
 
