@@ -819,12 +819,6 @@ function drawField() {
     const xW = xH * xSrc.naturalWidth / xSrc.naturalHeight;
     const xX = LW * 0.60; // lateral derecho
     ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - xH, xW, xH);
-    ctx.font = 'bold 9px Barlow Condensed, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(0,0,0,.55)';
-    ctx.fillText('XAXA', xX + 1, GROUND_Y - xH - 3);
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('XAXA', xX, GROUND_Y - xH - 4);
   }
 
   // ── ARCOS ──
@@ -1255,11 +1249,11 @@ function showPick(m) {
   // En modo CPU, p2 es CPU con Barcia fijo; el jugador solo elige su personaje
   if (m === 'cpu') {
     p1sel = 'feli';
-    p2sel = 'barcia';
+    p2sel = 'rodo';
     showPickP1(true);
   } else {
     p1sel = 'feli';
-    p2sel = 'barcia';
+    p2sel = 'rodo';
     showPickP1(false);
   }
 }
