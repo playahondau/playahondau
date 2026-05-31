@@ -312,6 +312,45 @@ escudoImg.src = 'escudo.png';
 
 const xaxaImg = new Image();
 xaxaImg.src = 'img/xaxa-cabezudo.jpg';
+let xaxaCanvas = null; // versión sin fondo, generada al cargar
+
+xaxaImg.onload = function() {
+  try {
+    // Procesar a 300px para velocidad
+    const oW = xaxaImg.naturalWidth, oH = xaxaImg.naturalHeight;
+    const S  = 300, SH = Math.round(S * oH / oW);
+    const tmp = document.createElement('canvas');
+    tmp.width = S; tmp.height = SH;
+    const tc = tmp.getContext('2d');
+    tc.drawImage(xaxaImg, 0, 0, S, SH);
+    const id = tc.getImageData(0, 0, S, SH);
+    const px = id.data;
+    const vis = new Uint8Array(S * SH);
+
+    // Flood-fill desde las 4 esquinas con tolerancia de color
+    function flood(x0, y0) {
+      const si = (y0*S+x0)*4;
+      const sr=px[si], sg=px[si+1], sb=px[si+2];
+      const q = [[x0,y0]];
+      while (q.length) {
+        const [x,y] = q.pop();
+        if (x<0||x>=S||y<0||y>=SH) continue;
+        const i = y*S+x; if (vis[i]) continue;
+        const p = i*4;
+        if (Math.abs(px[p]-sr)+Math.abs(px[p+1]-sg)+Math.abs(px[p+2]-sb) > 68) continue;
+        vis[i]=1; px[p+3]=0; // transparente
+        q.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+      }
+    }
+    flood(0,0); flood(S-1,0); flood(0,SH-1); flood(S-1,SH-1);
+
+    tc.putImageData(id, 0, 0);
+    xaxaCanvas = tmp;
+  } catch(e) {
+    // Fallback: usar imagen original si hay problema de CORS
+    xaxaCanvas = null;
+  }
+};
 
 // ── Estado global ─────────────────────────────────────────
 let state      = 'menu';   // menu | pick1 | pick2 | countdown | playing | goal | gameover
@@ -812,19 +851,20 @@ function drawField() {
   }
 
   // ── XAXA: cabezudo viendo el partido desde el costado ──
-  if (xaxaImg.complete && xaxaImg.naturalWidth) {
-    const xH = 52; // altura en px del canvas
-    const xW = xH * xaxaImg.naturalWidth / xaxaImg.naturalHeight;
-    const xX = LW * 0.58; // posición horizontal: lateral derecho
-    const xY = GROUND_Y - xH;
-    ctx.drawImage(xaxaImg, xX - xW / 2, xY, xW, xH);
+  const xSrc = xaxaCanvas ||
+               (xaxaImg.complete && xaxaImg.naturalWidth ? xaxaImg : null);
+  if (xSrc) {
+    const xH = SPRITE_H;  // mismo tamaño que los jugadores
+    const xW = xH * xSrc.width / xSrc.height;
+    const xX = LW * 0.60; // lateral derecho
+    ctx.drawImage(xSrc, xX - xW / 2, GROUND_Y - xH, xW, xH);
     // Nombre encima
     ctx.font = 'bold 9px Barlow Condensed, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,.55)';
-    ctx.fillText('XAXA', xX + 1, xY - 3);
+    ctx.fillText('XAXA', xX + 1, GROUND_Y - xH - 3);
     ctx.fillStyle = '#ffd700';
-    ctx.fillText('XAXA', xX, xY - 4);
+    ctx.fillText('XAXA', xX, GROUND_Y - xH - 4);
   }
 
   // ── ARCOS ──
