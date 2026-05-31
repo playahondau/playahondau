@@ -311,53 +311,8 @@ const escudoImg = new Image();
 escudoImg.src = 'escudo.png';
 
 const xaxaImg = new Image();
-xaxaImg.src = 'img/xaxa-cabezudo.jpg';
-let xaxaCanvas = null; // versión sin fondo, generada al cargar
+xaxaImg.src = 'img/xaxa-cabezudo.png'; // PNG con fondo transparente
 
-xaxaImg.onload = function() {
-  try {
-    const oW = xaxaImg.naturalWidth, oH = xaxaImg.naturalHeight;
-    const S = 420, SH = Math.round(S * oH / oW);
-    const tmp = document.createElement('canvas');
-    tmp.width = S; tmp.height = SH;
-    const tc = tmp.getContext('2d');
-    tc.drawImage(xaxaImg, 0, 0, S, SH);
-    const id = tc.getImageData(0, 0, S, SH);
-    const px = id.data;
-    const vis = new Uint8Array(S * SH);
-    const q = []; // BFS multi-origen
-    const TOL = 52; // tolerancia de color entre píxeles adyacentes
-
-    // Sembrar desde TODOS los píxeles del borde perimetral
-    function seed(x, y) {
-      const i = y*S+x; if (vis[i]) return;
-      vis[i]=1; px[i*4+3]=0; q.push(x, y);
-    }
-    for (let x=0; x<S; x++) { seed(x, 0); seed(x, SH-1); }
-    for (let y=1; y<SH-1; y++) { seed(0, y); seed(S-1, y); }
-
-    // BFS: expande a vecinos con color similar al pixel actual
-    // (comparación entre adyacentes, no contra un color fijo)
-    let qi = 0;
-    while (qi < q.length) {
-      const x=q[qi++], y=q[qi++];
-      const p=(y*S+x)*4, r=px[p], g=px[p+1], b=px[p+2];
-      const dirs=[1,0, -1,0, 0,1, 0,-1];
-      for (let d=0; d<8; d+=2) {
-        const nx=x+dirs[d], ny=y+dirs[d+1];
-        if (nx<0||nx>=S||ny<0||ny>=SH) continue;
-        const ni=ny*S+nx; if (vis[ni]) continue;
-        const np=ni*4;
-        if (Math.abs(px[np]-r)+Math.abs(px[np+1]-g)+Math.abs(px[np+2]-b) <= TOL) {
-          vis[ni]=1; px[np+3]=0; q.push(nx, ny);
-        }
-      }
-    }
-
-    tc.putImageData(id, 0, 0);
-    xaxaCanvas = tmp;
-  } catch(e) { xaxaCanvas = null; }
-};
 
 // ── Estado global ─────────────────────────────────────────
 let state      = 'menu';   // menu | pick1 | pick2 | countdown | playing | goal | gameover
@@ -858,14 +813,12 @@ function drawField() {
   }
 
   // ── XAXA: cabezudo viendo el partido desde el costado ──
-  const xSrc = xaxaCanvas ||
-               (xaxaImg.complete && xaxaImg.naturalWidth ? xaxaImg : null);
-  if (xSrc) {
-    const xH = SPRITE_H;  // mismo tamaño que los jugadores
-    const xW = xH * xSrc.width / xSrc.height;
+  if (xaxaImg.complete && xaxaImg.naturalWidth) {
+    const xSrc = xaxaImg;
+    const xH = SPRITE_H;
+    const xW = xH * xSrc.naturalWidth / xSrc.naturalHeight;
     const xX = LW * 0.60; // lateral derecho
-    ctx.drawImage(xSrc, xX - xW / 2, GROUND_Y - xH, xW, xH);
-    // Nombre encima
+    ctx.drawImage(xaxaImg, xX - xW / 2, GROUND_Y - xH, xW, xH);
     ctx.font = 'bold 9px Barlow Condensed, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,.55)';
