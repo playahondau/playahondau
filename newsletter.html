@@ -147,26 +147,26 @@ function renderDiario(resultados, fixture) {
 
   var TIT = {
     victoria:[
+      'GRAN FINDE AZUL. EL PLAYA RESPONDE CON FUERZA.',
       'PLAYA HONDA APLASTA A '+rival.toUpperCase()+' CON UN CONTUNDENTE '+sc,
       'NOCHE AZUL EN '+cat.toUpperCase()+': VICTORIA HISTÓRICA DE LOS UNIVERSITARIOS',
-      'IMPARABLES: LOS AZULES SE IMPONEN '+sc+' Y SIGUEN SOÑANDO',
-      'DOMINIO TOTAL: PLAYA HONDA APLICA '+sc+' Y SUMA TRES PUNTOS DE ORO'
+      'IMPARABLES: LOS AZULES SE IMPONEN '+sc+' Y SIGUEN SOÑANDO'
     ],
     empate:[
+      'FINDE PAREJO. EL PLAYA SUMA Y SIGUE.',
       'SE REPARTEN LOS PUNTOS: PLAYA HONDA Y '+rival.toUpperCase()+' IGUALAN '+sc,
-      'PUNTO VALIOSO DE LOS UNIVERSITARIOS ANTE '+rival.toUpperCase(),
       'NI VENCEDORES NI VENCIDOS: EMPATE JUSTO EN '+cat.toUpperCase()
     ],
     derrota:[
+      'DURA FECHA. A PREPARAR LO QUE SE VIENE.',
       'GOLPE DURO: PLAYA HONDA CAE ANTE '+rival.toUpperCase()+' POR '+sc,
-      'TROPIEZO AZUL QUE DUELE EN '+cat.toUpperCase(),
-      'DURA NOCHE UNIVERSITARIA: DERROTA '+sc+' ANTE '+rival.toUpperCase()
+      'TROPIEZO AZUL QUE DUELE EN '+cat.toUpperCase()
     ]
   };
   var SUB = {
-    victoria:['Los azules demostraron carácter y se llevaron los tres puntos.','Una victoria que levanta el ánimo de toda la hinchada universitaria.','Playa Honda sumó de a tres y sigue en la pelea por los primeros puestos.'],
-    empate:['Un punto que puede valer mucho en el balance final de la temporada.','Reparto justo en un partido disputado y equilibrado de principio a fin.'],
-    derrota:['Los universitarios deberán reponerse de cara a la próxima fecha.','Golpe duro que no define, pero obliga a responder en el siguiente partido.']
+    victoria:['Jornada positiva para el Playa. A mantener el nivel el finde que viene.','Los azules demostraron carácter y se llevaron los tres puntos.','Playa Honda sumó de a tres y sigue en la pelea por los primeros puestos.'],
+    empate:['Jornada con luces y sombras. A cerrar mejor el finde que viene.','Un punto que puede valer mucho en el balance final de la temporada.'],
+    derrota:['Jornada complicada para el Playa. A pensar en el finde que viene.','Los universitarios deberán reponerse de cara a la próxima fecha.']
   };
   var CRON = {
     victoria:['Desde el primer silbato Playa Honda mostró intensidad. Los azules cerraron bien los espacios atrás y fueron peligrosos en ataque, con una ventaja que reflejan los números: '+sc+'. Tres puntos vitales para la campaña universitaria.','Un partido para enmarcar. Playa Honda manejó los tiempos con inteligencia, sostuvo la presión y terminó siendo justo vencedor. El '+sc+' es elocuente.'],
@@ -221,7 +221,10 @@ function renderDiario(resultados, fixture) {
     : '<p style="font-size:.78rem;color:#888;font-family:\'Barlow Condensed\',sans-serif;">Sin fixture disponible.</p>'
   );
 
-  var loc0 = parseLoc(r.localia);
+  var allCats = resultados
+    .map(function(rv){ return rv.categoria.toUpperCase(); })
+    .filter(function(c,i,a){ return a.indexOf(c)===i; })
+    .join(' &nbsp;|&nbsp; ');
 
   sec.innerHTML =
     /* ── Cabecera ── */
@@ -233,7 +236,7 @@ function renderDiario(resultados, fixture) {
     '<p class="dr-tagline">Playa Honda Universitario &middot; Liga Universitaria del Uruguay &middot; Desde 1964</p>'+
     /* ── Titular ancho completo ── */
     '<div class="dr-featured">'+
-      '<p class="dr-kicker">'+cat+' &middot; '+r.dia+' '+r.fecha+' &middot; '+loc0.lado+(loc0.cancha?' &middot; &#128205; '+loc0.cancha:'')+'</p>'+
+      '<p class="dr-kicker">'+allCats+'</p>'+
       '<h3 class="dr-titular">'+titular+'</h3>'+
       '<p class="dr-subtit">'+subtit+'</p>'+
     '</div>'+
