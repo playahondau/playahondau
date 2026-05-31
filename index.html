@@ -3061,20 +3061,48 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 ══════════════════════════════════════════════════════ */
 function checkMatchDay(rows){
   var now=new Date();
+  var todayD=now.getDate(), todayM=now.getMonth()+1;
+  var tom=new Date(now); tom.setDate(tom.getDate()+1);
+  var tomD=tom.getDate(), tomM=tom.getMonth()+1;
+
+  function parseDT(r){
+    var m=(r.dia_hora||'').trim().match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})/);
+    if(!m) return null;
+    return {d:parseInt(m[1]),mo:parseInt(m[2]),h:parseInt(m[3]),min:parseInt(m[4])};
+  }
+  function sortByTime(a,b){
+    var pa=parseDT(a),pb=parseDT(b);
+    if(!pa||!pb) return 0;
+    return (pa.h*60+pa.min)-(pb.h*60+pb.min);
+  }
+
+  // Partidos de hoy que aún no terminaron (hasta 90 min después del arranque)
   var hoy=rows.filter(function(r){
-    var m=(r.dia_hora||'').trim().match(/^(\d{1,2})\/(\d{1,2})\s/);
-    if(!m) return false;
-    return parseInt(m[1])===now.getDate() && parseInt(m[2])===(now.getMonth()+1);
-  });
-  if(!hoy.length) return;
+    var p=parseDT(r); if(!p) return false;
+    if(p.d!==todayD||p.mo!==todayM) return false;
+    var fin=new Date(now.getFullYear(),now.getMonth(),now.getDate(),p.h,p.min+90);
+    return now<fin;
+  }).sort(sortByTime);
+
+  var label, partido;
+  if(hoy.length){
+    label='⚽ HOY JUGAMOS'; partido=hoy[0];
+  } else {
+    var manana=rows.filter(function(r){
+      var p=parseDT(r); if(!p) return false;
+      return p.d===tomD&&p.mo===tomM;
+    }).sort(sortByTime);
+    if(!manana.length) return;
+    label='⚽ MAÑANA JUGAMOS'; partido=manana[0];
+  }
+
   document.body.classList.add('match-day');
   var banner=document.getElementById('matchday-banner');
-  var p=hoy[0];
-  var hora=(p.dia_hora||'').split(' ')[1]||'';
+  var hora=(partido.dia_hora||'').split(' ')[1]||'';
   document.getElementById('md-text').innerHTML=
-    '⚽ HOY JUGAMOS &nbsp;·&nbsp; <strong>'+p.categoria+'</strong> &nbsp;·&nbsp; '+
-    p.local+' vs '+p.visitante+' &nbsp;·&nbsp; '+hora+
-    (p.lugar?' &nbsp;·&nbsp; '+p.lugar:'');
+    label+' &nbsp;·&nbsp; <strong>'+partido.categoria+'</strong> &nbsp;·&nbsp; '+
+    partido.local+' vs '+partido.visitante+' &nbsp;·&nbsp; '+hora+
+    (partido.lugar?' &nbsp;·&nbsp; '+partido.lugar:'');
   banner.style.display='flex';
 }
 
