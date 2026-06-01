@@ -2087,9 +2087,9 @@ init();
 const newsletter = document.getElementById('newsletter');
 const closeNewsletter = document.getElementById('close-newsletter');
 
-// Botón flotante abre el modal
-document.getElementById('fab-newsletter').addEventListener('click', () => {
-  newsletter.classList.add('active');
+// Botón flotante abre el modal (el FAB está al final del body, usar delegación)
+document.addEventListener('click', function(e) {
+  if (e.target.closest('#fab-newsletter')) newsletter.classList.add('active');
 });
 
 // Click fuera del modal lo cierra
@@ -4362,7 +4362,7 @@ function compartirTarjeta(){
 <!-- BUSCADOR DE JUGADORES + ESTADÍSTICAS EN VIVO -->
 <style>
   .jugador-card { flex-direction: column !important; align-items: flex-start !important; }
-  .jstat { display: block; font-size: .67rem; color: #c9a227; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; margin-top: .16rem; }
+  .jstat { display: block; font-size: .67rem; color: #f0f4ff; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; margin-top: .16rem; }
   .buscador-overlay { position: fixed; inset: 0; z-index: 10025; background: rgba(3,5,18,.96); display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 1rem; opacity: 0; pointer-events: none; transition: opacity .25s; }
   .buscador-overlay.on { opacity: 1; pointer-events: all; }
   .buscador-header { width: 100%; max-width: 560px; display: flex; align-items: center; gap: .75rem; margin-bottom: 1.2rem; }
