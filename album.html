@@ -296,7 +296,7 @@
 </div>
 
 <div class="sobre-section">
-  <button class="sobre-btn" id="btn-sobre" type="button">
+  <button class="sobre-btn" id="btn-sobre" type="button" onclick="if(!this.classList.contains('disabled'))abrirSobre()">
     <img class="sobre-escudo" src="escudo.png" alt="Escudo">
     <div class="sobre-linea"></div>
     <span class="sobre-txt">ABRIR SOBRE</span>
@@ -552,8 +552,10 @@ let jugIdx = 0;
 let fase = 0; // 0=pack visible, 1=shaking, 2=carta visible
 
 function abrirSobre() {
+  console.log('abrirSobre llamado');
   const col = getCol();
   const disp = JUGADORES.filter(j => !col.includes(j.id));
+  console.log('disp length:', disp.length, 'col:', col);
   if (!disp.length) return;
   jugActuales = [];
   jugIdx = 0;
@@ -841,16 +843,6 @@ setInterval(updateClock,1000);
 updateUI(); updateClock();
 fetchMinutos();
 
-// Listener fijo para el sobre — confiable en mobile (touch)
-(function() {
-  var btn = document.getElementById('btn-sobre');
-  function intentarAbrir(e) {
-    e.preventDefault();
-    if (!btn.classList.contains('disabled')) abrirSobre();
-  }
-  btn.addEventListener('click', intentarAbrir);
-  btn.addEventListener('touchend', intentarAbrir);
-})();
 </script>
 </body>
 </html>
