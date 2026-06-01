@@ -93,8 +93,10 @@
     .mobile-nav a.mobile-sub{padding-left:2.6rem;border-left-color:transparent;}
     .mobile-nav a.mobile-sub:hover{border-left-color:var(--dorado);}
     .nav-links{display:flex;gap:2rem;list-style:none;}
-    .nav-links a{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);text-decoration:none;transition:color .2s;}
+    .nav-links a{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);text-decoration:none;transition:color .2s;position:relative;}
     .nav-links a:hover{color:var(--dorado);}
+    .nav-links a.active{color:var(--blanco);}
+    .nav-links a.active::after{content:'';position:absolute;bottom:-4px;left:0;width:100%;height:2px;background:var(--dorado-light);border-radius:1px;}
     .nav-ig{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;color:var(--dorado);text-decoration:none;border:1px solid var(--dorado);padding:.35rem .8rem;border-radius:2px;transition:background .2s,color .2s;}
     .nav-ig:hover{background:var(--dorado);color:var(--negro);}
     .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4rem 5rem;position:relative;overflow:hidden;}
@@ -210,6 +212,8 @@
     .sep{opacity:.4;}
     @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
     section{padding:5.5rem 4rem;}
+    section[id]:not(#hero){border-top:1px solid rgba(32,72,160,.2);}
+    #proximos,#partidos,#estadisticas,#rendimiento,#divisiones{background:#0b0f1a;}
     .section-label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dorado);margin-bottom:.4rem;}
     .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);line-height:1;color:var(--blanco);margin-bottom:1.5rem;}
     .gold-line{width:60px;height:3px;background:var(--dorado);margin-bottom:1.5rem;}
@@ -2004,18 +2008,26 @@ const revealObs = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-stagger').forEach(el => revealObs.observe(el));
 
 /* ── Scroll Spy (active nav link) ── */
-const sections = document.querySelectorAll('section[id]');
-const navLinks  = document.querySelectorAll('.nav-links a');
-const spyObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      navLinks.forEach(a => a.classList.remove('active'));
-      const active = document.querySelector('.nav-links a[href="#' + e.target.id + '"]');
-      if (active) active.classList.add('active');
-    }
+(function(){
+  var spyIds = ['hero','resultados','proximos','partidos','posiciones','planteles','goleadores','historial','estadisticas','divisiones'];
+  var spyLinks = {};
+  spyIds.forEach(function(id){
+    spyLinks[id] = document.querySelector('.nav-links a[href="' + (id==='hero'?'#':'#'+id) + '"]');
   });
-}, { threshold: 0.35 });
-sections.forEach(s => spyObs.observe(s));
+  function doSpy(){
+    var y = window.scrollY + 110;
+    var cur = 'hero';
+    spyIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && el.offsetTop <= y) cur = id;
+    });
+    spyIds.forEach(function(id){
+      if(spyLinks[id]) spyLinks[id].classList.toggle('active', id === cur);
+    });
+  }
+  window.addEventListener('scroll', doSpy, {passive:true});
+  doSpy();
+})();
 
 /* ── Nav shadow on scroll ── */
 window.addEventListener('scroll', () => {
