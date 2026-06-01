@@ -4414,6 +4414,11 @@ function compartirTarjeta(){
 
 <script>
 // Definir abrirBuscador INMEDIATAMENTE (no depende del fetch)
+window.cerrarPerfilGlobal = function() {
+  var po = document.getElementById('perfil-overlay');
+  if (po) po.classList.remove('on');
+};
+
 window.abrirBuscador = function(e) {
   if (e) e.preventDefault();
   var ov = document.getElementById('buscador-overlay');
@@ -4587,7 +4592,7 @@ window.abrirBuscador = function(e) {
       + '<div class="perfil-stat ps-roj"><div class="perfil-stat-val">' + (j.rojas || '—') + '</div><div class="perfil-stat-lbl">Rojas</div></div>'
       + '</div>'
       + (j.min > 0 ? '<div class="perfil-bar-wrap"><div class="perfil-bar-lbl"><span>Minutos jugados</span><span>' + j.min + "' de " + maxMin + "'</span></div><div class='perfil-bar'><div class='perfil-bar-fill' style='width:" + pct + "%'></div></div></div>" : '')
-      + '<div class="perfil-footer"><button class="perfil-close-btn" onclick="document.getElementById('perfil-overlay').classList.remove('on')">Cerrar</button></div>';
+      + '<div class="perfil-footer"><button class="perfil-close-btn" onclick="window.cerrarPerfilGlobal()">Cerrar</button></div>';
     perfOverlay.classList.add('on');
   }
 
