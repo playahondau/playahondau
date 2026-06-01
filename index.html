@@ -4484,6 +4484,13 @@ function compartirTarjeta(){
 </div>
 
 <script>
+window.abrirBuscador = function(e) {
+  if (e) e.preventDefault();
+  var ov = document.getElementById('buscador-overlay');
+  var inp = document.getElementById('buscador-input');
+  if (ov) { ov.classList.add('on'); setTimeout(function(){ if(inp) inp.focus(); }, 100); }
+};
+
 (async () => {
   const API = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretymdsk/exec';
 
