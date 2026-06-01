@@ -4340,6 +4340,336 @@ function compartirTarjeta(){
 }
 </script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<!-- BUSCADOR DE JUGADORES + ESTADÍSTICAS EN VIVO -->
+<style>
+  /* Stats inline en tarjetas del plantel */
+  .jugador-card { flex-direction: column !important; align-items: flex-start !important; }
+  .jstat { display: block; font-size: .67rem; color: #c9a227; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; margin-top: .16rem; }
+
+  /* Botón buscador flotante */
+  .buscador-fab {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 800;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #1a3a8f, #0d1f5c);
+    border: 2px solid #c9a227;
+    color: #c9a227; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .buscador-fab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(201,162,39,.3); }
+
+  /* Overlay buscador */
+  .buscador-overlay {
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(3,5,18,.96);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem 1rem 1rem;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .buscador-overlay.on { opacity: 1; pointer-events: all; }
+
+  .buscador-header { width: 100%; max-width: 560px; display: flex; align-items: center; gap: .75rem; margin-bottom: 1.2rem; }
+  .buscador-input {
+    flex: 1; background: rgba(255,255,255,.07); border: 2px solid rgba(201,162,39,.4);
+    border-radius: 12px; padding: .75rem 1.1rem;
+    color: #f0f4ff; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem;
+    letter-spacing: .03em; outline: none; transition: border-color .2s;
+  }
+  .buscador-input:focus { border-color: #c9a227; }
+  .buscador-input::placeholder { color: rgba(255,255,255,.28); }
+  .buscador-close {
+    background: transparent; border: 1px solid rgba(255,255,255,.15);
+    border-radius: 8px; padding: .5rem .8rem; color: #8892a4;
+    font-family: 'Barlow Condensed', sans-serif; font-size: .85rem; cursor: pointer;
+    transition: all .2s; white-space: nowrap;
+  }
+  .buscador-close:hover { border-color: #c9a227; color: #c9a227; }
+
+  /* Resultados */
+  .buscador-resultados { width: 100%; max-width: 560px; overflow-y: auto; flex: 1; }
+  .buscador-hint { text-align: center; color: #8892a4; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; margin-top: 3rem; letter-spacing: .06em; }
+
+  .resultado-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem 1rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.06); margin-bottom: .4rem;
+    background: rgba(255,255,255,.03); transition: all .18s;
+  }
+  .resultado-item:hover { background: rgba(26,58,143,.2); border-color: rgba(201,162,39,.3); }
+  .res-nombre { font-family: 'Barlow Condensed', sans-serif; font-size: .95rem; font-weight: 700; color: #f0f4ff; flex: 1; }
+  .res-cat { font-size: .6rem; font-weight: 700; letter-spacing: .08em; padding: .12rem .45rem; border-radius: 10px; white-space: nowrap; }
+  .res-min { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; color: #c9a227; font-weight: 700; }
+
+  /* Perfil de jugador */
+  .perfil-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(3,5,18,.97);
+    display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .perfil-overlay.on { opacity: 1; pointer-events: all; }
+
+  .perfil-card {
+    width: 100%; max-width: 380px;
+    background: linear-gradient(160deg, #0d1730 0%, #060d1e 100%);
+    border: 2px solid rgba(201,162,39,.35);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  }
+  .perfil-top {
+    padding: 1.8rem 1.5rem 1.4rem;
+    background: linear-gradient(135deg, rgba(26,58,143,.3) 0%, transparent 100%);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .perfil-escudo { width: 56px; height: 56px; object-fit: contain; opacity: .9; }
+  .perfil-info { flex: 1; }
+  .perfil-cat { font-family: 'Barlow Condensed', sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .3rem; }
+  .perfil-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: .04em; color: #f0f4ff; line-height: 1.05; }
+
+  .perfil-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,.06); }
+  .perfil-stat { background: #080f20; padding: 1.1rem 1rem; text-align: center; }
+  .perfil-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: .03em; line-height: 1; }
+  .perfil-stat-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: .65rem; letter-spacing: .1em; color: #8892a4; text-transform: uppercase; margin-top: .2rem; }
+  .ps-min .perfil-stat-val { color: #c9a227; }
+  .ps-pj  .perfil-stat-val { color: #f0f4ff; }
+  .ps-gol .perfil-stat-val { color: #66bb6a; }
+  .ps-roj .perfil-stat-val { color: #ef5350; }
+
+  .perfil-bar-wrap { padding: .9rem 1.2rem; background: #06101e; }
+  .perfil-bar-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: .65rem; letter-spacing: .1em; color: #8892a4; text-transform: uppercase; margin-bottom: .4rem; display: flex; justify-content: space-between; }
+  .perfil-bar { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  .perfil-bar-fill { height: 100%; background: linear-gradient(90deg, #1a3a8f, #c9a227); border-radius: 3px; transition: width .6s ease; }
+
+  .perfil-footer { padding: .9rem 1.2rem; display: flex; justify-content: flex-end; background: #06101e; }
+  .perfil-close-btn {
+    background: transparent; border: 1px solid rgba(201,162,39,.3);
+    border-radius: 8px; padding: .45rem 1.1rem; color: #c9a227;
+    font-family: 'Barlow Condensed', sans-serif; font-size: .88rem; font-weight: 600; cursor: pointer;
+    transition: background .2s;
+  }
+  .perfil-close-btn:hover { background: rgba(201,162,39,.1); }
+
+  .cb-may { background: rgba(201,162,39,.15); color: #c9a227; }
+  .cb-pre { background: rgba(21,101,192,.2);  color: #64b5f6; }
+  .cb-res { background: rgba(2,119,189,.2);   color: #4fc3f7; }
+  .cb-s18 { background: rgba(46,125,50,.2);   color: #81c784; }
+  .cb-s20 { background: rgba(0,131,143,.2);   color: #4dd0e1; }
+</style>
+
+<!-- Botón flotante -->
+<button class="buscador-fab" id="fab-buscar" title="Buscar jugador">🔍</button>
+
+<!-- Overlay buscador -->
+<div class="buscador-overlay" id="buscador-overlay">
+  <div class="buscador-header">
+    <input class="buscador-input" id="buscador-input" placeholder="Buscá un jugador..." autocomplete="off" spellcheck="false">
+    <button class="buscador-close" id="buscador-close">Cerrar ✕</button>
+  </div>
+  <div class="buscador-resultados" id="buscador-resultados">
+    <p class="buscador-hint">Escribí un nombre para buscar</p>
+  </div>
+</div>
+
+<!-- Overlay perfil -->
+<div class="perfil-overlay" id="perfil-overlay">
+  <div class="perfil-card" id="perfil-card"></div>
+</div>
+
+<script>
+(async () => {
+  const API = 'https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/';
+
+  function norm(n) {
+    return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  }
+
+  function catInfo(tn) {
+    const t = (tn||'').toLowerCase();
+    if (t.includes('mayores'))                           return { label:'Mayores',    cls:'cb-may' };
+    if (t.includes('pre senior')||t.includes('pre-senior')) return { label:'Pre Senior', cls:'cb-pre' };
+    if (t.includes('reserva'))                           return { label:'Reserva',    cls:'cb-res' };
+    if (t.includes('sub 18')||t.includes('sub18'))       return { label:'Sub 18',     cls:'cb-s18' };
+    if (t.includes('sub 20')||t.includes('sub20'))       return { label:'Sub 20',     cls:'cb-s20' };
+    return { label:'—', cls:'' };
+  }
+
+  // Fetch con caché 1h
+  let raw;
+  const CK = 'phu_stats_raw', CT = 'phu_stats_ts';
+  const cached = sessionStorage.getItem(CK), ts = sessionStorage.getItem(CT);
+  if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+    raw = JSON.parse(cached);
+  } else {
+    try {
+      const res = await fetch(API);
+      raw = await res.json();
+      sessionStorage.setItem(CK, JSON.stringify(raw));
+      sessionStorage.setItem(CT, Date.now().toString());
+    } catch(e) { raw = []; }
+  }
+
+  // Año objetivo
+  const años = [...new Set(raw.map(f => String(f.season_year)))];
+  const anioActual = new Date().getFullYear().toString();
+  const targetYear = años.includes(anioActual) ? anioActual : años.sort().pop();
+
+  // Construir mapa de stats
+  const statsMap = {};
+  let maxMin = 1;
+  raw.forEach(fase => {
+    if (String(fase.season_year) !== targetYear) return;
+    const ci = catInfo(fase.tournament_name);
+    (fase.players || []).forEach(p => {
+      const k = norm(p.name);
+      if (!statsMap[k]) statsMap[k] = { nombre: p.name, min: 0, pj: 0, goles: 0, rojas: 0, ...ci };
+      statsMap[k].min   += (p.minutes   || 0);
+      statsMap[k].pj    += (p.matches   || 0);
+      statsMap[k].goles += (p.goals     || 0);
+      statsMap[k].rojas += (p.red_cards || 0);
+    });
+  });
+  Object.values(statsMap).forEach(j => { if (j.min > maxMin) maxMin = j.min; });
+
+  // Enriquecer tarjetas del plantel
+  document.querySelectorAll('.jugador-card').forEach(card => {
+    const nombre = card.textContent.trim();
+    const s = statsMap[norm(nombre)];
+    if (s && s.min > 0) {
+      const sp = document.createElement('span');
+      sp.className = 'jstat';
+      let txt = s.pj + ' PJ · ' + s.min + "'";
+      if (s.goles > 0) txt += ' · ⚽ ' + s.goles;
+      if (s.rojas > 0) txt += ' · 🟥 ' + s.rojas;
+      sp.textContent = txt;
+      card.appendChild(sp);
+    }
+  });
+
+  // ── UI DEL BUSCADOR ──
+  const fab      = document.getElementById('fab-buscar');
+  const overlay  = document.getElementById('buscador-overlay');
+  const inputEl  = document.getElementById('buscador-input');
+  const resultsEl= document.getElementById('buscador-resultados');
+  const perfOverlay = document.getElementById('perfil-overlay');
+  const perfCard    = document.getElementById('perfil-card');
+
+  fab.addEventListener('click', () => {
+    overlay.classList.add('on');
+    setTimeout(() => inputEl.focus(), 100);
+  });
+
+  document.getElementById('buscador-close').addEventListener('click', cerrarBuscador);
+  overlay.addEventListener('click', e => { if (e.target === overlay) cerrarBuscador(); });
+  perfOverlay.addEventListener('click', e => { if (e.target === perfOverlay) cerrarPerfil(); });
+
+  function cerrarBuscador() {
+    overlay.classList.remove('on');
+    inputEl.value = '';
+    resultsEl.innerHTML = '<p class="buscador-hint">Escribí un nombre para buscar</p>';
+  }
+
+  function cerrarPerfil() {
+    perfOverlay.classList.remove('on');
+  }
+
+  inputEl.addEventListener('input', () => {
+    const q = norm(inputEl.value);
+    if (q.length < 2) {
+      resultsEl.innerHTML = '<p class="buscador-hint">Escribí un nombre para buscar</p>';
+      return;
+    }
+
+    // Buscar en statsMap Y en jugadores del plantel sin stats
+    const hayStats = Object.values(statsMap).filter(j => norm(j.nombre).includes(q));
+
+    // También buscar en las tarjetas del plantel (jugadores sin stats de API)
+    const todosNombres = new Set();
+    document.querySelectorAll('.jugador-card').forEach(card => {
+      const n = card.textContent.split('\n')[0].trim();
+      if (norm(n).includes(q) && n.length > 2) todosNombres.add(n);
+    });
+
+    const resultados = [];
+    // Primero los que tienen stats
+    hayStats.sort((a,b) => b.min - a.min).forEach(j => {
+      resultados.push(j);
+      todosNombres.delete(j.nombre);
+    });
+    // Luego los del plantel sin stats
+    todosNombres.forEach(nombre => {
+      resultados.push({ nombre, min: 0, pj: 0, goles: 0, rojas: 0, label: '—', cls: '' });
+    });
+
+    if (!resultados.length) {
+      resultsEl.innerHTML = '<p class="buscador-hint">Sin resultados</p>';
+      return;
+    }
+
+    resultsEl.innerHTML = resultados.slice(0,15).map(j => `
+      <div class="resultado-item" data-key="${norm(j.nombre)}">
+        <span class="res-nombre">${j.nombre}</span>
+        ${j.label !== '—' ? `<span class="res-cat ${j.cls}">${j.label}</span>` : ''}
+        ${j.min > 0 ? `<span class="res-min">${j.min}'</span>` : ''}
+      </div>
+    `).join('');
+
+    resultsEl.querySelectorAll('.resultado-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const key = el.dataset.key;
+        const j = statsMap[key] || { nombre: el.querySelector('.res-nombre').textContent, min: 0, pj: 0, goles: 0, rojas: 0, label: '—', cls: '' };
+        abrirPerfil(j);
+      });
+    });
+  });
+
+  function abrirPerfil(j) {
+    cerrarBuscador();
+    const pct = maxMin > 0 ? Math.round(j.min / maxMin * 100) : 0;
+    perfCard.innerHTML = `
+      <div class="perfil-top">
+        <img class="perfil-escudo" src="escudo.png" alt="Escudo">
+        <div class="perfil-info">
+          ${j.label !== '—' ? `<div class="perfil-cat ${j.cls} res-cat">${j.label}</div>` : ''}
+          <div class="perfil-nombre">${j.nombre}</div>
+        </div>
+      </div>
+      <div class="perfil-stats">
+        <div class="perfil-stat ps-min">
+          <div class="perfil-stat-val">${j.min > 0 ? j.min + "'" : '—'}</div>
+          <div class="perfil-stat-lbl">Minutos</div>
+        </div>
+        <div class="perfil-stat ps-pj">
+          <div class="perfil-stat-val">${j.pj || '—'}</div>
+          <div class="perfil-stat-lbl">Partidos</div>
+        </div>
+        <div class="perfil-stat ps-gol">
+          <div class="perfil-stat-val">${j.goles || '—'}</div>
+          <div class="perfil-stat-lbl">Goles</div>
+        </div>
+        <div class="perfil-stat ps-roj">
+          <div class="perfil-stat-val">${j.rojas || '—'}</div>
+          <div class="perfil-stat-lbl">Rojas</div>
+        </div>
+      </div>
+      ${j.min > 0 ? `
+      <div class="perfil-bar-wrap">
+        <div class="perfil-bar-lbl">
+          <span>Minutos jugados</span>
+          <span>${j.min}' de ${maxMin}'</span>
+        </div>
+        <div class="perfil-bar"><div class="perfil-bar-fill" style="width:${pct}%"></div></div>
+      </div>` : ''}
+      <div class="perfil-footer">
+        <button class="perfil-close-btn" onclick="document.getElementById('perfil-overlay').classList.remove('on')">Cerrar</button>
+      </div>
+    `;
+    perfOverlay.classList.add('on');
+  }
+})();
+</script>
+
 </body>
 </html>
 
