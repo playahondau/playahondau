@@ -4426,7 +4426,7 @@ window.abrirBuscador = function(e) {
   var API_PROXY   = 'https://corsproxy.io/?' + encodeURIComponent(API_DIRECTO);
 
   function norm(n) {
-    return (n||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/s+/g,' ').trim();
+    return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   }
 
   var CLS = {'Mayores':'cb-may','Presenior':'cb-pre','Pre Senior':'cb-pre','Reserva':'cb-res','Sub 18':'cb-s18','Sub18':'cb-s18','Sub 20':'cb-s20','Sub20':'cb-s20'};
