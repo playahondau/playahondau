@@ -543,7 +543,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="#">Inicio</a></li>
-    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#categorias">Categorías</a></li><li><a href="#resultados">Resultados</a></li>
     <li><a href="#proximos">Fixture</a></li>
     <li><a href="#posiciones">Posiciones</a></li>
     <li><a href="#planteles">Planteles</a></li>
@@ -4596,6 +4596,147 @@ window.abrirBuscador = function(e) {
     perfOverlay.classList.add('on');
   }
 
+})();
+</script>
+
+
+<!-- HUB DE CATEGORÍAS -->
+<style>
+  #categorias { padding: 3rem 1rem 2rem; background: linear-gradient(180deg, rgba(26,58,143,.07) 0%, transparent 100%); }
+  .cat-hub-titulo { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem,5vw,2.8rem); letter-spacing: .08em; color: #f0f4ff; text-align: center; margin-bottom: .3rem; }
+  .cat-hub-sub { text-align: center; color: #8892a4; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; margin-bottom: 2rem; }
+  .cat-hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .85rem; max-width: 900px; margin: 0 auto; }
+  .cat-card {
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    border: 2px solid rgba(255,255,255,.06);
+    background: #0d1220;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    display: flex; flex-direction: column;
+  }
+  .cat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.5); }
+  .cat-card.activa { border-color: var(--cat-color) !important; box-shadow: 0 0 20px rgba(0,0,0,.4), 0 0 0 1px var(--cat-color); }
+  .cat-card-bar { height: 4px; background: var(--cat-color); }
+  .cat-card-body { padding: 1rem .9rem .8rem; flex: 1; }
+  .cat-card-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: .06em; color: #f0f4ff; line-height: 1; }
+  .cat-card-div { font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; color: #8892a4; margin-top: .25rem; letter-spacing: .03em; line-height: 1.3; }
+  .cat-card-btn { margin: 0 .9rem .8rem; padding: .38rem .6rem; border-radius: 8px; border: 1px solid var(--cat-color); background: rgba(0,0,0,.2); color: var(--cat-color); font-family: 'Barlow Condensed', sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .06em; cursor: pointer; transition: background .2s; text-align: center; }
+  .cat-card:hover .cat-card-btn { background: var(--cat-color); color: #000; }
+
+  /* Badge sticky de categoria activa */
+  #cat-badge {
+    position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+    z-index: 200; display: none; align-items: center; gap: .5rem;
+    background: rgba(11,15,26,.95); border: 1px solid var(--cat-color, #c9a227);
+    border-radius: 20px; padding: .3rem .9rem .3rem .7rem;
+    font-family: 'Barlow Condensed', sans-serif; font-size: .82rem;
+    color: #f0f4ff; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    backdrop-filter: blur(8px);
+  }
+  #cat-badge.visible { display: flex; }
+  #cat-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cat-color, #c9a227); flex-shrink: 0; }
+  #cat-badge-txt { font-weight: 700; letter-spacing: .05em; }
+  #cat-badge-x { margin-left: .3rem; opacity: .5; cursor: pointer; font-size: .9rem; transition: opacity .2s; }
+  #cat-badge-x:hover { opacity: 1; }
+
+  @media (max-width: 500px) {
+    .cat-hub-grid { grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+    .cat-card-nombre { font-size: 1rem; }
+    .cat-card-btn { font-size: .68rem; }
+  }
+</style>
+
+<section id="categorias">
+  <h2 class="cat-hub-titulo reveal">Elegí tu categoría</h2>
+  <p class="cat-hub-sub">Seleccioná y toda la información del sitio se filtra para vos.</p>
+  <div class="cat-hub-grid" id="cat-hub-grid"></div>
+</section>
+
+<div id="cat-badge">
+  <span id="cat-badge-dot"></span>
+  <span id="cat-badge-txt"></span>
+  <span id="cat-badge-x" onclick="window.limpiarCategoria()">✕</span>
+</div>
+
+<script>
+(function() {
+  var CATS = [
+    { key:'may', label:'Mayores',    div:'Div A · Copa Pilsen',   color:'#c9a227', partKey:'may', tabKey:'mayores',  planKey:'pl-may', golKey:'gmay' },
+    { key:'res', label:'Reserva',    div:'Div A · Copa Antel',    color:'#2196f3', partKey:'res', tabKey:'reserva',  planKey:'pl-res', golKey:'gres' },
+    { key:'pre', label:'Pre Senior', div:'División',               color:'#1565c0', partKey:'pre', tabKey:'presenior',planKey:'pl-pre', golKey:'gpre' },
+    { key:'s20', label:'Sub 20',     div:'División',               color:'#00838f', partKey:'s20', tabKey:'sub20',   planKey:'pl-s20', golKey:'gs20' },
+    { key:'s18', label:'Sub 18',     div:'División',               color:'#2e7d32', partKey:'s18', tabKey:'sub18',   planKey:'pl-s18', golKey:'gs18' },
+    { key:'mas', label:'Master',     div:'Liga Master',            color:'#7b1fa2', partKey:'mas', tabKey:'master',  planKey:'pl-mas', golKey:'gmas' },
+  ];
+
+  // Construir tarjetas
+  var grid = document.getElementById('cat-hub-grid');
+  CATS.forEach(function(cat) {
+    var card = document.createElement('div');
+    card.className = 'cat-card';
+    card.id = 'catcard-' + cat.key;
+    card.style.setProperty('--cat-color', cat.color);
+    card.innerHTML =
+      '<div class="cat-card-bar"></div>' +
+      '<div class="cat-card-body">' +
+        '<div class="cat-card-nombre">' + cat.label + '</div>' +
+        '<div class="cat-card-div">' + cat.div + '</div>' +
+      '</div>' +
+      '<div class="cat-card-btn">Ver todo →</div>';
+    card.addEventListener('click', function() { window.selectCategoria(cat.key); });
+    grid.appendChild(card);
+  });
+
+  // Función global para seleccionar categoría
+  window.selectCategoria = function(key) {
+    var cat = CATS.find(function(c){ return c.key === key; });
+    if (!cat) return;
+
+    // Marcar tarjeta activa
+    document.querySelectorAll('.cat-card').forEach(function(c){ c.classList.remove('activa'); });
+    var card = document.getElementById('catcard-' + key);
+    if (card) card.classList.add('activa');
+
+    // Sincronizar todos los tabs
+    if (typeof showPartidos === 'function')    try { showPartidos(cat.partKey);   } catch(e){}
+    if (typeof showTab      === 'function')    try { showTab(cat.tabKey);         } catch(e){}
+    if (typeof showPlantel  === 'function')    try { showPlantel(cat.planKey);    } catch(e){}
+    if (typeof showGol      === 'function')    try { showGol(cat.golKey);         } catch(e){}
+    if (typeof showChartPanel === 'function')  try { showChartPanel(cat.partKey); } catch(e){}
+
+    // Mostrar badge sticky
+    var badge = document.getElementById('cat-badge');
+    badge.style.setProperty('--cat-color', cat.color);
+    document.getElementById('cat-badge-dot').style.background = cat.color;
+    document.getElementById('cat-badge-txt').textContent = cat.label;
+    badge.classList.add('visible');
+
+    // Guardar preferencia
+    localStorage.setItem('phu_cat', key);
+
+    // Scroll a la sección de partidos
+    var target = document.getElementById('partidos') || document.getElementById('posiciones');
+    if (target) { setTimeout(function(){ target.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100); }
+  };
+
+  window.limpiarCategoria = function() {
+    document.querySelectorAll('.cat-card').forEach(function(c){ c.classList.remove('activa'); });
+    document.getElementById('cat-badge').classList.remove('visible');
+    localStorage.removeItem('phu_cat');
+  };
+
+  // Mover la sección al lugar correcto en el DOM (después del hero, antes de #resultados)
+  var hub = document.getElementById('categorias');
+  var badge = document.getElementById('cat-badge');
+  var ref = document.getElementById('resultados') || document.getElementById('partidos');
+  if (hub && ref && ref.parentNode) {
+    ref.parentNode.insertBefore(hub, ref);
+  }
+
+  // Restaurar categoría guardada al cargar
+  var saved = localStorage.getItem('phu_cat');
+  if (saved) {
+    setTimeout(function(){ window.selectCategoria(saved); }, 800);
+  }
 })();
 </script>
 
