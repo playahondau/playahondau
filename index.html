@@ -1130,7 +1130,12 @@ function showTab(name) {
   function renderTabla(tabId, data) {
     var tbody = document.getElementById('tbody-' + tabId);
     if (!tbody || !data || !data.length) return;
-    tbody.innerHTML = data.map(function(r, i) {
+    var sorted = data.slice().sort(function(a, b) {
+      if (b.total_points !== a.total_points) return b.total_points - a.total_points;
+      if (b.goal_difference !== a.goal_difference) return b.goal_difference - a.goal_difference;
+      return b.goals_for - a.goals_for;
+    });
+    tbody.innerHTML = sorted.map(function(r, i) {
       var esPlaya = r.team.name.indexOf('PLAYA HONDA') !== -1;
       var dg = r.goal_difference > 0 ? '+' + r.goal_difference : String(r.goal_difference);
       return '<tr' + (esPlaya ? ' class="playa"' : '') + '>'
