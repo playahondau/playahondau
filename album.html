@@ -13,25 +13,16 @@
       --azul: #1a3a8f;
       --dorado: #c9a227;
       --fondo: #0b0f1a;
-      --card-bg: #0d1220;
       --blanco: #f0f4ff;
       --gris: #8892a4;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--fondo); color: var(--blanco); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+    body { background: var(--fondo); color: var(--blanco); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
     /* NAV */
-    .nav {
-      background: rgba(11,15,26,.97);
-      border-bottom: 2px solid var(--dorado);
-      padding: .9rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
-    }
+    .nav { background: rgba(11,15,26,.97); border-bottom: 2px solid var(--dorado); padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .nav-logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--blanco); }
-    .nav-logo img { width: 32px; height: 32px; object-fit: contain; border-radius: 50%; }
+    .nav-logo img { width: 32px; height: 32px; object-fit: contain; }
     .nav-logo span { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: .08em; }
     .nav-back { color: var(--dorado); text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: .85rem; letter-spacing: .05em; transition: opacity .2s; }
     .nav-back:hover { opacity: .7; }
@@ -43,67 +34,180 @@
     .hero-sub { color: var(--gris); font-size: .9rem; max-width: 380px; margin: 0 auto 2rem; line-height: 1.5; }
 
     /* PROGRESS */
-    .progress-wrap { max-width: 460px; margin: 0 auto 2rem; padding: 0 1.5rem; }
+    .progress-wrap { max-width: 460px; margin: 0 auto 2.5rem; padding: 0 1.5rem; }
     .progress-label { display: flex; justify-content: space-between; font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; color: var(--gris); margin-bottom: .35rem; }
     .progress-bar { height: 5px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--azul), var(--dorado)); border-radius: 3px; transition: width .7s ease; }
 
-    /* SOBRE */
-    .sobre-section { max-width: 420px; margin: 0 auto 3rem; padding: 0 1rem; text-align: center; }
-    .sobre-wrap { position: relative; display: inline-block; margin-bottom: 1.2rem; }
-    .sobre {
-      width: 150px; height: 200px;
-      background: linear-gradient(145deg, #1e3fa0 0%, #0b1a55 60%, #1a3a8f 100%);
+    /* SOBRE EN PÁGINA */
+    .sobre-section { text-align: center; margin-bottom: 3rem; }
+    .sobre-btn {
+      display: inline-flex; flex-direction: column; align-items: center; gap: .7rem;
+      width: 160px; height: 220px;
+      background: linear-gradient(160deg, #1e3fa0 0%, #091540 55%, #162f80 100%);
       border: 2px solid var(--dorado);
-      border-radius: 14px;
+      border-radius: 16px;
       cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
-      transition: transform .2s, box-shadow .2s;
       position: relative; overflow: hidden;
+      transition: transform .25s, box-shadow .25s;
+      justify-content: center;
+      animation: pulseSobre 2.5s ease-in-out infinite;
     }
-    .sobre::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
-      background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 100%);
+    .sobre-btn::before {
+      content: ''; position: absolute; top: 0; left: -60%;
+      width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+      animation: foilOver 3s ease-in-out infinite;
     }
-    .sobre:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 36px rgba(201,162,39,.3); }
-    .sobre img { width: 52px; }
-    .sobre-texto { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .1em; color: var(--dorado); }
-    .sobre.disabled { opacity: .35; cursor: not-allowed; filter: grayscale(.8); }
-    .sobre.disabled:hover { transform: none; box-shadow: none; }
-    .proximo-txt { font-family: 'Barlow Condensed', sans-serif; font-size: .88rem; color: var(--gris); }
-    .proximo-txt span { color: var(--dorado); font-weight: 700; }
+    .sobre-btn:hover { transform: translateY(-6px) scale(1.04); box-shadow: 0 16px 48px rgba(201,162,39,.35); }
+    .sobre-btn.disabled { opacity: .32; cursor: not-allowed; filter: grayscale(.9); animation: none; }
+    .sobre-btn.disabled:hover { transform: none; box-shadow: none; }
+    .sobre-escudo { width: 64px; position: relative; z-index: 1; }
+    .sobre-txt { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .12em; color: var(--dorado); position: relative; z-index: 1; }
+    .sobre-linea { width: 60%; height: 1px; background: rgba(201,162,39,.3); }
+    .prox-txt { font-family: 'Barlow Condensed', sans-serif; font-size: .88rem; color: var(--gris); margin-top: .9rem; }
+    .prox-txt span { color: var(--dorado); font-weight: 700; }
 
-    /* MODAL SOBRE */
-    .modal-bg {
-      position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 500;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity .3s;
+    @keyframes pulseSobre { 0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.0)} 50%{box-shadow:0 0 24px 4px rgba(201,162,39,.2)} }
+    @keyframes foilOver { 0%{left:-60%} 100%{left:130%} }
+
+    /* ══════════════════════════════════════
+       PACK OPENING — FULL SCREEN OVERLAY
+    ══════════════════════════════════════ */
+    .pack-screen {
+      position: fixed; inset: 0; z-index: 900;
+      background: #03050d;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .35s;
     }
-    .modal-bg.on { opacity: 1; pointer-events: all; }
-    .modal-box { display: flex; flex-direction: column; align-items: center; gap: 1.2rem; padding: 2rem 1.5rem; }
-    .new-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; letter-spacing: .18em; color: var(--dorado); text-transform: uppercase; }
+    .pack-screen.on { opacity: 1; pointer-events: all; }
+
+    /* Partículas de fondo */
+    #part-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+    /* Flash blanco */
+    .flash-layer {
+      position: absolute; inset: 0; background: #fff;
+      opacity: 0; pointer-events: none; z-index: 10;
+    }
+
+    /* PACK GRANDE */
+    .pack-grande {
+      width: 200px; height: 280px;
+      background: linear-gradient(160deg, #1e40af 0%, #050d2e 50%, #1a3a8f 100%);
+      border: 2px solid var(--dorado);
+      border-radius: 18px;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem;
+      transition: transform .15s;
+      box-shadow: 0 0 40px rgba(26,58,143,.6), 0 0 80px rgba(26,58,143,.3);
+      z-index: 2;
+    }
+    .pack-grande::before {
+      content: ''; position: absolute; top: 0; left: -70%;
+      width: 45%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+      animation: foilOver 2.5s ease-in-out infinite;
+    }
+    .pack-grande::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 35%;
+      background: linear-gradient(180deg, rgba(255,255,255,.07) 0%, transparent 100%);
+    }
+    .pack-escudo { width: 80px; position: relative; z-index: 1; }
+    .pack-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .14em; color: var(--dorado); position: relative; z-index: 1; text-align: center; line-height: 1.1; }
+    .pack-sep { width: 55%; height: 1px; background: rgba(201,162,39,.25); }
+    .pack-sub { font-family: 'Barlow Condensed', sans-serif; font-size: .65rem; letter-spacing: .1em; color: rgba(201,162,39,.55); position: relative; z-index: 1; }
+    .pack-hint { font-family: 'Barlow Condensed', sans-serif; font-size: .82rem; color: rgba(255,255,255,.35); letter-spacing: .08em; margin-top: 1.4rem; animation: blink 1.5s ease-in-out infinite; z-index: 2; }
+    @keyframes blink { 0%,100%{opacity:.35} 50%{opacity:.8} }
+
+    @keyframes packShake {
+      0%,100%{transform:translateX(0) rotate(0)}
+      12%{transform:translateX(-12px) rotate(-4deg)}
+      25%{transform:translateX(12px) rotate(4deg)}
+      37%{transform:translateX(-8px) rotate(-2.5deg)}
+      50%{transform:translateX(8px) rotate(2.5deg)}
+      62%{transform:translateX(-5px) rotate(-1.5deg)}
+      75%{transform:translateX(5px) rotate(1.5deg)}
+      87%{transform:translateX(-2px) rotate(-.5deg)}
+    }
+    @keyframes packExplode {
+      0%{transform:scale(1);opacity:1}
+      40%{transform:scale(1.25);opacity:.6}
+      100%{transform:scale(0);opacity:0}
+    }
+    @keyframes flashPop { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+
+    /* ══════════════════════════════════════
+       CARTA REVEAL
+    ══════════════════════════════════════ */
+    .carta-reveal-wrap {
+      position: absolute; inset: 0; z-index: 5;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+      opacity: 0; pointer-events: none;
+    }
+    .carta-reveal-wrap.on { opacity: 1; pointer-events: all; }
+
+    .reveal-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: .78rem; letter-spacing: .18em; color: rgba(255,255,255,.45); text-transform: uppercase; }
+    .reveal-hint { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; color: rgba(255,255,255,.3); margin-top: -.2rem; animation: blink 1.4s ease-in-out infinite; }
+
+    @keyframes cardDrop {
+      0%{transform:translateY(-300px) scale(.7) rotate(-5deg);opacity:0}
+      55%{transform:translateY(12px) scale(1.03) rotate(.5deg);opacity:1}
+      75%{transform:translateY(-5px) scale(.99) rotate(0deg)}
+      100%{transform:translateY(0) scale(1) rotate(0deg);opacity:1}
+    }
 
     /* CARTA FLIP */
-    .carta-flip { width: 190px; height: 270px; perspective: 900px; cursor: pointer; }
-    .carta-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .65s ease; }
+    .carta-flip { width: 210px; height: 294px; perspective: 1000px; cursor: pointer; }
+    .carta-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.4,0,.2,1); }
     .carta-inner.flipped { transform: rotateY(180deg); }
-    .c-face { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; overflow: hidden; }
-    .c-back {
-      background: linear-gradient(140deg, #1e3fa0, #0b1a55);
-      border: 2px solid var(--dorado);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
-    }
-    .c-back img { width: 65px; opacity: .75; }
-    .c-back-txt { font-family: 'Bebas Neue', sans-serif; font-size: .9rem; letter-spacing: .15em; color: rgba(201,162,39,.55); }
-    .c-front { transform: rotateY(180deg); display: flex; flex-direction: column; border: 2px solid rgba(201,162,39,.45); }
-    .c-cat-bar { padding: .35rem .5rem; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .58rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-    .c-body { flex: 1; background: #08101f; display: flex; align-items: center; justify-content: center; }
-    .c-body img { width: 72px; }
-    .c-name { background: #08101f; padding: .5rem .4rem .3rem; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .04em; color: var(--blanco); line-height: 1.1; }
-    .c-num { background: #06090f; padding: .2rem .5rem; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: .5rem; color: rgba(255,255,255,.3); }
+    .c-face { position: absolute; inset: 0; border-radius: 16px; backface-visibility: hidden; overflow: hidden; }
 
-    .hint-txt { color: var(--gris); font-size: .78rem; }
-    .btn-sec { background: transparent; border: 1px solid rgba(201,162,39,.35); border-radius: 8px; padding: .55rem 1.4rem; color: var(--dorado); font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; font-weight: 600; letter-spacing: .05em; cursor: pointer; transition: background .2s; }
+    /* DORSO */
+    .c-back {
+      background: linear-gradient(145deg, #1e40af 0%, #050d2e 100%);
+      border: 2px solid rgba(201,162,39,.6);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .7rem;
+      box-shadow: 0 0 30px rgba(26,58,143,.5);
+    }
+    .c-back img { width: 70px; }
+    .c-back-txt { font-family: 'Bebas Neue', sans-serif; font-size: .85rem; letter-spacing: .15em; color: rgba(201,162,39,.5); }
+
+    /* FRENTE */
+    .c-front { transform: rotateY(180deg); display: flex; flex-direction: column; border: 2px solid rgba(201,162,39,.5); }
+    .c-front::after {
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      pointer-events: none;
+    }
+    .c-front.shine::after { animation: cardShine .65s ease forwards; }
+    @keyframes cardShine { to { left: 160%; } }
+
+    .c-cat { padding: .4rem .5rem; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .c-body-img { flex: 1; background: #06101e; display: flex; align-items: center; justify-content: center; padding: .6rem; }
+    .c-body-img img { max-width: 80px; max-height: 80px; object-fit: contain; }
+    .c-nombre { background: #050e1c; padding: .55rem .5rem .3rem; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .04em; color: var(--blanco); line-height: 1.1; }
+    .c-num { background: #040b17; padding: .22rem .5rem; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: .48rem; color: rgba(255,255,255,.28); }
+
+    /* GLOW POR CATEGORÍA */
+    .glow-may { box-shadow: 0 0 50px rgba(201,162,39,.8), 0 0 100px rgba(201,162,39,.35); }
+    .glow-pre { box-shadow: 0 0 50px rgba(21,101,192,.9), 0 0 100px rgba(21,101,192,.4); }
+    .glow-res { box-shadow: 0 0 50px rgba(2,119,189,.9), 0 0 100px rgba(2,119,189,.4); }
+    .glow-s18 { box-shadow: 0 0 50px rgba(46,125,50,.9), 0 0 100px rgba(46,125,50,.4); }
+    .glow-s20 { box-shadow: 0 0 50px rgba(0,131,143,.9), 0 0 100px rgba(0,131,143,.4); }
+    .glow-mas { box-shadow: 0 0 50px rgba(106,27,154,.9), 0 0 100px rgba(106,27,154,.4); }
+
+    /* BURST DE COLOR */
+    .burst {
+      position: absolute; inset: 0; pointer-events: none; z-index: 4;
+      opacity: 0; transition: opacity .15s;
+    }
+    .burst.on { animation: burstAnim .5s ease forwards; }
+    @keyframes burstAnim { 0%{opacity:.8} 100%{opacity:0} }
+
+    .btn-sec { background: transparent; border: 1px solid rgba(201,162,39,.35); border-radius: 8px; padding: .55rem 1.6rem; color: var(--dorado); font-family: 'Barlow Condensed', sans-serif; font-size: .95rem; font-weight: 600; letter-spacing: .05em; cursor: pointer; transition: background .2s; z-index: 2; }
     .btn-sec:hover { background: rgba(201,162,39,.1); }
 
     /* COLECCION */
@@ -121,8 +225,8 @@
     .mc.got:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 8px 22px rgba(0,0,0,.6); }
     .mc-inner { width: 100%; height: 100%; display: flex; flex-direction: column; }
     .mc-hdr { padding: .28rem .35rem; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .55rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-    .mc-body { flex: 1; background: #08101f; display: flex; align-items: center; justify-content: center; }
-    .mc-body img { width: 52%; }
+    .mc-body { flex: 1; background: #08101f; display: flex; align-items: center; justify-content: center; padding: .4rem; }
+    .mc-body img { max-width: 58%; max-height: 58%; object-fit: contain; }
     .mc-body .q { font-size: 1.6rem; color: rgba(255,255,255,.12); }
     .mc-name { background: rgba(0,0,0,.6); padding: .28rem .35rem; font-family: 'Barlow Condensed', sans-serif; font-size: .6rem; font-weight: 700; text-align: center; line-height: 1.2; color: var(--blanco); }
     .mc.pend .mc-hdr { color: rgba(255,255,255,.1); background: rgba(255,255,255,.03); }
@@ -130,12 +234,7 @@
     .mc-id { position: absolute; bottom: .22rem; right: .3rem; font-size: .46rem; color: rgba(255,255,255,.25); font-family: 'Barlow Condensed', sans-serif; }
 
     /* COMPLETION */
-    .comp-overlay {
-      position: fixed; inset: 0; background: rgba(5,8,18,.97); z-index: 2000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 2rem;
-      opacity: 0; pointer-events: none; transition: opacity .5s;
-    }
+    .comp-overlay { position: fixed; inset: 0; background: rgba(5,8,18,.97); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; opacity: 0; pointer-events: none; transition: opacity .5s; }
     .comp-overlay.on { opacity: 1; pointer-events: all; }
     .comp-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 9vw, 5.5rem); color: var(--dorado); line-height: 1; margin: 1rem 0 .5rem; }
     .comp-sub { color: var(--blanco); font-size: .92rem; max-width: 360px; line-height: 1.6; margin-bottom: 2rem; }
@@ -158,6 +257,7 @@
 
     @media (max-width: 420px) {
       .album-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
+      .carta-flip { width: 180px; height: 252px; }
     }
   </style>
 </head>
@@ -167,7 +267,7 @@
 
 <nav class="nav">
   <a class="nav-logo" href="index.html">
-    <img src="favicon.jpg" alt="Escudo">
+    <img src="escudo.png" alt="Escudo">
     <span>Playa Honda</span>
   </a>
   <a class="nav-back" href="index.html">← Volver</a>
@@ -187,13 +287,12 @@
 </div>
 
 <div class="sobre-section">
-  <div class="sobre-wrap">
-    <div class="sobre" id="btn-sobre">
-      <img src="favicon.jpg" alt="Escudo">
-      <span class="sobre-texto">ABRIR SOBRE</span>
-    </div>
+  <div class="sobre-btn" id="btn-sobre">
+    <img class="sobre-escudo" src="escudo.png" alt="Escudo">
+    <div class="sobre-linea"></div>
+    <span class="sobre-txt">ABRIR SOBRE</span>
   </div>
-  <p class="proximo-txt" id="prox-txt"></p>
+  <p class="prox-txt" id="prox-txt"></p>
 </div>
 
 <div class="col-section">
@@ -211,27 +310,41 @@
   <div class="album-grid" id="grid"></div>
 </div>
 
-<!-- MODAL SOBRE -->
-<div class="modal-bg" id="modal">
-  <div class="modal-box">
-    <p class="new-lbl">¡Nuevo jugador!</p>
+<!-- PACK OPENING SCREEN -->
+<div class="pack-screen" id="pack-screen">
+  <canvas id="part-canvas"></canvas>
+  <div class="flash-layer" id="flash"></div>
+  <div class="burst" id="burst"></div>
+
+  <!-- Pack clickeable -->
+  <div class="pack-grande" id="pack-grande">
+    <img class="pack-escudo" src="escudo.png" alt="Escudo">
+    <div class="pack-sep"></div>
+    <div class="pack-nombre">Playa Honda<br>Universitario</div>
+    <div class="pack-sub">SOBRE OFICIAL</div>
+  </div>
+  <p class="pack-hint" id="pack-hint">Tocá el sobre para abrirlo</p>
+
+  <!-- Carta reveal -->
+  <div class="carta-reveal-wrap" id="reveal-wrap">
+    <p class="reveal-lbl">¡Nuevo jugador!</p>
     <div class="carta-flip" id="carta-flip">
       <div class="carta-inner" id="carta-inner">
         <div class="c-face c-back">
-          <img src="favicon.jpg" alt="Escudo">
+          <img src="escudo.png" alt="Escudo">
           <span class="c-back-txt">PLAYA HONDA</span>
         </div>
         <div class="c-face c-front" id="c-front"></div>
       </div>
     </div>
-    <p class="hint-txt" id="hint">Tocá la carta para revelar</p>
-    <button class="btn-sec" id="btn-cerrar">Ver mi colección</button>
+    <p class="reveal-hint" id="reveal-hint">Tocá la carta para revelar</p>
+    <button class="btn-sec" id="btn-cerrar" style="display:none">Ver mi colección</button>
   </div>
 </div>
 
-<!-- MODAL COMPLETADO -->
+<!-- COMPLETION -->
 <div class="comp-overlay" id="comp">
-  <img src="favicon.jpg" alt="Escudo" style="width:72px;">
+  <img src="escudo.png" alt="Escudo" style="width:72px;">
   <h2 class="comp-title">¡Álbum<br>Completo!</h2>
   <p class="comp-sub">Completaste la colección de Playa Honda Universitario. ¡Registrá tu nombre para quedar en la historia del club!</p>
   <div class="comp-form" id="comp-form">
@@ -243,7 +356,7 @@
 </div>
 
 <script>
-const ENDPOINT = ''; // URL de Google Apps Script o Formspree para registrar el primer lugar
+const ENDPOINT = '';
 
 const JUGADORES = [
   {id:1,nombre:"Rodrigo León",cat:"Mayores"},
@@ -388,37 +501,164 @@ const JUGADORES = [
 ];
 
 const TOTAL = JUGADORES.length;
-
-const CAT_CLASS = {
-  'Mayores':'cat-may','Pre Senior':'cat-pre','Reserva':'cat-res',
-  'Sub 18':'cat-s18','Sub 20':'cat-s20','Master':'cat-mas'
-};
+const CAT_CSS = { 'Mayores':'cat-may','Pre Senior':'cat-pre','Reserva':'cat-res','Sub 18':'cat-s18','Sub 20':'cat-s20','Master':'cat-mas' };
+const CAT_GLOW = { 'Mayores':'glow-may','Pre Senior':'glow-pre','Reserva':'glow-res','Sub 18':'glow-s18','Sub 20':'glow-s20','Master':'glow-mas' };
+const CAT_BURST = { 'Mayores':'rgba(201,162,39,.55)','Pre Senior':'rgba(21,101,192,.55)','Reserva':'rgba(2,119,189,.55)','Sub 18':'rgba(46,125,50,.55)','Sub 20':'rgba(0,131,143,.55)','Master':'rgba(106,27,154,.55)' };
 
 function getCol() { try { return JSON.parse(localStorage.getItem('phu_album')||'[]'); } catch { return []; } }
 function saveCol(c) { localStorage.setItem('phu_album', JSON.stringify(c)); }
 function hoy() { return new Date().toISOString().split('T')[0]; }
 function puedeAbrir() { return localStorage.getItem('phu_album_d') !== hoy(); }
 
-function cartaFrontHTML(j) {
-  const cc = CAT_CLASS[j.cat];
-  return `<div class="c-cat-bar ${cc}">${j.cat}</div>
-    <div class="c-body"><img src="favicon.jpg" alt="Escudo"></div>
-    <div class="c-name">${j.nombre}</div>
-    <div class="c-num">#${String(j.id).padStart(3,'0')}</div>`;
+// ── PARTÍCULAS DE FONDO ──
+let partAnim;
+function startParticles() {
+  const c = document.getElementById('part-canvas');
+  const ctx = c.getContext('2d');
+  c.width = innerWidth; c.height = innerHeight;
+  const ps = Array.from({length:55}, () => ({
+    x: Math.random()*c.width, y: Math.random()*c.height,
+    r: 1+Math.random()*2, vy: -.3-Math.random()*.5,
+    vx: (Math.random()-.5)*.3,
+    op: .1+Math.random()*.4, col: Math.random()>.5?'201,162,39':'26,58,143'
+  }));
+  function loop() {
+    ctx.clearRect(0,0,c.width,c.height);
+    ps.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<-5){p.y=c.height+5;p.x=Math.random()*c.width;}
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.col},${p.op})`; ctx.fill();
+    });
+    partAnim = requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopParticles() { if(partAnim) cancelAnimationFrame(partAnim); }
+
+// ── OPEN FLOW ──
+let jugActual = null;
+let fase = 0; // 0=pack visible, 1=shaking, 2=carta visible
+
+function abrirSobre() {
+  const col = getCol();
+  const disp = JUGADORES.filter(j => !col.includes(j.id));
+  if (!disp.length) return;
+  jugActual = disp[Math.floor(Math.random()*disp.length)];
+  col.push(jugActual.id);
+  saveCol(col);
+  localStorage.setItem('phu_album_d', hoy());
+  updateUI();
+
+  // Mostrar pack screen
+  fase = 0;
+  document.getElementById('pack-grande').style.animation = '';
+  document.getElementById('pack-grande').style.opacity = '1';
+  document.getElementById('pack-grande').style.transform = '';
+  document.getElementById('pack-hint').style.display = 'block';
+  document.getElementById('reveal-wrap').classList.remove('on');
+  document.getElementById('btn-cerrar').style.display = 'none';
+  document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
+  document.getElementById('carta-inner').classList.remove('flipped');
+  document.getElementById('c-front').classList.remove('shine');
+
+  document.getElementById('pack-screen').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  startParticles();
 }
 
-let filtro = 'todos';
+document.getElementById('pack-grande').addEventListener('click', () => {
+  if (fase !== 0) return;
+  fase = 1;
+  const pack = document.getElementById('pack-grande');
+  document.getElementById('pack-hint').style.display = 'none';
 
+  // Shake
+  pack.style.animation = 'packShake .6s ease';
+  setTimeout(() => {
+    // Flash
+    const flash = document.getElementById('flash');
+    flash.style.animation = 'none'; flash.offsetHeight;
+    flash.style.animation = 'flashPop .4s ease forwards';
+    // Explotar pack
+    pack.style.animation = 'packExplode .35s ease forwards';
+    setTimeout(() => {
+      pack.style.display = 'none';
+      mostrarCarta();
+    }, 350);
+  }, 620);
+});
+
+function mostrarCarta() {
+  fase = 2;
+  const j = jugActual;
+  const cc = CAT_CSS[j.cat];
+  document.getElementById('c-front').innerHTML = `
+    <div class="c-cat ${cc}">${j.cat}</div>
+    <div class="c-body-img"><img src="escudo.png" alt="Escudo"></div>
+    <div class="c-nombre">${j.nombre}</div>
+    <div class="c-num">#${String(j.id).padStart(3,'0')}</div>`;
+
+  const wrap = document.getElementById('reveal-wrap');
+  wrap.classList.add('on');
+  const carta = document.getElementById('carta-flip');
+  carta.style.animation = 'cardDrop .65s cubic-bezier(.22,.68,0,1.2) forwards';
+  setTimeout(() => { carta.style.animation = ''; }, 700);
+}
+
+document.getElementById('carta-flip').addEventListener('click', () => {
+  if (fase !== 2) return;
+  const inner = document.getElementById('carta-inner');
+  if (inner.classList.contains('flipped')) return;
+  inner.classList.add('flipped');
+
+  setTimeout(() => {
+    const front = document.getElementById('c-front');
+    front.classList.add('shine');
+
+    // Glow
+    const flip = document.getElementById('carta-flip');
+    flip.style.transition = 'box-shadow .3s';
+    flip.style.boxShadow = '';
+    const gl = CAT_GLOW[jugActual.cat];
+    flip.className = 'carta-flip ' + gl;
+
+    // Burst
+    const burst = document.getElementById('burst');
+    burst.style.background = `radial-gradient(circle at center, ${CAT_BURST[jugActual.cat]} 0%, transparent 70%)`;
+    burst.classList.add('on');
+    setTimeout(() => burst.classList.remove('on'), 500);
+
+    document.getElementById('reveal-hint').textContent = '';
+    document.getElementById('btn-cerrar').style.display = 'block';
+
+    if (getCol().length === TOTAL) setTimeout(mostrarCompletado, 900);
+  }, 350);
+});
+
+document.getElementById('btn-cerrar').addEventListener('click', cerrarPackScreen);
+
+function cerrarPackScreen() {
+  document.getElementById('pack-screen').classList.remove('on');
+  document.body.style.overflow = '';
+  document.getElementById('pack-grande').style.display = '';
+  document.getElementById('pack-grande').style.opacity = '';
+  document.getElementById('carta-flip').className = 'carta-flip';
+  stopParticles();
+}
+
+// ── GRILLA ──
+let filtro = 'todos';
 function renderGrid() {
   const col = getCol();
   const lista = filtro === 'todos' ? JUGADORES : JUGADORES.filter(j => j.cat === filtro);
   document.getElementById('grid').innerHTML = lista.map(j => {
     const got = col.includes(j.id);
-    const cc = CAT_CLASS[j.cat];
+    const cc = CAT_CSS[j.cat];
     return `<div class="mc ${got?'got':'pend'}">
       <div class="mc-inner">
         <div class="mc-hdr ${got?cc:''}">${got?j.cat:'???'}</div>
-        <div class="mc-body">${got?`<img src="favicon.jpg" alt="Escudo">`:'<span class="q">?</span>'}</div>
+        <div class="mc-body">${got?'<img src="escudo.png" alt="Escudo">':`<span class="q">?</span>`}</div>
         <div class="mc-name">${got?j.nombre:'???'}</div>
       </div>
       <span class="mc-id">#${String(j.id).padStart(3,'0')}</span>
@@ -432,138 +672,65 @@ function updateUI() {
   const pct = Math.round(n/TOTAL*100);
   document.getElementById('prog-txt').textContent = `${n} / ${TOTAL} jugadores`;
   document.getElementById('prog-pct').textContent = `${pct}%`;
-  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').style.width = pct+'%';
   document.getElementById('col-sub').textContent =
-    n === 0 ? 'Todavía no tenés ninguna carta. ¡Abrí tu primer sobre!' :
-    n === TOTAL ? '¡Colección completa! Sos un verdadero hincha del Playa.' :
+    n===0 ? 'Todavía no tenés ninguna carta. ¡Abrí tu primer sobre!' :
+    n===TOTAL ? '¡Colección completa! Sos un verdadero hincha del Playa.' :
     `Tenés ${n} de ${TOTAL} cartas. ¡Seguí coleccionando!`;
   const btn = document.getElementById('btn-sobre');
-  if (n === TOTAL) {
-    btn.classList.add('disabled');
-    btn.querySelector('.sobre-texto').textContent = '¡COMPLETO!';
-    btn.onclick = null;
+  if (n===TOTAL) {
+    btn.classList.add('disabled'); btn.querySelector('.sobre-txt').textContent='¡COMPLETO!'; btn.onclick=null;
   } else if (puedeAbrir()) {
-    btn.classList.remove('disabled');
-    btn.onclick = abrirSobre;
+    btn.classList.remove('disabled'); btn.onclick=abrirSobre;
   } else {
-    btn.classList.add('disabled');
-    btn.onclick = null;
+    btn.classList.add('disabled'); btn.onclick=null;
   }
   renderGrid();
 }
 
 function updateClock() {
-  const col = getCol();
-  const el = document.getElementById('prox-txt');
-  if (col.length === TOTAL) { el.innerHTML = '¡Colección completa! 🏆'; return; }
-  if (puedeAbrir()) { el.textContent = ''; return; }
-  const ahora = new Date();
-  const manana = new Date(ahora); manana.setDate(manana.getDate()+1); manana.setHours(0,0,0,0);
-  const d = manana - ahora;
-  const h = String(Math.floor(d/3600000)).padStart(2,'0');
-  const m = String(Math.floor(d%3600000/60000)).padStart(2,'0');
-  const s = String(Math.floor(d%60000/1000)).padStart(2,'0');
-  el.innerHTML = `Próximo sobre en <span>${h}:${m}:${s}</span>`;
+  const col = getCol(); const el = document.getElementById('prox-txt');
+  if (col.length===TOTAL){el.innerHTML='¡Colección completa! 🏆';return;}
+  if (puedeAbrir()){el.textContent='';return;}
+  const ahora=new Date(), manana=new Date(ahora);
+  manana.setDate(manana.getDate()+1); manana.setHours(0,0,0,0);
+  const d=manana-ahora;
+  const h=String(Math.floor(d/3600000)).padStart(2,'0');
+  const m=String(Math.floor(d%3600000/60000)).padStart(2,'0');
+  const s=String(Math.floor(d%60000/1000)).padStart(2,'0');
+  el.innerHTML=`Próximo sobre en <span>${h}:${m}:${s}</span>`;
 }
-
-function abrirSobre() {
-  const col = getCol();
-  const disp = JUGADORES.filter(j => !col.includes(j.id));
-  if (!disp.length) return;
-  const j = disp[Math.floor(Math.random()*disp.length)];
-  col.push(j.id);
-  saveCol(col);
-  localStorage.setItem('phu_album_d', hoy());
-
-  document.getElementById('c-front').innerHTML = cartaFrontHTML(j);
-  document.getElementById('carta-inner').classList.remove('flipped');
-  document.getElementById('hint').textContent = 'Tocá la carta para revelar';
-  document.getElementById('modal').classList.add('on');
-
-  updateUI();
-  if (col.length === TOTAL) setTimeout(mostrarCompletado, 800);
-}
-
-document.getElementById('carta-flip').addEventListener('click', () => {
-  const inner = document.getElementById('carta-inner');
-  if (!inner.classList.contains('flipped')) {
-    inner.classList.add('flipped');
-    document.getElementById('hint').textContent = '';
-  }
-});
-
-document.getElementById('btn-cerrar').addEventListener('click', () => {
-  document.getElementById('modal').classList.remove('on');
-});
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('on');
-});
 
 document.getElementById('tabs').addEventListener('click', e => {
-  if (!e.target.classList.contains('tab')) return;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
-  e.target.classList.add('on');
-  filtro = e.target.dataset.cat;
-  renderGrid();
+  if(!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  e.target.classList.add('on'); filtro=e.target.dataset.cat; renderGrid();
 });
 
 function mostrarCompletado() {
   const ya = localStorage.getItem('phu_album_reg');
-  if (ya) {
-    document.getElementById('comp-form').style.display = 'none';
-    const d = document.getElementById('comp-done');
-    d.style.display = 'block';
-    d.textContent = `Ya registrado como "${ya}". ¡Sos parte de la historia!`;
-  }
-  document.getElementById('comp').classList.add('on');
-  confetti();
+  if(ya){ document.getElementById('comp-form').style.display='none'; const d=document.getElementById('comp-done'); d.style.display='block'; d.textContent=`Ya registrado como "${ya}". ¡Sos parte de la historia!`; }
+  document.getElementById('comp').classList.add('on'); confetti();
 }
 
 document.getElementById('btn-reg').addEventListener('click', async () => {
-  const nombre = document.getElementById('inp-nombre').value.trim();
-  if (!nombre) return;
+  const nombre = document.getElementById('inp-nombre').value.trim(); if(!nombre) return;
   localStorage.setItem('phu_album_reg', nombre);
-  if (ENDPOINT) {
-    try {
-      await fetch(ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({nombre, fecha: new Date().toISOString()}) });
-    } catch(e) {}
-  }
-  document.getElementById('comp-form').style.display = 'none';
-  const d = document.getElementById('comp-done');
-  d.style.display = 'block';
-  d.textContent = `¡Logro registrado, ${nombre}! 🏆`;
+  if(ENDPOINT){ try{ await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,fecha:new Date().toISOString()})}); }catch(e){} }
+  document.getElementById('comp-form').style.display='none';
+  const d=document.getElementById('comp-done'); d.style.display='block'; d.textContent=`¡Logro registrado, ${nombre}! 🏆`;
 });
 
 function confetti() {
-  const c = document.getElementById('confetti-c');
-  const ctx = c.getContext('2d');
-  c.width = innerWidth; c.height = innerHeight;
-  const ps = Array.from({length:130}, () => ({
-    x: Math.random()*c.width, y: Math.random()*-c.height,
-    w: 6+Math.random()*8, h: 3+Math.random()*5,
-    col: ['#c9a227','#1a3a8f','#f0f4ff','#e74c3c','#27ae60'][Math.floor(Math.random()*5)],
-    vx:(Math.random()-.5)*2.5, vy:2+Math.random()*3.5,
-    rot:Math.random()*360, vr:(Math.random()-.5)*5
-  }));
-  let t = 0;
-  (function loop() {
-    ctx.clearRect(0,0,c.width,c.height);
-    ps.forEach(p => {
-      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
-      if(p.y>c.height){p.y=-10;p.x=Math.random()*c.width;}
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=p.col; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-      ctx.restore();
-    });
-    if(++t<350) requestAnimationFrame(loop);
-    else ctx.clearRect(0,0,c.width,c.height);
-  })();
+  const c=document.getElementById('confetti-c'), ctx=c.getContext('2d');
+  c.width=innerWidth; c.height=innerHeight;
+  const ps=Array.from({length:130},()=>({x:Math.random()*c.width,y:Math.random()*-c.height,w:6+Math.random()*8,h:3+Math.random()*5,col:['#c9a227','#1a3a8f','#f0f4ff','#e74c3c','#27ae60'][Math.floor(Math.random()*5)],vx:(Math.random()-.5)*2.5,vy:2+Math.random()*3.5,rot:Math.random()*360,vr:(Math.random()-.5)*5}));
+  let t=0;
+  (function loop(){ctx.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;if(p.y>c.height){p.y=-10;p.x=Math.random()*c.width;}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});if(++t<350)requestAnimationFrame(loop);else ctx.clearRect(0,0,c.width,c.height);})();
 }
 
-setInterval(updateClock, 1000);
-updateUI();
-updateClock();
+setInterval(updateClock,1000);
+updateUI(); updateClock();
 </script>
 </body>
 </html>
