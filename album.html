@@ -43,6 +43,7 @@
     .sobre-section { text-align: center; margin-bottom: 3rem; }
     .sobre-btn {
       display: inline-flex; flex-direction: column; align-items: center; gap: .7rem;
+      -webkit-appearance: none; appearance: none; outline: none;
       width: 160px; height: 220px;
       background: linear-gradient(160deg, #1e3fa0 0%, #091540 55%, #162f80 100%);
       border: 2px solid var(--dorado);
@@ -295,11 +296,11 @@
 </div>
 
 <div class="sobre-section">
-  <div class="sobre-btn" id="btn-sobre">
+  <button class="sobre-btn" id="btn-sobre" type="button">
     <img class="sobre-escudo" src="escudo.png" alt="Escudo">
     <div class="sobre-linea"></div>
     <span class="sobre-txt">ABRIR SOBRE</span>
-  </div>
+  </button>
   <p class="prox-txt" id="prox-txt"></p>
 </div>
 
