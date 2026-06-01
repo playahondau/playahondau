@@ -213,11 +213,16 @@
     .section-label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dorado);margin-bottom:.4rem;}
     .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,5vw,4rem);line-height:1;color:var(--blanco);margin-bottom:1.5rem;}
     .gold-line{width:60px;height:3px;background:var(--dorado);margin-bottom:1.5rem;}
-    .stats-row{display:flex;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);margin-bottom:4rem;}
-    .stat-item{flex:1;padding:1.5rem 2rem;border-right:1px solid rgba(255,255,255,.04);}
+    .stats-row{display:flex;margin-bottom:0;}
+    .stat-item{flex:1;padding:2rem 2.5rem;border-right:1px solid rgba(255,255,255,.06);text-align:center;}
     .stat-item:last-child{border-right:none;}
-    .stat-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--dorado);line-height:1;}
-    .stat-label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-top:.2rem;}
+    .stat-num{font-family:'Bebas Neue',sans-serif;font-size:5.5rem;color:var(--dorado-light);line-height:1;}
+    .stat-label{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gris);margin-top:.4rem;}
+    /* Banda de estadísticas */
+    .stats-band{background:#050810;border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:0;}
+    /* Botón flotante newsletter */
+    .fab-newsletter{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dorado-light);color:var(--blanco);border:none;border-radius:50px;padding:.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s;z-index:9998;}
+    .fab-newsletter:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.6);}
     .resultados-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:rgba(255,255,255,.04);}
     .resultado-card{background:var(--card-bg);padding:1.5rem;position:relative;overflow:hidden;transition:background var(--transition),transform var(--transition),box-shadow var(--transition);}
     .resultado-card:hover{background:#111827;transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
@@ -280,6 +285,8 @@
       .fix-home,.fix-away,.fix-info{text-align:left;}
       .stats-row{flex-wrap:wrap;}
       .stat-item{flex:50%;}
+      .stats-band .stat-num{font-size:3.8rem;}
+      .fab-newsletter{bottom:1rem;right:1rem;font-size:.8rem;padding:.55rem 1.1rem;}
     }
   
     /* Newsletter popup */
@@ -623,13 +630,16 @@
 </div>
 
 
-<section id="resultados">
+<section class="stats-band">
   <div class="stats-row reveal-stagger">
     <div class="stat-item"><div class="stat-num" data-target="61">61</div><div class="stat-label">A&ntilde;os de historia</div></div>
     <div class="stat-item"><div class="stat-num" data-target="6">6</div><div class="stat-label">Categor&iacute;as activas</div></div>
     <div class="stat-item"><div class="stat-num" id="stat-v">&mdash;</div><div class="stat-label">Victorias</div></div>
     <div class="stat-item"><div class="stat-num" id="stat-p">&mdash;</div><div class="stat-label">Partidos jugados</div></div>
   </div>
+</section>
+
+<section id="resultados">
   <p class="section-label reveal">Temporada 2026</p>
   <h2 class="section-title reveal">&Uacute;ltimos Resultados</h2>
   <div class="gold-line reveal"></div>
@@ -2077,17 +2087,18 @@ init();
 const newsletter = document.getElementById('newsletter');
 const closeNewsletter = document.getElementById('close-newsletter');
 
-window.addEventListener('load', () => {
-  if (!localStorage.getItem('newsletterClosed')) {
-    setTimeout(() => {
-      newsletter.classList.add('active');
-    }, 1200);
-  }
+// Botón flotante abre el modal
+document.getElementById('fab-newsletter').addEventListener('click', () => {
+  newsletter.classList.add('active');
+});
+
+// Click fuera del modal lo cierra
+newsletter.addEventListener('click', (e) => {
+  if (e.target === newsletter) newsletter.classList.remove('active');
 });
 
 closeNewsletter.addEventListener('click', () => {
   newsletter.classList.remove('active');
-  localStorage.setItem('newsletterClosed', 'true');
 });
 
 document.querySelector('.newsletter-form').addEventListener('submit', async function(e) {
@@ -4598,6 +4609,8 @@ window.abrirBuscador = function(e) {
 
 })();
 </script>
+
+<button class="fab-newsletter" id="fab-newsletter" aria-label="Suscribirse al newsletter">✉ SUSCRIBIRME</button>
 
 </body>
 </html>
