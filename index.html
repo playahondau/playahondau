@@ -1184,7 +1184,7 @@ function showTab(name) {
     if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
       try { renderTabla('master', JSON.parse(cached)); return; } catch(e) {}
     }
-    fetch(API + '?view=master')
+    fetch('https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec?view=master')
       .then(function(r){ return r.json(); })
       .then(function(data) {
         if (!Array.isArray(data) || !data.length) return;
