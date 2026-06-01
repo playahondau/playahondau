@@ -552,10 +552,8 @@ let jugIdx = 0;
 let fase = 0; // 0=pack visible, 1=shaking, 2=carta visible
 
 function abrirSobre() {
-  console.log('abrirSobre llamado');
   const col = getCol();
   const disp = JUGADORES.filter(j => !col.includes(j.id));
-  console.log('disp length:', disp.length, 'col:', col);
   if (!disp.length) return;
   jugActuales = [];
   jugIdx = 0;
@@ -836,7 +834,6 @@ async function fetchMinutos() {
   sessionStorage.setItem('phu_min', JSON.stringify(Object.fromEntries(Object.entries(mapa).map(([k,v])=>[k,v.min]))));
     sessionStorage.setItem('phu_min_ts', Date.now().toString());
     renderGrid();
-  } catch(e) { minutosMap = {}; }
 }
 
 setInterval(updateClock,1000);
