@@ -189,7 +189,9 @@
     .c-body-img { flex: 1; background: #06101e; display: flex; align-items: center; justify-content: center; padding: .6rem; }
     .c-body-img img { max-width: 80px; max-height: 80px; object-fit: contain; }
     .c-nombre { background: #050e1c; padding: .55rem .5rem .3rem; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .04em; color: var(--blanco); line-height: 1.1; }
-    .c-num { background: #040b17; padding: .22rem .5rem; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: .48rem; color: rgba(255,255,255,.28); }
+    .c-minutos { background: #040b17; padding: .18rem .5rem; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .78rem; font-weight: 700; color: var(--dorado); letter-spacing: .06em; }
+    .c-num { background: #040b17; padding: .15rem .5rem; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: .48rem; color: rgba(255,255,255,.28); }
+    .mc-min { position: absolute; top: .22rem; left: .3rem; font-size: .52rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; color: var(--dorado); background: rgba(0,0,0,.5); padding: .05rem .2rem; border-radius: 3px; }
 
     /* GLOW POR CATEGORÍA */
     .glow-may { box-shadow: 0 0 50px rgba(201,162,39,.8), 0 0 100px rgba(201,162,39,.35); }
@@ -662,6 +664,7 @@ function renderGrid() {
         <div class="mc-name">${got?j.nombre:'???'}</div>
       </div>
       <span class="mc-id">#${String(j.id).padStart(3,'0')}</span>
+      ${got && getMinutos(j.nombre) > 0 ? `<span class="mc-min">${getMinutos(j.nombre)}'`+`</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -729,8 +732,61 @@ function confetti() {
   (function loop(){ctx.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;if(p.y>c.height){p.y=-10;p.x=Math.random()*c.width;}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});if(++t<350)requestAnimationFrame(loop);else ctx.clearRect(0,0,c.width,c.height);})();
 }
 
+// ── MINUTOS API ──
+const API_MIN = 'https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/';
+let minutosMap = {};
+
+function normName(n) {
+  return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function getMinutos(nombre) {
+  return minutosMap[normName(nombre)] || 0;
+}
+
+async function fetchMinutos() {
+  const cached = sessionStorage.getItem('phu_min');
+  const ts = sessionStorage.getItem('phu_min_ts');
+  if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+    minutosMap = JSON.parse(cached); renderGrid(); return;
+  }
+  try {
+    const res = await fetch(API_MIN);
+    const data = await res.json();
+    const mapa = {};
+    const anio = new Date().getFullYear().toString();
+    // Intentar año actual
+    data.forEach(fase => {
+      if (String(fase.season_year) === anio) {
+        (fase.players||[]).forEach(p => {
+          const k = normName(p.name);
+          mapa[k] = (mapa[k]||0) + (p.minutes||0);
+        });
+      }
+    });
+    // Fallback al año más reciente si no hay datos del actual
+    if (!Object.keys(mapa).length) {
+      let maxY = '0';
+      data.forEach(f => { if (String(f.season_year) > maxY) maxY = String(f.season_year); });
+      data.forEach(fase => {
+        if (String(fase.season_year) === maxY) {
+          (fase.players||[]).forEach(p => {
+            const k = normName(p.name);
+            mapa[k] = (mapa[k]||0) + (p.minutes||0);
+          });
+        }
+      });
+    }
+    minutosMap = mapa;
+    sessionStorage.setItem('phu_min', JSON.stringify(mapa));
+    sessionStorage.setItem('phu_min_ts', Date.now().toString());
+    renderGrid();
+  } catch(e) { minutosMap = {}; }
+}
+
 setInterval(updateClock,1000);
 updateUI(); updateClock();
+fetchMinutos();
 </script>
 </body>
 </html>
