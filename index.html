@@ -1914,15 +1914,23 @@ async function fetchSheetExtra() {
   try {
     const r = await fetch(SHEET_CSV);
     const text = await r.text();
+    const rows = text.split('\n');
+    const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+    const iNov  = headers.indexOf('novedad');
+    const iIcon = headers.indexOf('icono');
+    const iEst  = headers.indexOf('estado');
     const map = {};
-    text.split('\n').slice(1).forEach(row => {
+    rows.slice(1).forEach(row => {
       if (!row.trim()) return;
       const cols = row.split(',');
       const cat = (cols[0] || '').trim().toLowerCase();
       map[cat] = {
         localia:    (cols[4] || '').trim(),
         goleadores: (cols[7] || '').trim(),
-        lugar:      (cols[8] || '').trim()   /* columna opcional */
+        lugar:      (cols[8] || '').trim(),
+        estado:     iEst  >= 0 ? (cols[iEst]  || '').trim().toLowerCase() : '',
+        novedad:    iNov  >= 0 ? (cols[iNov]  || '').trim() : '',
+        icono:      iIcon >= 0 ? (cols[iIcon] || '').trim() : ''
       };
     });
     return map;
@@ -2055,6 +2063,22 @@ function renderFixture(rows) {
   setInterval(checkLive, 60000);
 }
 
+function renderNovedades(extra) {
+  var chips = Object.keys(extra)
+    .filter(function(cat) { return extra[cat].novedad; })
+    .map(function(cat) {
+      var d = extra[cat];
+      var icon = d.icono || (d.estado === 'victoria' ? '🔥' : d.estado === 'empate' ? '🤝' : d.estado === 'derrota' ? '💪' : '⚽');
+      var label = cat.charAt(0).toUpperCase() + cat.slice(1);
+      return '<div class="novedad-chip"><span class="nov-icon">' + icon + '</span>'
+        + '<span class="nov-cat">' + label + '</span>'
+        + '<span class="nov-txt">' + d.novedad + '</span></div>';
+    });
+  if (!chips.length) return;
+  var bar = document.querySelector('.novedades-bar');
+  if (bar) bar.innerHTML = '<span class="nov-label">Novedades de la fecha</span>' + chips.join('');
+}
+
 async function init() {
   try {
     const [resp, extra] = await Promise.all([fetch(API), fetchSheetExtra()]);
@@ -2065,6 +2089,7 @@ async function init() {
     renderTicker(resultados);
     renderResultados(resultados, extra);
     renderFixture(fixture);
+    renderNovedades(extra);
     initCountdown(fixture);
     checkMatchDay(fixture);
   } catch(e) {
