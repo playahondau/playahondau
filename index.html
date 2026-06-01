@@ -4492,7 +4492,7 @@ window.abrirBuscador = function(e) {
 };
 
 (async () => {
-  const API = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretymdsk/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec';
 
   function norm(n) {
     return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
@@ -4611,21 +4611,22 @@ window.abrirBuscador = function(e) {
     // También buscar en las tarjetas del plantel (jugadores sin stats de API)
     const todosNombres = new Set();
     document.querySelectorAll('.jugador-card').forEach(card => {
-      const n = card.textContent.split('\n')[0].trim();
+      var nodo = card.firstChild;
+      var n = (nodo && nodo.nodeType === 3) ? nodo.textContent.trim() : '';
       if (norm(n).includes(q) && n.length > 2) todosNombres.add(n);
     });
 
-    const resultados = [];
-    // Primero los que tienen stats
+    var resultados = [];
+    var yaAgregados = new Set();
     hayStats.sort((a,b) => b.min - a.min).forEach(j => {
       resultados.push(j);
-      todosNombres.delete(j.nombre);
+      yaAgregados.add(norm(j.nombre));
     });
-    // Luego los del plantel sin stats
     todosNombres.forEach(nombre => {
-      resultados.push({ nombre, min: 0, pj: 0, goles: 0, rojas: 0, label: '—', cls: '' });
+      if (!yaAgregados.has(norm(nombre))) {
+        resultados.push({ nombre: nombre, min: 0, pj: 0, goles: 0, rojas: 0, label: '-', cls: '' });
+      }
     });
-
     if (!resultados.length) {
       resultsEl.innerHTML = '<p class="buscador-hint">Sin resultados</p>';
       return;
