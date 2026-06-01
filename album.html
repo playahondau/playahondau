@@ -190,6 +190,9 @@
     .c-body-img img { max-width: 80px; max-height: 80px; object-fit: contain; }
     .c-nombre { background: #050e1c; padding: .55rem .5rem .3rem; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .04em; color: var(--blanco); line-height: 1.1; }
     .c-minutos { background: #040b17; padding: .18rem .5rem; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: .78rem; font-weight: 700; color: var(--dorado); letter-spacing: .06em; }
+    .c-stats-row { background: #040b17; display: flex; justify-content: space-around; padding: .15rem .5rem; }
+    .c-stat { font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; color: rgba(255,255,255,.5); font-weight: 600; }
+    .c-stat-gol { font-family: 'Barlow Condensed', sans-serif; font-size: .68rem; color: #66bb6a; font-weight: 600; }
     .c-num { background: #040b17; padding: .15rem .5rem; text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: .48rem; color: rgba(255,255,255,.28); }
     .mc-min { position: absolute; top: .22rem; left: .3rem; font-size: .52rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; color: var(--dorado); background: rgba(0,0,0,.5); padding: .05rem .2rem; border-radius: 3px; }
 
@@ -340,6 +343,7 @@
       </div>
     </div>
     <p class="reveal-hint" id="reveal-hint">Tocá la carta para revelar</p>
+    <button class="btn-sec" id="btn-siguiente" style="display:none">Siguiente →</button>
     <button class="btn-sec" id="btn-cerrar" style="display:none">Ver mi colección</button>
   </div>
 </div>
@@ -539,15 +543,23 @@ function startParticles() {
 function stopParticles() { if(partAnim) cancelAnimationFrame(partAnim); }
 
 // ── OPEN FLOW ──
-let jugActual = null;
+let jugActuales = [];
+let jugIdx = 0;
 let fase = 0; // 0=pack visible, 1=shaking, 2=carta visible
 
 function abrirSobre() {
   const col = getCol();
   const disp = JUGADORES.filter(j => !col.includes(j.id));
   if (!disp.length) return;
-  jugActual = disp[Math.floor(Math.random()*disp.length)];
-  col.push(jugActual.id);
+  jugActuales = [];
+  jugIdx = 0;
+  const cantidad = Math.min(2, disp.length);
+  for (let i = 0; i < cantidad; i++) {
+    const dispRest = disp.filter(j => !jugActuales.find(ja => ja.id === j.id));
+    const j = dispRest[Math.floor(Math.random()*dispRest.length)];
+    jugActuales.push(j);
+    col.push(j.id);
+  }
   saveCol(col);
   localStorage.setItem('phu_album_d', hoy());
   updateUI();
@@ -560,6 +572,8 @@ function abrirSobre() {
   document.getElementById('pack-hint').style.display = 'block';
   document.getElementById('reveal-wrap').classList.remove('on');
   document.getElementById('btn-cerrar').style.display = 'none';
+  document.getElementById('btn-siguiente').style.display = 'none';
+  document.querySelector('.new-lbl') && (document.querySelector('.new-lbl').textContent = '¡Nuevo jugador!');
   document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
   document.getElementById('carta-inner').classList.remove('flipped');
   document.getElementById('c-front').classList.remove('shine');
@@ -593,12 +607,21 @@ document.getElementById('pack-grande').addEventListener('click', () => {
 
 function mostrarCarta() {
   fase = 2;
-  const j = jugActual;
+  const j = jugActuales[jugIdx];
   const cc = CAT_CSS[j.cat];
+  const st = getStat(j.nombre);
+  const minStr = st.min > 0 ? st.min + "'" : '-';
+  const pjStr  = st.pj  > 0 ? st.pj  + ' PJ' : '-';
+  const golStr = st.goles > 0 ? '⚽ ' + st.goles : '-';
   document.getElementById('c-front').innerHTML = `
     <div class="c-cat ${cc}">${j.cat}</div>
     <div class="c-body-img"><img src="escudo.png" alt="Escudo"></div>
     <div class="c-nombre">${j.nombre}</div>
+    <div class="c-minutos">${minStr}</div>
+    <div class="c-stats-row">
+      <span class="c-stat">${pjStr}</span>
+      <span class="c-stat-gol">${golStr}</span>
+    </div>
     <div class="c-num">#${String(j.id).padStart(3,'0')}</div>`;
 
   const wrap = document.getElementById('reveal-wrap');
@@ -622,22 +645,38 @@ document.getElementById('carta-flip').addEventListener('click', () => {
     const flip = document.getElementById('carta-flip');
     flip.style.transition = 'box-shadow .3s';
     flip.style.boxShadow = '';
-    const gl = CAT_GLOW[jugActual.cat];
+    const gl = CAT_GLOW[jugActuales[jugIdx].cat];
     flip.className = 'carta-flip ' + gl;
 
     // Burst
     const burst = document.getElementById('burst');
-    burst.style.background = `radial-gradient(circle at center, ${CAT_BURST[jugActual.cat]} 0%, transparent 70%)`;
+    burst.style.background = `radial-gradient(circle at center, ${CAT_BURST[jugActuales[jugIdx].cat]} 0%, transparent 70%)`;
     burst.classList.add('on');
     setTimeout(() => burst.classList.remove('on'), 500);
 
     document.getElementById('reveal-hint').textContent = '';
-    document.getElementById('btn-cerrar').style.display = 'block';
-
+    // Si hay segunda carta, mostrar boton Siguiente; sino Ver coleccion
+    if (jugIdx === 0 && jugActuales.length > 1) {
+      document.getElementById('btn-siguiente').style.display = 'block';
+      document.getElementById('btn-cerrar').style.display = 'none';
+    } else {
+      document.getElementById('btn-cerrar').style.display = 'block';
+      document.getElementById('btn-siguiente').style.display = 'none';
+    }
     if (getCol().length === TOTAL) setTimeout(mostrarCompletado, 900);
   }, 350);
 });
 
+document.getElementById('btn-siguiente').addEventListener('click', () => {
+  jugIdx = 1;
+  document.getElementById('btn-siguiente').style.display = 'none';
+  document.getElementById('carta-inner').classList.remove('flipped');
+  document.getElementById('c-front').classList.remove('shine');
+  document.getElementById('carta-flip').className = 'carta-flip';
+  document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
+  document.getElementById('reveal-wrap').querySelector('.new-lbl').textContent = '¡Segundo jugador!';
+  mostrarCarta();
+});
 document.getElementById('btn-cerrar').addEventListener('click', cerrarPackScreen);
 
 function cerrarPackScreen() {
@@ -732,53 +771,63 @@ function confetti() {
   (function loop(){ctx.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;if(p.y>c.height){p.y=-10;p.x=Math.random()*c.width;}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});if(++t<350)requestAnimationFrame(loop);else ctx.clearRect(0,0,c.width,c.height);})();
 }
 
-// ── MINUTOS API ──
-const API_MIN = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretymdsk/exec';
-let minutosMap = {};
+// ── STATS API ──
+const API_DIRECTO = 'https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/';
+const API_PROXY   = 'https://corsproxy.io/?' + encodeURIComponent(API_DIRECTO);
+let statsMap = {}; // normName → {min, pj, goles, rojas}
 
 function normName(n) {
   return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 }
 
-function getMinutos(nombre) {
-  return minutosMap[normName(nombre)] || 0;
+function getStat(nombre) {
+  return statsMap[normName(nombre)] || { min:0, pj:0, goles:0, rojas:0 };
 }
 
+function getMinutos(nombre) { return getStat(nombre).min; }
+
 async function fetchMinutos() {
-  const cached = sessionStorage.getItem('phu_min');
-  const ts = sessionStorage.getItem('phu_min_ts');
+  const cached = sessionStorage.getItem('phu2_raw');
+  const ts = sessionStorage.getItem('phu2_ts');
+  let raw = [];
   if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
-    minutosMap = JSON.parse(cached); renderGrid(); return;
+    try { raw = JSON.parse(cached); } catch(e) {}
   }
-  try {
-    const res = await fetch(API_MIN);
-    const data = await res.json();
-    const mapa = {};
-    const anio = new Date().getFullYear().toString();
-    // Intentar año actual
-    data.forEach(fase => {
-      if (String(fase.season_year) === anio) {
-        (fase.players||[]).forEach(p => {
-          const k = normName(p.name);
-          mapa[k] = (mapa[k]||0) + (p.minutes||0);
-        });
-      }
-    });
-    // Fallback al año más reciente si no hay datos del actual
-    if (!Object.keys(mapa).length) {
-      let maxY = '0';
-      data.forEach(f => { if (String(f.season_year) > maxY) maxY = String(f.season_year); });
-      data.forEach(fase => {
-        if (String(fase.season_year) === maxY) {
-          (fase.players||[]).forEach(p => {
-            const k = normName(p.name);
-            mapa[k] = (mapa[k]||0) + (p.minutes||0);
-          });
+  if (!raw.length) {
+    for (const url of [API_DIRECTO, API_PROXY]) {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 9000);
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          raw = data;
+          sessionStorage.setItem('phu2_raw', JSON.stringify(raw));
+          sessionStorage.setItem('phu2_ts', Date.now().toString());
+          break;
         }
-      });
+      } catch(e) {}
     }
-    minutosMap = mapa;
-    sessionStorage.setItem('phu_min', JSON.stringify(mapa));
+  }
+  if (!raw.length) { renderGrid(); return; }
+  const anio = new Date().getFullYear();
+  const anos = [...new Set(raw.map(f => f.season_year))].sort((a,b) => b-a);
+  const targetYear = anos.includes(anio) ? anio : anos[0];
+  const mapa = {};
+  raw.forEach(fase => {
+    if (fase.season_year !== targetYear) return;
+    (fase.players||[]).forEach(p => {
+      const k = normName(p.name);
+      if (!mapa[k]) mapa[k] = { min:0, pj:0, goles:0, rojas:0 };
+      mapa[k].min   += p.minutes   || 0;
+      mapa[k].pj    += p.matches   || 0;
+      mapa[k].goles += p.goals     || 0;
+      mapa[k].rojas += p.red_cards || 0;
+    });
+  });
+  statsMap = mapa;
+  sessionStorage.setItem('phu_min', JSON.stringify(Object.fromEntries(Object.entries(mapa).map(([k,v])=>[k,v.min]))));
     sessionStorage.setItem('phu_min_ts', Date.now().toString());
     renderGrid();
   } catch(e) { minutosMap = {}; }
