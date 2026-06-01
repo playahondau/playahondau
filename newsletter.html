@@ -175,9 +175,9 @@ function renderDiario(resultados, fixture) {
   };
 
   var arr     = TIT[res] || TIT.derrota;
-  var titular = arr[Math.floor(Math.random()*arr.length)];
+  var titular = arr[0];
   var sarr    = SUB[res] || SUB.derrota;
-  var subtit  = sarr[Math.floor(Math.random()*sarr.length)];
+  var subtit  = sarr[0];
   var carr    = CRON[res] || CRON.derrota;
 
   // Si escribiste la crónica en la columna L del sheet, se usa esa. Si no, texto automático.
