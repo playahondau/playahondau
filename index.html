@@ -1464,7 +1464,7 @@ function showPlantel(name) {
   <!-- MAYORES -->
   <div id="gmay" class="gol-content active">
     <p class="tabla-titulo">Mayores Divisional A &mdash; Copa Pilsen</p>
-    <div class="gol-table">
+    <div class="gol-table" id="gtable-gmay">
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Luciano Laudicio</span><span class="gol-num">1 ⚽</span></div>
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Emiliano Dantaz</span><span class="gol-num">1 ⚽</span></div>
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Juan Pedro Tafernaberry</span><span class="gol-num">1 ⚽</span></div>
@@ -1475,7 +1475,7 @@ function showPlantel(name) {
   <!-- RESERVA -->
   <div id="gres" class="gol-content">
     <p class="tabla-titulo">Reserva Divisional A &mdash; Copa Antel</p>
-    <div class="gol-table">
+    <div class="gol-table" id="gtable-gres">
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Lautaro E. Catsouris</span><span class="gol-num">3 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Maximiliano Montero</span><span class="gol-num">2 ⚽</span></div>
       <div class="gol-row bronze" style="--bar:33%"><span class="gol-pos">3</span><span class="gol-name">Mat&iacute;as N. Rodr&iacute;guez</span><span class="gol-num">1 ⚽</span></div>
@@ -1489,7 +1489,7 @@ function showPlantel(name) {
   <!-- PRE SENIOR -->
   <div id="gpre" class="gol-content">
     <p class="tabla-titulo">Pre Senior Divisional A &mdash; Copa Summum</p>
-    <div class="gol-table">
+    <div class="gol-table" id="gtable-gpre">
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Fabi&aacute;n Aicardi</span><span class="gol-num">3 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Alejandro N&uacute;&ntilde;ez</span><span class="gol-num">2 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Marcelo Meli&aacute;n</span><span class="gol-num">2 ⚽</span></div>
@@ -1499,7 +1499,7 @@ function showPlantel(name) {
   <!-- SUB 20 -->
   <div id="gs20" class="gol-content">
     <p class="tabla-titulo">Sub 20 Divisional A</p>
-    <div class="gol-table">
+    <div class="gol-table" id="gtable-gs20">
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Juan Manuel Bocchi</span><span class="gol-num">3 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Federico Soria</span><span class="gol-num">2 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Agust&iacute;n Lucero</span><span class="gol-num">2 ⚽</span></div>
@@ -1510,7 +1510,7 @@ function showPlantel(name) {
   <!-- SUB 18 -->
   <div id="gs18" class="gol-content">
     <p class="tabla-titulo">Sub 18 Serie 5 &mdash; Copa Perifar</p>
-    <div class="gol-table">
+    <div class="gol-table" id="gtable-gs18">
       <div class="gol-row gold" style="--bar:100%"><span class="gol-pos">1</span><span class="gol-name">Juan Manuel Rivas</span><span class="gol-num">3 ⚽</span></div>
       <div class="gol-row silver" style="--bar:66%"><span class="gol-pos">2</span><span class="gol-name">Ignacio Bertinat</span><span class="gol-num">2 ⚽</span></div>
       <div class="gol-row bronze" style="--bar:33%"><span class="gol-pos">3</span><span class="gol-name">Juan Borca</span><span class="gol-num">1 ⚽</span></div>
@@ -4616,6 +4616,41 @@ window.abrirBuscador = function(e) {
       }
     });
     Object.assign(statsMap, _alias);
+
+    // --- GOLEADORES AUTOMÁTICOS ---
+    var GOL_TABS = {'cb-may':'gmay','cb-res':'gres','cb-pre':'gpre','cb-s20':'gs20','cb-s18':'gs18'};
+    var golPorCat = {};
+    raw.forEach(function(fase) {
+      if (fase.season_year !== targetYear) return;
+      var cls = CLS[fase.category] || '';
+      var tabId = GOL_TABS[cls];
+      if (!tabId) return;
+      if (!golPorCat[tabId]) golPorCat[tabId] = {};
+      (fase.players || []).forEach(function(p) {
+        if (!p.goals) return;
+        var k = norm(p.name);
+        if (!golPorCat[tabId][k]) golPorCat[tabId][k] = { name: p.name, goals: 0 };
+        golPorCat[tabId][k].goals += p.goals;
+      });
+    });
+    Object.keys(golPorCat).forEach(function(tabId) {
+      var table = document.getElementById('gtable-' + tabId);
+      if (!table) return;
+      var sorted = Object.values(golPorCat[tabId]).sort(function(a,b){ return b.goals - a.goals; });
+      if (!sorted.length) return;
+      var maxG = sorted[0].goals;
+      var lastG = -1, pos = 0;
+      table.innerHTML = sorted.map(function(p, i) {
+        if (p.goals !== lastG) { pos = i + 1; lastG = p.goals; }
+        var pct = Math.round(p.goals / maxG * 100);
+        var cl = pos === 1 ? 'gold' : pos === 2 ? 'silver' : 'bronze';
+        return '<div class="gol-row ' + cl + '" style="--bar:' + pct + '%">'
+          + '<span class="gol-pos">' + pos + '</span>'
+          + '<span class="gol-name">' + p.name + '</span>'
+          + '<span class="gol-num">' + p.goals + ' ⚽</span>'
+          + '</div>';
+      }).join('');
+    });
   }
 
   // --- ENRIQUECER TARJETAS DEL PLANTEL ---
