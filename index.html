@@ -944,7 +944,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Mayores Divisional A &mdash; Copa Pilsen</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-mayores">
         <tr><td>1</td><td>Tenis El Pinar</td><td>5</td><td>4</td><td>1</td><td>0</td><td>10</td><td>2</td><td>+8</td><td class="pts">13</td></tr>
         <tr><td>2</td><td>Carrasco Polo Club</td><td>5</td><td>3</td><td>1</td><td>1</td><td>9</td><td>2</td><td>+7</td><td class="pts">10</td></tr>
         <tr><td>3</td><td>Old Woodlands Club</td><td>5</td><td>3</td><td>1</td><td>1</td><td>9</td><td>4</td><td>+5</td><td class="pts">10</td></tr>
@@ -970,7 +970,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Reserva Divisional A &mdash; Copa Antel</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-reserva">
         <tr><td>1</td><td>Carrasco Lawn Tennis</td><td>6</td><td>6</td><td>0</td><td>0</td><td>19</td><td>7</td><td>+12</td><td class="pts">18</td></tr>
         <tr><td>2</td><td>Old Christians Club</td><td>6</td><td>4</td><td>1</td><td>1</td><td>13</td><td>4</td><td>+9</td><td class="pts">13</td></tr>
         <tr><td>3</td><td>Old Christians Azul</td><td>6</td><td>3</td><td>2</td><td>1</td><td>16</td><td>7</td><td>+9</td><td class="pts">11</td></tr>
@@ -996,7 +996,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Pre Senior Divisional A &mdash; Copa Summum</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-presenior">
         <tr><td>1</td><td>Old Christians Club</td><td>6</td><td>5</td><td>0</td><td>1</td><td>13</td><td>1</td><td>+12</td><td class="pts">15</td></tr>
         <tr><td>2</td><td>Nautico Carrasco y PG</td><td>6</td><td>4</td><td>0</td><td>2</td><td>8</td><td>5</td><td>+3</td><td class="pts">12</td></tr>
         <tr><td>3</td><td>Independiente</td><td>6</td><td>3</td><td>2</td><td>1</td><td>12</td><td>7</td><td>+5</td><td class="pts">11</td></tr>
@@ -1022,7 +1022,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Sub 20 Divisional A</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-sub20">
         <tr><td>1</td><td>Old Woodlands Club</td><td>6</td><td>6</td><td>0</td><td>0</td><td>17</td><td>1</td><td>+16</td><td class="pts">18</td></tr>
         <tr><td>2</td><td>Old Christians Club</td><td>6</td><td>5</td><td>1</td><td>0</td><td>20</td><td>8</td><td>+12</td><td class="pts">16</td></tr>
         <tr><td>3</td><td>Ceibos Club</td><td>6</td><td>4</td><td>0</td><td>2</td><td>17</td><td>10</td><td>+7</td><td class="pts">12</td></tr>
@@ -1048,7 +1048,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Sub 18 Serie 5 &mdash; Copa Perifar</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-sub18">
         <tr class="playa"><td>1</td><td>&#11088; Playa Honda Universitario</td><td>5</td><td>3</td><td>1</td><td>1</td><td>8</td><td>4</td><td>+4</td><td class="pts">10</td></tr>
         <tr><td>2</td><td>Ceibos Club</td><td>4</td><td>2</td><td>2</td><td>0</td><td>11</td><td>6</td><td>+5</td><td class="pts">8</td></tr>
         <tr><td>3</td><td>Anglo School Univ.</td><td>4</td><td>2</td><td>1</td><td>1</td><td>7</td><td>3</td><td>+4</td><td class="pts">7</td></tr>
@@ -1117,6 +1117,66 @@ function showTab(name) {
   el.classList.add('fade-in');
   event.target.classList.add('active');
 }
+
+/* ── Tablas de Posiciones — Live desde LUD API ── */
+(function() {
+  var API = 'https://lud-backend-ld7d.onrender.com/api/phases/';
+  var FASES = { mayores: 1, reserva: 8, presenior: 13, sub20: 23, sub18: 30 };
+
+  function titleCase(s) {
+    return s.toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
+
+  function renderTabla(tabId, data) {
+    var tbody = document.getElementById('tbody-' + tabId);
+    if (!tbody || !data || !data.length) return;
+    tbody.innerHTML = data.map(function(r, i) {
+      var esPlaya = r.team.name.indexOf('PLAYA HONDA') !== -1;
+      var dg = r.goal_difference > 0 ? '+' + r.goal_difference : String(r.goal_difference);
+      return '<tr' + (esPlaya ? ' class="playa"' : '') + '>'
+        + '<td>' + (i+1) + '</td>'
+        + '<td>' + (esPlaya ? '&#11088; ' : '') + titleCase(r.team.name) + '</td>'
+        + '<td>' + r.played + '</td>'
+        + '<td>' + r.won + '</td>'
+        + '<td>' + r.drawn + '</td>'
+        + '<td>' + r.lost + '</td>'
+        + '<td>' + r.goals_for + '</td>'
+        + '<td>' + r.goals_against + '</td>'
+        + '<td>' + dg + '</td>'
+        + '<td class="pts">' + r.total_points + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function fetchFase(tabId, phaseId) {
+    var key = 'phu_pos_' + phaseId, tsKey = key + '_ts';
+    var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
+    if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+      try { renderTabla(tabId, JSON.parse(cached)); return; } catch(e) {}
+    }
+    var url = API + phaseId + '/standings/';
+    var proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    function tryFetch(urls, i) {
+      if (i >= urls.length) return;
+      var ctrl = new AbortController();
+      var t = setTimeout(function(){ ctrl.abort(); }, 9000);
+      fetch(urls[i], { signal: ctrl.signal })
+        .then(function(r){ clearTimeout(t); return r.json(); })
+        .then(function(data) {
+          if (!Array.isArray(data) || !data.length) throw new Error();
+          sessionStorage.setItem(key, JSON.stringify(data));
+          sessionStorage.setItem(tsKey, Date.now().toString());
+          renderTabla(tabId, data);
+        })
+        .catch(function(){ clearTimeout(t); tryFetch(urls, i+1); });
+    }
+    tryFetch([url, proxy], 0);
+  }
+
+  Object.keys(FASES).forEach(function(tabId) {
+    fetchFase(tabId, FASES[tabId]);
+  });
+})();
 </script>
 
 
