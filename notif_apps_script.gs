@@ -29,9 +29,10 @@ function onResultadoEdit(e) {
 }
 
 function enviarPush(titulo, cuerpo) {
+  var segmento = "Total Subscriptions";
   var payload = JSON.stringify({
     app_id: ONESIGNAL_APP_ID,
-    included_segments: ["Total Subscriptions"],
+    included_segments: [segmento],
     headings: { es: titulo, en: titulo },
     contents: { es: cuerpo, en: cuerpo },
     url: "https://playahondau.github.io/playahondau/#resultados"
@@ -39,7 +40,7 @@ function enviarPush(titulo, cuerpo) {
   var opciones = {
     method: "post",
     contentType: "application/json",
-    headers: { "Authorization": "Basic " + ONESIGNAL_REST_KEY },
+    headers: { Authorization: "Basic " + ONESIGNAL_REST_KEY },
     payload: payload,
     muteHttpExceptions: true
   };
@@ -55,14 +56,87 @@ function testPush() {
   enviarPush("Test Playa Honda", "Si ves esto las notificaciones funcionan");
 }
 
-// Proxy para stats de jugadores — evita el problema HTTP/2 de Render.com
 function doGet(e) {
+  var view = e && e.parameter && e.parameter.view;
+
+  if (view === 'master') {
+    return getMasterStandings();
+  }
+
+  // Default: proxy LUD API
   var url = "https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/";
   try {
     var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-    var output = ContentService.createTextOutput(resp.getContentText())
+    return ContentService.createTextOutput(resp.getContentText()).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getMasterStandings() {
+  try {
+    var url = 'https://ffm.com.uy/index.php?view=posiciones&cat=2';
+    var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    var html = resp.getContentText();
+
+    // Localizar sección SERIE B
+    var serieBIdx = html.indexOf('SERIE B</h3>');
+    if (serieBIdx === -1) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Serie B no encontrada' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Extraer la tabla que sigue a SERIE B
+    var tableStart = html.indexOf('<table', serieBIdx);
+    var tableEnd   = html.indexOf('</table>', tableStart) + 8;
+    var tableHtml  = html.substring(tableStart, tableEnd);
+
+    // Extraer tbody
+    var tbodyStart = tableHtml.indexOf('<tbody>');
+    var tbodyEnd   = tableHtml.indexOf('</tbody>');
+    var tbodyHtml  = tableHtml.substring(tbodyStart, tbodyEnd);
+
+    // Parsear filas
+    var rows = [];
+    var rowRegex = /<tr>([\s\S]*?)<\/tr>/g;
+    var rowMatch;
+    var pos = 1;
+
+    while ((rowMatch = rowRegex.exec(tbodyHtml)) !== null) {
+      var rowHtml = rowMatch[1];
+      var tds = [];
+      var tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+      var tdMatch;
+      while ((tdMatch = tdRegex.exec(rowHtml)) !== null) {
+        tds.push(tdMatch[1]);
+      }
+      if (tds.length < 10) continue;
+
+      // Nombre del equipo: remover el div logo y las etiquetas HTML
+      var teamName = tds[1]
+        .replace(/<div[\s\S]*?<\/div>/g, '')
+        .replace(/<[^>]+>/g, '')
+        .trim();
+
+      var dif = tds[8].replace(/<[^>]+>/g, '').trim();
+
+      rows.push({
+        pos:            pos++,
+        team:           teamName,
+        played:         parseInt(tds[2]) || 0,
+        won:            parseInt(tds[3]) || 0,
+        drawn:          parseInt(tds[4]) || 0,
+        lost:           parseInt(tds[5]) || 0,
+        goals_for:      parseInt(tds[6]) || 0,
+        goals_against:  parseInt(tds[7]) || 0,
+        goal_difference: dif,
+        points:         parseInt(tds[9].replace(/<[^>]+>/g, '')) || 0
+      });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(rows))
       .setMimeType(ContentService.MimeType.JSON);
-    return output;
+
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({ error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);

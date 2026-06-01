@@ -1066,7 +1066,7 @@ function showPartidos(name) {
     <p class="tabla-titulo">Master +50 &mdash; Federaci&oacute;n F&uacute;tbol Master &mdash; Serie B</p>
     <div class="tabla-wrap"><table class="tabla">
       <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>Pts</th></tr></thead>
-      <tbody>
+      <tbody id="tbody-master">
         <tr><td>1</td><td>Cerrito Master</td><td>5</td><td>5</td><td>0</td><td>0</td><td>15</td><td>2</td><td>+13</td><td class="pts">15</td></tr>
         <tr><td>2</td><td>Union F.C.</td><td>6</td><td>4</td><td>1</td><td>1</td><td>22</td><td>7</td><td>+15</td><td class="pts">13</td></tr>
         <tr><td>3</td><td>Frentymano Negro</td><td>6</td><td>4</td><td>0</td><td>2</td><td>21</td><td>8</td><td>+13</td><td class="pts">12</td></tr>
@@ -1176,6 +1176,40 @@ function showTab(name) {
   Object.keys(FASES).forEach(function(tabId) {
     fetchFase(tabId, FASES[tabId]);
   });
+
+  // Master: Apps Script parsea FFM (SSL incompatible con proxies de browser)
+  (function() {
+    var key = 'phu_pos_master', tsKey = key + '_ts';
+    var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
+    if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+      try { renderTabla('master', JSON.parse(cached)); return; } catch(e) {}
+    }
+    fetch(API + '?view=master')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (!Array.isArray(data) || !data.length) return;
+        sessionStorage.setItem(key, JSON.stringify(data));
+        sessionStorage.setItem(tsKey, Date.now().toString());
+        var tbody = document.getElementById('tbody-master');
+        if (!tbody) return;
+        tbody.innerHTML = data.map(function(r) {
+          var esPlaya = (r.team || '').toUpperCase().indexOf('PLAYA HONDA') !== -1;
+          return '<tr' + (esPlaya ? ' class="playa"' : '') + '>'
+            + '<td>' + r.pos + '</td>'
+            + '<td>' + (esPlaya ? '&#11088; ' : '') + r.team + '</td>'
+            + '<td>' + r.played + '</td>'
+            + '<td>' + r.won + '</td>'
+            + '<td>' + r.drawn + '</td>'
+            + '<td>' + r.lost + '</td>'
+            + '<td>' + r.goals_for + '</td>'
+            + '<td>' + r.goals_against + '</td>'
+            + '<td>' + r.goal_difference + '</td>'
+            + '<td class="pts">' + r.points + '</td>'
+            + '</tr>';
+        }).join('');
+      })
+      .catch(function(){});
+  })();
 })();
 </script>
 
