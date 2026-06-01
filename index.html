@@ -4565,18 +4565,18 @@ function compartirTarjeta(){
   });
 
   // ── UI DEL BUSCADOR ──
-  const fab = null;
+
   const overlay  = document.getElementById('buscador-overlay');
   const inputEl  = document.getElementById('buscador-input');
   const resultsEl= document.getElementById('buscador-resultados');
   const perfOverlay = document.getElementById('perfil-overlay');
   const perfCard    = document.getElementById('perfil-card');
 
-  fab.addEventListener('click', () => {
+  window.abrirBuscador = function(e) {
+    if (e) e.preventDefault();
     overlay.classList.add('on');
     setTimeout(() => inputEl.focus(), 100);
-  });
-
+  };
   document.getElementById('buscador-close').addEventListener('click', cerrarBuscador);
   overlay.addEventListener('click', e => { if (e.target === overlay) cerrarBuscador(); });
   perfOverlay.addEventListener('click', e => { if (e.target === perfOverlay) cerrarPerfil(); });
