@@ -52,6 +52,9 @@
       transition: transform .25s, box-shadow .25s;
       justify-content: center;
       animation: pulseSobre 2.5s ease-in-out infinite;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
     .sobre-btn::before {
       content: ''; position: absolute; top: 0; left: -60%;
@@ -721,11 +724,11 @@ function updateUI() {
     `Tenés ${n} de ${TOTAL} cartas. ¡Seguí coleccionando!`;
   const btn = document.getElementById('btn-sobre');
   if (n===TOTAL) {
-    btn.classList.add('disabled'); btn.querySelector('.sobre-txt').textContent='¡COMPLETO!'; btn.onclick=null;
+    btn.classList.add('disabled'); btn.querySelector('.sobre-txt').textContent='¡COMPLETO!';
   } else if (puedeAbrir()) {
-    btn.classList.remove('disabled'); btn.onclick=abrirSobre;
+    btn.classList.remove('disabled');
   } else {
-    btn.classList.add('disabled'); btn.onclick=null;
+    btn.classList.add('disabled');
   }
   renderGrid();
 }
@@ -836,6 +839,17 @@ async function fetchMinutos() {
 setInterval(updateClock,1000);
 updateUI(); updateClock();
 fetchMinutos();
+
+// Listener fijo para el sobre — confiable en mobile (touch)
+(function() {
+  var btn = document.getElementById('btn-sobre');
+  function intentarAbrir(e) {
+    e.preventDefault();
+    if (!btn.classList.contains('disabled')) abrirSobre();
+  }
+  btn.addEventListener('click', intentarAbrir);
+  btn.addEventListener('touchend', intentarAbrir);
+})();
 </script>
 </body>
 </html>
