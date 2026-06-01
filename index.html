@@ -1548,6 +1548,32 @@ function showPlantel(name) {
 .gol-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--blanco);}
 .gol-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--dorado);text-align:right;}
 .gol-ball{font-size:1rem;text-align:center;}
+
+@media(max-width:768px){
+  /* Tabs horizontalmente scrollables en vez de wrap */
+  .tabs,.tabs-pl,.tabs-gol,.tabs-partidos{
+    flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-bottom:.3rem;
+  }
+  .tabs::-webkit-scrollbar,.tabs-pl::-webkit-scrollbar,
+  .tabs-gol::-webkit-scrollbar,.tabs-partidos::-webkit-scrollbar{display:none;}
+
+  /* Touch targets mínimo 44px */
+  .tab,.tab-g,.tab-pl,.tab-p{min-height:44px;display:inline-flex;align-items:center;justify-content:center;}
+
+  /* Goleadores: 3 columnas reales, nombres truncados */
+  .gol-table{max-width:100%;}
+  .gol-row{grid-template-columns:30px 1fr 54px;padding:.7rem .8rem;gap:.5rem;}
+  .gol-name{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .gol-num{font-size:1.4rem;}
+  .gol-pos{font-size:1.2rem;}
+
+  /* Resultado cards full width */
+  .resultados-grid{grid-template-columns:1fr;}
+
+  /* Jugador card más cómodo al tap */
+  .jugador-card{padding:.7rem .9rem;font-size:.88rem;}
+}
 </style>
 <script>
 function showGol(name) {
