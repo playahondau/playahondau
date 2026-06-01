@@ -546,12 +546,15 @@
     <li><a href="#resultados">Resultados</a></li>
     <li><a href="#proximos">Fixture</a></li>
     <li><a href="#posiciones">Posiciones</a></li>
-    <li><a href="#planteles">Planteles</a></li><li><a href="album.html">Álbum</a></li><li><a href="#planteles" id="nav-buscar-btn" onclick="abrirBuscador(event)">🔍 Buscar</a></li>
-    <li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li><li class="nav-dropdown">
+    <li><a href="#planteles">Planteles</a></li>
+    <li><a href="#" onclick="abrirBuscador(event)">Buscar</a></li><li><a href="#goleadores">Goleadores</a></li><li><a href="#historial">Historial</a></li><li><a href="#estadisticas">Estad&iacute;sticas</a></li><li><a href="#divisiones">Divisiones</a></li><li class="nav-dropdown">
       <button class="nav-drop-btn">Juegos<span class="nav-drop-caret">▾</span></button>
       <ul class="nav-drop-menu">
         <li><a href="#" onclick="abrirPenales();return false;">⚽ Penales</a></li>
         <li><a href="cabezudos.html">🗿 Cabezudos</a></li>
+        <li><a href="album.html">🎴 Álbum</a></li>
+
+
       </ul>
     </li>
   </ul>
@@ -575,6 +578,9 @@
   <span class="mobile-games-label">Juegos</span>
   <a class="mobile-sub" href="#" onclick="closeMobileNav();abrirPenales();return false;">⚽ Penales</a>
   <a class="mobile-sub" href="cabezudos.html">🗿 Cabezudos</a>
+  <a class="mobile-sub" href="album.html">🎴 Álbum</a>
+  <a class="mobile-sub" href="album.html">🎴 Álbum</a>
+  <a class="mobile-sub" href="#" onclick="abrirBuscador(event);closeMobileNav()">🔍 Buscar jugador</a>
   <a href="https://www.instagram.com/playahondau/" target="_blank" style="color:var(--dorado-light)">@playahondau</a>
 </div>
 
@@ -4459,7 +4465,7 @@ function compartirTarjeta(){
 </style>
 
 <!-- Botón flotante -->
-<button class="buscador-fab" id="fab-buscar" title="Buscar jugador">🔍</button>
+
 
 <!-- Overlay buscador -->
 <div class="buscador-overlay" id="buscador-overlay">
@@ -4548,13 +4554,7 @@ function compartirTarjeta(){
   });
 
   // ── UI DEL BUSCADOR ──
-  // Insertar botón en la barra de nav
-  const fab = document.createElement('button');
-  fab.className = 'buscador-fab';
-  fab.id = 'fab-buscar';
-  fab.innerHTML = '🔍 Buscar jugador';
-  const navEl = document.querySelector('nav') || document.querySelector('.nav') || document.querySelector('header');
-  if (navEl) navEl.appendChild(fab);
+  const fab = null;
   const overlay  = document.getElementById('buscador-overlay');
   const inputEl  = document.getElementById('buscador-input');
   const resultsEl= document.getElementById('buscador-resultados');
