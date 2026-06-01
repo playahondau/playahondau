@@ -4487,7 +4487,12 @@ window.abrirBuscador = function(e) {
       var cls   = CLS[cat] || '';
       (fase.players || []).forEach(function(p) {
         var k = norm(p.name);
-        if (!statsMap[k]) statsMap[k] = { nombre: p.name, min: 0, pj: 0, goles: 0, rojas: 0, cat: cat, cls: cls };
+        if (!statsMap[k]) {
+          statsMap[k] = { nombre: p.name, min: 0, pj: 0, goles: 0, rojas: 0, cat: cat, cls: cls };
+        } else if (cat && statsMap[k].cat.indexOf(cat) === -1) {
+          statsMap[k].cat += ' / ' + cat;
+          if (cls && statsMap[k].cls.indexOf(cls) === -1) statsMap[k].cls += ' ' + cls;
+        }
         statsMap[k].min   += p.minutes   || 0;
         statsMap[k].pj    += p.matches   || 0;
         statsMap[k].goles += p.goals     || 0;
@@ -4495,6 +4500,16 @@ window.abrirBuscador = function(e) {
       });
     });
     Object.values(statsMap).forEach(function(j){ if (j.min > maxMin) maxMin = j.min; });
+    // Alias nombre corto (primer + último) para jugadores con segundo nombre en la API
+    var _alias = {};
+    Object.keys(statsMap).forEach(function(k) {
+      var parts = k.split(' ');
+      if (parts.length >= 3) {
+        var corto = parts[0] + ' ' + parts[parts.length - 1];
+        if (!statsMap[corto] && !_alias[corto]) _alias[corto] = statsMap[k];
+      }
+    });
+    Object.assign(statsMap, _alias);
   }
 
   // --- ENRIQUECER TARJETAS DEL PLANTEL ---
@@ -4502,6 +4517,14 @@ window.abrirBuscador = function(e) {
     var nodo = card.firstChild;
     var nombre = nodo && nodo.nodeType === 3 ? nodo.textContent.trim() : '';
     var s = statsMap[norm(nombre)];
+    // Fallback: busca clave donde todas las palabras del nombre del plantel están presentes
+    if (!s && nombre) {
+      var partes = norm(nombre).split(' ');
+      var clave = Object.keys(statsMap).find(function(k) {
+        return partes.every(function(w) { return k.split(' ').indexOf(w) !== -1; });
+      });
+      if (clave) s = statsMap[clave];
+    }
     if (s && s.min > 0 && !card.querySelector('.jstat')) {
       var sp = document.createElement('span');
       sp.className = 'jstat';
