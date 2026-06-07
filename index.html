@@ -601,14 +601,45 @@
   <div class="hero-year">1964</div>
   <!-- Pelota 3D decorativa -->
   <div class="hero-ball3d" aria-hidden="true">
-    <div class="hb-float"><div class="hb-spin">
-      <div class="hb-sphere"></div>
-      <div class="hb-seam"></div>
-      <div class="hb-seam hb-s2"></div>
-      <div class="hb-seam hb-s3"></div>
-      <div class="hb-seam hb-s4"></div>
-      <div class="hb-seam hb-s5"></div>
-    </div></div>
+    <svg class="hb-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="hbClip"><circle cx="100" cy="100" r="95"/></clipPath>
+        <radialGradient id="hbBg" cx="37%" cy="28%" r="76%">
+          <stop offset="0%"   stop-color="#2a5ce0"/>
+          <stop offset="48%"  stop-color="#1540a8"/>
+          <stop offset="100%" stop-color="#060e22"/>
+        </radialGradient>
+        <radialGradient id="hbGlow" cx="34%" cy="26%" r="38%">
+          <stop offset="0%" stop-color="white" stop-opacity=".22"/>
+          <stop offset="100%" stop-color="white" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- Esfera base -->
+      <circle cx="100" cy="100" r="95" fill="url(#hbBg)"/>
+      <!-- Parches pentagonales rotantes (clipados al círculo) -->
+      <g clip-path="url(#hbClip)">
+        <g class="hb-patches">
+          <!-- centro -->
+          <polygon points="100,74 124.7,92 115.3,121 84.7,121 75.3,92"     fill="#06102a" stroke="rgba(200,151,43,.28)" stroke-width="1.5" opacity=".92"/>
+          <!-- arriba -->
+          <polygon points="100,30 124.7,48 115.3,77 84.7,77 75.3,48"      fill="#06102a" stroke="rgba(200,151,43,.24)" stroke-width="1.5" opacity=".8"/>
+          <!-- arriba-derecha -->
+          <polygon points="138,52 162.7,70 153.3,99 122.7,99 113.3,70"    fill="#06102a" stroke="rgba(200,151,43,.22)" stroke-width="1.5" opacity=".75"/>
+          <!-- abajo-derecha -->
+          <polygon points="138,96 162.7,114 153.3,143 122.7,143 113.3,114" fill="#06102a" stroke="rgba(200,151,43,.2)"  stroke-width="1.5" opacity=".72"/>
+          <!-- abajo -->
+          <polygon points="100,118 124.7,136 115.3,165 84.7,165 75.3,136"  fill="#06102a" stroke="rgba(200,151,43,.2)"  stroke-width="1.5" opacity=".7"/>
+          <!-- abajo-izquierda -->
+          <polygon points="62,96 86.7,114 77.3,143 46.7,143 37.3,114"     fill="#06102a" stroke="rgba(200,151,43,.2)"  stroke-width="1.5" opacity=".72"/>
+          <!-- arriba-izquierda -->
+          <polygon points="62,52 86.7,70 77.3,99 46.7,99 37.3,70"         fill="#06102a" stroke="rgba(200,151,43,.22)" stroke-width="1.5" opacity=".75"/>
+        </g>
+      </g>
+      <!-- Brillo fijo (no rota con los parches) -->
+      <circle cx="100" cy="100" r="95" fill="url(#hbGlow)"/>
+      <!-- Borde dorado -->
+      <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(200,151,43,.2)" stroke-width="1.5"/>
+    </svg>
   </div>
   <p class="hero-eyebrow">Liga Universitaria Uruguay &middot; Desde 1964</p>
   <h1 class="hero-title"><span>Playa</span><br><span>Honda</span><br>Universitario</h1>
@@ -5026,64 +5057,39 @@ window.abrirBuscador = function(e) {
 <!-- ===== ANIMACIONES 3D — PLAYA HONDA UNIVERSITARIO ===== -->
 <style>
 
-/* ══ A. Pelota 3D flotante en el hero ════════════════════ */
+/* ══ A. Pelota SVG flotante en el hero ═══════════════════ */
 .hero-ball3d {
   position: absolute;
-  right: 8%; top: 12%;
-  width: 195px; height: 195px;
+  right: 8%; top: 14%;
+  width: 200px; height: 200px;
   pointer-events: none;
   opacity: 0;
   animation: hbAppear 2s cubic-bezier(.22,.61,.36,1) 1.4s forwards;
+  filter: drop-shadow(0 0 40px rgba(26,58,143,.55)) drop-shadow(0 28px 48px rgba(0,0,0,.6));
 }
 @media (max-width: 920px) { .hero-ball3d { display: none; } }
 
-.hb-float {
+.hb-svg {
   width: 100%; height: 100%;
-  animation: hbFloat 6s ease-in-out infinite alternate;
+  animation: hbFloat 5.5s ease-in-out infinite alternate;
 }
-.hb-spin {
-  width: 100%; height: 100%;
-  transform-style: preserve-3d;
-  animation: hbSpin 22s linear infinite;
+/* Parches rotan alrededor del centro del SVG */
+.hb-patches {
+  transform-origin: 100px 100px;
+  animation: hbSpin 16s linear infinite;
 }
-.hb-sphere {
-  position: absolute; inset: 0; border-radius: 50%;
-  background:
-    radial-gradient(circle at 37% 29%, rgba(120,165,255,.2) 0%, transparent 44%),
-    radial-gradient(circle at 50% 50%, #1d44bc 0%, #0b0f1a 86%);
-  box-shadow:
-    inset -28px -20px 52px rgba(0,0,0,.82),
-    inset 10px 8px 22px rgba(255,255,255,.04),
-    0 0 65px rgba(26,58,143,.28),
-    0 30px 50px rgba(0,0,0,.5);
-}
-.hb-sphere::after {
-  content: ''; position: absolute;
-  width: 35%; height: 22%; top: 13%; left: 16%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255,255,255,.22), transparent 70%);
-}
-.hb-seam {
-  position: absolute; inset: 0; border-radius: 50%;
-  border: 1.5px solid rgba(200,151,43,.42);
-  background: transparent;
-}
-.hb-s2 { transform: rotateY(60deg);                border-color: rgba(200,151,43,.3); }
-.hb-s3 { transform: rotateY(120deg);               border-color: rgba(200,151,43,.2); }
-.hb-s4 { transform: rotateX(55deg);                border-color: rgba(200,151,43,.24); }
-.hb-s5 { transform: rotateX(-50deg) rotateY(60deg);border-color: rgba(200,151,43,.17); }
 
 @keyframes hbSpin {
-  from { transform: rotate3d(.35, 1, .2, 0deg); }
-  to   { transform: rotate3d(.35, 1, .2, 360deg); }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 @keyframes hbFloat {
   from { transform: translateY(0); }
-  to   { transform: translateY(-24px); }
+  to   { transform: translateY(-22px); }
 }
 @keyframes hbAppear {
   from { opacity: 0; transform: scale(.5); }
-  to   { opacity: .48; transform: scale(1); }
+  to   { opacity: .52; transform: scale(1); }
 }
 
 /* ══ B. Glare de tilt magnético en cards ═════════════════ */
