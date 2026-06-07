@@ -3137,7 +3137,9 @@ document.addEventListener('DOMContentLoaded',function(){
 
   var chartInstances={};
   window._chartInst = chartInstances;
+  var _pendingChartData = {};
   window.updateChartWithData = function(key, nd) {
+    _pendingChartData[key] = nd;
     var pie=chartInstances['pie-'+key];
     if(pie){pie.data.datasets[0].data=nd.wdl;pie.update();}
     var pts=chartInstances['pts-'+key];
@@ -3148,7 +3150,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   function buildCharts(key){
     if(chartInstances['pie-'+key]) return;
-    var d=data[key];
+    var d=(_pendingChartData[key])||data[key];
 
     // PIE
     var pieCtx=document.getElementById('pie-'+key);
