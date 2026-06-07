@@ -2261,7 +2261,6 @@ function renderNovedades(extra) {
       var icon = d.icono || (d.estado === 'victoria' ? '🔥' : d.estado === 'empate' ? '🤝' : d.estado === 'derrota' ? '💪' : '⚽');
       var label = cat.charAt(0).toUpperCase() + cat.slice(1);
       return '<div class="novedad-chip"><span class="nov-icon">' + icon + '</span>'
-        + '<span class="nov-cat">' + label + '</span>'
         + '<span class="nov-txt">' + d.novedad + '</span></div>';
     });
   if (!chips.length) {
