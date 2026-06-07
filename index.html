@@ -1625,7 +1625,7 @@ function showGol(name) {
         <th onclick="sortHistorial(5)" class="hvse-sortable">GF <span class="sort-icon">⇅</span></th>
         <th onclick="sortHistorial(6)" class="hvse-sortable">GC <span class="sort-icon">⇅</span></th>
       </tr></thead>
-      <tbody>
+      <tbody id="hvse-tbody">
         <tr><td>Nacional Universitario</td><td>55</td><td>20</td><td>11</td><td>24</td><td>81</td><td>81</td></tr>
         <tr><td>Urunday Universitario</td><td>46</td><td>20</td><td>11</td><td>15</td><td>80</td><td>76</td></tr>
         <tr><td>C&iacute;rculo de Tenis Montevideo</td><td>45</td><td>22</td><td>12</td><td>11</td><td>66</td><td>49</td></tr>
@@ -1960,7 +1960,10 @@ async function fetchSheetExtra() {
         lugar:      (cols[8] || '').trim(),
         estado:     iEst  >= 0 ? (cols[iEst]  || '').trim().toLowerCase() : '',
         novedad:    iNov  >= 0 ? (cols[iNov]  || '').trim() : '',
-        icono:      iIcon >= 0 ? (cols[iIcon] || '').trim() : ''
+        icono:      iIcon >= 0 ? (cols[iIcon] || '').trim() : '',
+        rival:  (cols[1] || '').trim(),
+        score:  (cols[2] || '').trim(),
+        fecha:  (cols[6] || '').trim()
       };
     });
     return map;
@@ -2150,6 +2153,97 @@ function renderPartidos(partidos) {
       }).join('');
     }
   });
+  // Actualizar badges de forma tras renderizar los partidos
+  document.querySelectorAll('.part-content').forEach(function(tab) {
+    var old = tab.querySelector('.forma-wrap'); if (old) old.remove();
+    var rows = tab.querySelectorAll('.part-row.jugado');
+    if (!rows.length) return;
+    var last5 = Array.from(rows).slice(-5);
+    var badges = last5.map(function(row) {
+      var cls = row.classList.contains('win')?'w':row.classList.contains('draw')?'d':'l';
+      return '<span class="forma-badge '+cls+'">'+(cls==='w'?'V':cls==='d'?'E':'D')+'</span>';
+    }).join('');
+    var wrap = document.createElement('div');
+    wrap.className = 'forma-wrap';
+    wrap.innerHTML = '<span class="forma-label">Forma</span><div class="forma-badges">'+badges+'</div>';
+    var titulo = tab.querySelector('.tabla-titulo');
+    if (titulo) titulo.after(wrap);
+  });
+}
+
+/* ── Rendimiento: calcula datos de charts desde partidos dinámicos ── */
+function renderRendimiento(partidos) {
+  if (!partidos || !window.updateChartWithData) return;
+  var cats = [
+    {key:'Mayor',cKey:'may'},{key:'Reserva',cKey:'res'},{key:'Pre Senior',cKey:'pre'},
+    {key:'Sub 20',cKey:'s20'},{key:'Sub 18',cKey:'s18'}
+  ];
+  var TEAM = 'PLAYA HONDA UNIVERSITARIO';
+  cats.forEach(function(c) {
+    var d = partidos[c.key];
+    if (!d || !d.jugados || !d.jugados.length) return;
+    var ms = d.jugados;
+    var fechas = ms.map(function(m,i){return 'Fecha '+(i+1);});
+    var gf = ms.map(function(m){return m.local===TEAM?m.goles_local:m.goles_visitante;});
+    var gc = ms.map(function(m){return m.local===TEAM?m.goles_visitante:m.goles_local;});
+    var pts=[],total=0;
+    ms.forEach(function(m){total+=m.resultado==='victoria'?3:m.resultado==='empate'?1:0;pts.push(total);});
+    var wdl=[0,0,0];
+    ms.forEach(function(m){wdl[m.resultado==='victoria'?0:m.resultado==='empate'?1:2]++;});
+    window.updateChartWithData(c.cKey,{fechas:fechas,gf:gf,gc:gc,pts:pts,wdl:wdl});
+  });
+}
+
+/* ── Historial: overlay de la temporada actual sobre la base estática ── */
+var _histBase = null;
+function _getHistBase() {
+  if (_histBase) return _histBase;
+  var tbody = document.getElementById('hvse-tbody');
+  if (!tbody) return {};
+  var base = {};
+  tbody.querySelectorAll('tr').forEach(function(tr) {
+    var tds = tr.querySelectorAll('td');
+    if (tds.length < 7) return;
+    var name = tds[0].textContent.trim();
+    base[name] = {pj:parseInt(tds[1].textContent)||0,pg:parseInt(tds[2].textContent)||0,pe:parseInt(tds[3].textContent)||0,pp:parseInt(tds[4].textContent)||0,gf:parseInt(tds[5].textContent)||0,gc:parseInt(tds[6].textContent)||0};
+  });
+  _histBase = base;
+  return base;
+}
+function _normH(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();}
+function renderHistorial(partidos) {
+  var tbody = document.getElementById('hvse-tbody');
+  if (!tbody || !partidos) return;
+  var base = JSON.parse(JSON.stringify(_getHistBase()));
+  var TEAM = 'PLAYA HONDA UNIVERSITARIO';
+  var delta = {};
+  ['Mayor','Reserva','Pre Senior','Sub 20','Sub 18'].forEach(function(cat) {
+    var d = partidos[cat]; if (!d||!d.jugados) return;
+    d.jugados.forEach(function(m) {
+      var opp = m.local===TEAM?m.visitante:m.local;
+      var oppT = opp.split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}).join(' ');
+      var esLocal=m.local===TEAM;
+      var gf=esLocal?m.goles_local:m.goles_visitante, gc=esLocal?m.goles_visitante:m.goles_local;
+      if(!delta[oppT]) delta[oppT]={pj:0,pg:0,pe:0,pp:0,gf:0,gc:0};
+      delta[oppT].pj++;
+      if(m.resultado==='victoria') delta[oppT].pg++;
+      else if(m.resultado==='empate') delta[oppT].pe++;
+      else delta[oppT].pp++;
+      delta[oppT].gf+=gf; delta[oppT].gc+=gc;
+    });
+  });
+  var merged={};
+  Object.keys(base).forEach(function(k){merged[k]=Object.assign({},base[k]);});
+  Object.keys(delta).forEach(function(oppN) {
+    var match=Object.keys(base).find(function(k){return _normH(k)===_normH(oppN);});
+    if(match){var dv=delta[oppN];merged[match].pj+=dv.pj;merged[match].pg+=dv.pg;merged[match].pe+=dv.pe;merged[match].pp+=dv.pp;merged[match].gf+=dv.gf;merged[match].gc+=dv.gc;}
+    else{merged[oppN]=Object.assign({},delta[oppN]);}
+  });
+  var entries=Object.keys(merged).sort(function(a,b){return merged[b].pj-merged[a].pj;});
+  tbody.innerHTML=entries.map(function(name){
+    var r=merged[name];
+    return '<tr><td>'+name+'</td><td>'+r.pj+'</td><td>'+r.pg+'</td><td>'+r.pe+'</td><td>'+r.pp+'</td><td>'+r.gf+'</td><td>'+r.gc+'</td></tr>';
+  }).join('');
 }
 
 function scheduleRefresh() {
@@ -2185,10 +2279,27 @@ async function init() {
     const recentResultados = latestTs
       ? resultados.filter(r => (latestTs - new Date(r._ts)) < 4 * 24 * 60 * 60 * 1000)
       : resultados;
+    // Añadir resultado de Máster desde el Sheet (liga aparte)
+    var exMas = extra['master'] || extra['máster'] || extra['mastar'] || {};
+    if (exMas.rival && exMas.score) {
+      var sc = exMas.score.split('-');
+      var gl = parseInt(sc[0]) || 0, gv = parseInt(sc[1]) || 0;
+      var esL = (exMas.localia || '').toLowerCase().trim() === 'local';
+      var masRes = exMas.estado || (gl > gv ? 'victoria' : gl < gv ? 'derrota' : 'empate');
+      recentResultados.push({
+        categoria: 'Máster', resultado: masRes,
+        local:     esL ? 'Playa Honda U.' : exMas.rival,
+        visitante: esL ? exMas.rival      : 'Playa Honda U.',
+        goles_local: esL ? gl : gv, goles_visitante: esL ? gv : gl,
+        fecha: exMas.fecha || '', _ts: '2000-01-01'
+      });
+    }
     renderTicker(recentResultados);
     renderResultados(recentResultados, extra);
     renderFixture(fixture);
     renderPartidos(data.partidos);
+    renderRendimiento(data.partidos);
+    renderHistorial(data.partidos);
     renderNovedades(extra);
     initCountdown(fixture);
     checkMatchDay(fixture);
@@ -2450,22 +2561,7 @@ document.querySelectorAll('.stat-num[data-target]').forEach(function(el){
   document.body.appendChild(n);
 })();
 
-/* ── Forma reciente (badges Sofascore-style) ── */
-document.querySelectorAll('.part-content').forEach(function(tab){
-  var rows = tab.querySelectorAll('.part-row.jugado');
-  if(!rows.length) return;
-  var last5 = Array.from(rows).slice(-5);
-  var badges = last5.map(function(row){
-    var cls = row.classList.contains('win') ? 'w' : row.classList.contains('draw') ? 'd' : 'l';
-    var lbl = cls==='w' ? 'V' : cls==='d' ? 'E' : 'D';
-    return '<span class="forma-badge '+cls+'">'+lbl+'</span>';
-  }).join('');
-  var wrap = document.createElement('div');
-  wrap.className = 'forma-wrap';
-  wrap.innerHTML = '<span class="forma-label">Forma</span><div class="forma-badges">'+badges+'</div>';
-  var titulo = tab.querySelector('.tabla-titulo');
-  if(titulo) titulo.after(wrap);
-});
+/* Forma badges ahora se calculan en renderPartidos() tras cargar datos dinámicos */
 
 /* ── Cursor personalizado ── */
 (function(){
@@ -3040,6 +3136,15 @@ document.addEventListener('DOMContentLoaded',function(){
   };
 
   var chartInstances={};
+  window._chartInst = chartInstances;
+  window.updateChartWithData = function(key, nd) {
+    var pie=chartInstances['pie-'+key];
+    if(pie){pie.data.datasets[0].data=nd.wdl;pie.update();}
+    var pts=chartInstances['pts-'+key];
+    if(pts){pts.data.labels=nd.fechas;pts.data.datasets[0].data=nd.pts;pts.update();}
+    var goles=chartInstances['goles-'+key];
+    if(goles){goles.data.labels=nd.fechas;goles.data.datasets[0].data=nd.gf;goles.data.datasets[1].data=nd.gc;goles.update();}
+  };
 
   function buildCharts(key){
     if(chartInstances['pie-'+key]) return;
