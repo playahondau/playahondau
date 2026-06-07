@@ -673,13 +673,14 @@ document.getElementById('carta-flip').addEventListener('click', () => {
 
 document.getElementById('btn-siguiente').addEventListener('click', () => {
   jugIdx = 1;
+  fase = 1;
   document.getElementById('btn-siguiente').style.display = 'none';
   document.getElementById('carta-inner').classList.remove('flipped');
   document.getElementById('c-front').classList.remove('shine');
   document.getElementById('carta-flip').className = 'carta-flip';
   document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
   document.getElementById('reveal-wrap').querySelector('.new-lbl').textContent = '¡Segundo jugador!';
-  mostrarCarta();
+  setTimeout(mostrarCarta, 750);
 });
 document.getElementById('btn-cerrar').addEventListener('click', cerrarPackScreen);
 
