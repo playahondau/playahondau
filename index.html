@@ -2295,6 +2295,9 @@ async function init() {
     renderPartidos(data.partidos);
     renderRendimiento(data.partidos);
     renderHistorial(data.partidos);
+    // Novedades manuales (overrides del Sheet)
+    extra['sub 18'] = Object.assign(extra['sub 18'] || {}, { novedad: '' });
+    extra['mayor']  = Object.assign(extra['mayor']  || {}, { novedad: 'Mayor ganó 1-0 · Gol de Titán', icono: '🔥' });
     renderNovedades(extra);
     initCountdown(fixture);
     checkMatchDay(fixture);
