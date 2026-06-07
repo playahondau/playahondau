@@ -553,16 +553,16 @@ let fase = 0; // 0=pack visible, 1=shaking, 2=carta visible
 
 function abrirSobre() {
   const col = getCol();
-  const disp = JUGADORES.filter(j => !col.includes(j.id));
-  if (!disp.length) return;
+  const disponibles = JUGADORES.filter(j => !col.includes(j.id));
+  if (!disponibles.length) return;
   jugActuales = [];
   jugIdx = 0;
-  const cantidad = Math.min(2, disp.length);
+  const cantidad = Math.min(2, disponibles.length);
   for (let i = 0; i < cantidad; i++) {
-    const dispRest = disp.filter(j => !jugActuales.find(ja => ja.id === j.id));
-    const j = dispRest[Math.floor(Math.random()*dispRest.length)];
-    jugActuales.push(j);
-    col.push(j.id);
+    const idx = Math.floor(Math.random() * disponibles.length);
+    jugActuales.push(disponibles[idx]);
+    col.push(disponibles[idx].id);
+    disponibles.splice(idx, 1); // saca el jugador elegido del pool
   }
   saveCol(col);
   localStorage.setItem('phu_album_d', hoy());
