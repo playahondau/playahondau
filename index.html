@@ -1944,10 +1944,12 @@ async function fetchSheetExtra() {
     const r = await fetch(SHEET_CSV);
     const text = await r.text();
     const rows = text.split('\n');
-    const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-    const iNov  = headers.indexOf('novedad');
-    const iIcon = headers.indexOf('icono');
-    const iEst  = headers.indexOf('estado');
+    const headers = rows[0].split(',').map(h => h.replace(/^﻿/,'').trim().toLowerCase());
+    console.log('[Sheet] headers:', headers);
+    const iNov  = headers.indexOf('novedad')  !== -1 ? headers.indexOf('novedad')  : headers.findIndex(h => h.includes('novedad'));
+    const iIcon = headers.indexOf('icono')    !== -1 ? headers.indexOf('icono')    : headers.findIndex(h => h.includes('icono'));
+    const iEst  = headers.indexOf('estado')   !== -1 ? headers.indexOf('estado')   : headers.findIndex(h => h.includes('estado'));
+    console.log('[Sheet] iNov:', iNov, '| iIcon:', iIcon, '| iEst:', iEst);
     const map = {};
     rows.slice(1).forEach(row => {
       if (!row.trim()) return;
