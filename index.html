@@ -1937,23 +1937,21 @@ window.addEventListener('scroll',()=>{
 
 /* ── GAS proxy → lud-backend (server-to-server, sin CORS) ── */
 const GAS_API = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZIgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec';
-const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv';
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=tsv';
 
 async function fetchSheetExtra() {
   try {
     const r = await fetch(SHEET_CSV);
     const text = await r.text();
     const rows = text.split('\n');
-    const headers = rows[0].split(',').map(h => h.replace(/^﻿/,'').trim().toLowerCase());
-    console.log('[Sheet] headers:', headers);
+    const headers = rows[0].split('\t').map(h => h.replace(/^﻿/,'').trim().toLowerCase());
     const iNov  = headers.indexOf('novedad')  !== -1 ? headers.indexOf('novedad')  : headers.findIndex(h => h.includes('novedad'));
     const iIcon = headers.indexOf('icono')    !== -1 ? headers.indexOf('icono')    : headers.findIndex(h => h.includes('icono'));
     const iEst  = headers.indexOf('estado')   !== -1 ? headers.indexOf('estado')   : headers.findIndex(h => h.includes('estado'));
-    console.log('[Sheet] iNov:', iNov, '| iIcon:', iIcon, '| iEst:', iEst);
     const map = {};
     rows.slice(1).forEach(row => {
       if (!row.trim()) return;
-      const cols = row.split(',');
+      const cols = row.split('\t');
       const cat = (cols[0] || '').trim().toLowerCase();
       map[cat] = {
         localia:    (cols[4] || '').trim(),
