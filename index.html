@@ -2282,21 +2282,13 @@ async function init() {
     const recentResultados = latestTs
       ? resultados.filter(r => (latestTs - new Date(r._ts)) < 4 * 24 * 60 * 60 * 1000)
       : resultados;
-    // Añadir resultado de Máster desde el Sheet (liga aparte)
-    var exMas = extra['master'] || extra['máster'] || extra['mastar'] || {};
-    if (exMas.rival && exMas.score) {
-      var sc = exMas.score.split('-');
-      var gl = parseInt(sc[0]) || 0, gv = parseInt(sc[1]) || 0;
-      var esL = (exMas.localia || '').toLowerCase().trim() === 'local';
-      var masRes = exMas.estado || (gl > gv ? 'victoria' : gl < gv ? 'derrota' : 'empate');
-      recentResultados.push({
-        categoria: 'Máster', resultado: masRes,
-        local:     esL ? 'Playa Honda U.' : exMas.rival,
-        visitante: esL ? exMas.rival      : 'Playa Honda U.',
-        goles_local: esL ? gl : gv, goles_visitante: esL ? gv : gl,
-        fecha: exMas.fecha || '', _ts: '2000-01-01'
-      });
-    }
+    // Máster — actualización manual vía HTML (Federación Fútbol Master, liga aparte)
+    recentResultados.push({
+      categoria: 'Máster', resultado: 'derrota',
+      local: 'Malvin 03', visitante: 'Playa Honda U.',
+      goles_local: 2, goles_visitante: 0,
+      fecha: 'Sáb 7 jun.', _ts: '2000-01-01'
+    });
     renderTicker(recentResultados);
     renderResultados(recentResultados, extra);
     renderFixture(fixture);
