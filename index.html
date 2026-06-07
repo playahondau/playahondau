@@ -2116,8 +2116,12 @@ async function init() {
     const resultados = Array.isArray(data.resultados) ? data.resultados : [];
     const fixture    = Array.isArray(data.fixture)    ? data.fixture    : [];
     window._fixtureRows = fixture;
-    renderTicker(resultados);
-    renderResultados(resultados, extra);
+    const latestTs = resultados.length ? new Date(resultados[0]._ts) : null;
+    const recentResultados = latestTs
+      ? resultados.filter(r => (latestTs - new Date(r._ts)) < 7 * 24 * 60 * 60 * 1000)
+      : resultados;
+    renderTicker(recentResultados);
+    renderResultados(recentResultados, extra);
     renderFixture(fixture);
     renderNovedades(extra);
     initCountdown(fixture);
