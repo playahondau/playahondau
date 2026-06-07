@@ -1936,16 +1936,8 @@ window.addEventListener('scroll',()=>{
    PLAYA HONDA — Main Script
 ═══════════════════════════════════════════════════════════════ */
 
-/* ── Lud-Stats Backend ── */
-const LUD_API   = 'https://lud-backend-ld7d.onrender.com/api';
-const TEAM_NAME = 'PLAYA HONDA UNIVERSITARIO';
-const PHASES_2026 = [
-  { id:  1, cat: 'Máster'     },
-  { id:  8, cat: 'Reserva'    },
-  { id: 13, cat: 'Pre Senior' },
-  { id: 23, cat: 'Sub 20'     },
-  { id: 30, cat: 'Sub 18'     }
-];
+/* ── GAS proxy → lud-backend (server-to-server, sin CORS) ── */
+const GAS_API = 'https://script.google.com/macros/s/AKfycbxqrgjhny8rrUjlFkJjydsUdVy7Xp9TzaqY4k6EwdbMFpPgdCWnPOmezlAoocdQbLAQ/exec';
 const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRk1EbUsbN8nC4fWhW0-Q9jhHuM-BY7DN6kRyPL3unosT2p8JVK2Y7IJjhPBRSBySbbKvy6es_0wJ5L/pub?gid=0&single=true&output=csv';
 
 async function fetchSheetExtra() {
@@ -2118,59 +2110,22 @@ function renderNovedades(extra) {
 }
 
 async function init() {
-  /* — Resultados: partidos jugados de cada fase 2026 — */
-  const [phaseData, extra] = await Promise.all([
-    Promise.all(
-      PHASES_2026.map(p =>
-        fetch(LUD_API + '/phases/' + p.id + '/matches/?limit=500')
-          .then(r => r.json())
-          .then(data => {
-            const matches = Array.isArray(data) ? data : (data.results || []);
-            return matches
-              .filter(m => m.status === 'finished' &&
-                          (m.home_team.name === TEAM_NAME || m.away_team.name === TEAM_NAME))
-              .map(m => {
-                const home     = m.home_team.name === TEAM_NAME;
-                const nuestros = home ? m.home_score : m.away_score;
-                const rival    = home ? m.away_score : m.home_score;
-                const opp      = home ? m.away_team.name : m.home_team.name;
-                const res      = nuestros > rival ? 'victoria' : nuestros === rival ? 'empate' : 'derrota';
-                const d        = new Date(m.date);
-                const fecha    = d.toLocaleDateString('es-UY', {day:'2-digit', month:'2-digit', year:'2-digit'});
-                return { _ts: m.date, categoria: p.cat, resultado: res,
-                         local: 'Playa Honda U.', visitante: opp,
-                         goles_local: nuestros, goles_visitante: rival, fecha };
-              });
-          })
-          .catch(() => [])
-      )
-    ),
-    fetchSheetExtra()
-  ]);
-  const resultados = phaseData.flat().sort((a, b) => b._ts.localeCompare(a._ts));
-
-  /* — Fixture: próximos partidos del fin de semana — */
-  const CAT_MAP = { 'Mayores':'Máster','Reserva':'Reserva','Pre Senior':'Pre Senior','Sub 20':'Sub 20','Sub 18':'Sub 18' };
-  const wf      = await fetch(LUD_API + '/weekend-fixture/').then(r => r.json()).catch(() => ({categories:{}}));
-  const fixture  = [];
-  for (const [cat, matches] of Object.entries(wf.categories || {})) {
-    for (const m of matches) {
-      if (m.local === TEAM_NAME || m.visitante === TEAM_NAME) {
-        fixture.push({ _ts: m.datetime_iso, categoria: CAT_MAP[cat] || cat,
-                       local: m.local, visitante: m.visitante,
-                       dia_hora: m.dia + ' · ' + m.hora + 'h', lugar: m.cancha });
-      }
-    }
+  try {
+    const [resp, extra] = await Promise.all([fetch(GAS_API), fetchSheetExtra()]);
+    const data       = await resp.json();
+    const resultados = Array.isArray(data.resultados) ? data.resultados : [];
+    const fixture    = Array.isArray(data.fixture)    ? data.fixture    : [];
+    window._fixtureRows = fixture;
+    renderTicker(resultados);
+    renderResultados(resultados, extra);
+    renderFixture(fixture);
+    renderNovedades(extra);
+    initCountdown(fixture);
+    checkMatchDay(fixture);
+  } catch(e) {
+    document.getElementById('resultados-grid').innerHTML = '<div class="msg">Error al conectar con la planilla</div>';
+    document.getElementById('fixtures-list').innerHTML   = '<div class="msg">Error al conectar con la planilla</div>';
   }
-  fixture.sort((a, b) => a._ts.localeCompare(b._ts));
-  window._fixtureRows = fixture;
-
-  renderTicker(resultados);
-  renderResultados(resultados, extra);
-  renderFixture(fixture);
-  renderNovedades(extra);
-  initCountdown(fixture);
-  checkMatchDay(fixture);
 }
 
 /* ── Animated Counter ── */
