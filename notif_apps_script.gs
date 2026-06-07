@@ -91,7 +91,21 @@ function doGet(e) {
           var riv = esLocal ? m.away_score : m.home_score;
           var res = nos>riv?'victoria':nos===riv?'empate':'derrota';
           var opp = esLocal ? m.away_team.name : m.home_team.name;
-          resultados.push({categoria:p.cat,resultado:res,local:'Playa Honda U.',visitante:opp,goles_local:nos,goles_visitante:riv,fecha:fechaStr,_ts:m.date});
+          var lugarVal = '';
+          if (m.ground) { lugarVal = (typeof m.ground==='object') ? (m.ground.name||'') : String(m.ground); }
+          if (!lugarVal && m.venue) { lugarVal = (typeof m.venue==='object') ? (m.venue.name||'') : String(m.venue); }
+          var golesArr = [];
+          if (Array.isArray(m.goals)) {
+            m.goals.forEach(function(g) {
+              var tid = g.team && (g.team.id !== undefined ? g.team.id : g.team);
+              var tn  = g.team && g.team.name;
+              if (tid===120 || tn===TEAM_NAME) {
+                var pn = g.player ? (g.player.name || g.player.short_name || String(g.player)) : (g.player_name||'');
+                if (pn) golesArr.push(pn + (g.minute ? " ("+g.minute+"')" : ''));
+              }
+            });
+          }
+          resultados.push({categoria:p.cat,resultado:res,local:'Playa Honda U.',visitante:opp,goles_local:nos,goles_visitante:riv,fecha:fechaStr,_ts:m.date,lugar:lugarVal,goleadores:golesArr.join('; ')});
           jugados.push({local:m.home_team.name,visitante:m.away_team.name,goles_local:m.home_score,goles_visitante:m.away_score,resultado:res,fecha_str:fechaStr,_ts:m.date});
         } else {
           proximos.push({local:m.home_team.name,visitante:m.away_team.name,fecha_str:fechaStr,_ts:m.date});

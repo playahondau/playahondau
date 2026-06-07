@@ -1994,10 +1994,10 @@ function renderResultados(rows, extra) {
     const res = String(r.resultado).toLowerCase();
     const cls = res === 'victoria' ? 'win' : res === 'empate' ? 'draw' : 'loss';
     const label = res === 'victoria' ? 'Victoria' : res === 'empate' ? 'Empate' : 'Derrota';
-    /* enriquecer con datos del sheet del newsletter */
+    /* lud-backend primero, sheet como fallback */
     var ex = extra[(r.categoria || '').trim().toLowerCase()] || {};
-    var goleadores = ex.goleadores || '';
-    var lugar      = ex.lugar      || '';
+    var goleadores = r.goleadores || ex.goleadores || '';
+    var lugar      = r.lugar      || ex.lugar      || '';
     var localia    = ex.localia    || '';
 
     var detalles = '';
