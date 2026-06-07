@@ -622,9 +622,8 @@
   </div>
 </section>
 
-<div class="novedades-bar">
+<div class="novedades-bar" style="display:none">
   <span class="nov-label">Novedades de la fecha</span>
-  <div class="novedad-chip"><span class="nov-icon">🔥</span><span class="nov-cat">Reserva</span><span class="nov-txt">Nueva goleada frente a Seminario para trepar a la parte de arriba</span></div>
 </div>
 <div class="ticker">
   <div class="ticker-inner" id="ticker-inner">
@@ -2253,6 +2252,8 @@ function scheduleRefresh() {
 }
 
 function renderNovedades(extra) {
+  var bar = document.querySelector('.novedades-bar');
+  if (!bar) return;
   var chips = Object.keys(extra)
     .filter(function(cat) { return extra[cat].novedad; })
     .map(function(cat) {
@@ -2263,9 +2264,12 @@ function renderNovedades(extra) {
         + '<span class="nov-cat">' + label + '</span>'
         + '<span class="nov-txt">' + d.novedad + '</span></div>';
     });
-  if (!chips.length) return;
-  var bar = document.querySelector('.novedades-bar');
-  if (bar) bar.innerHTML = '<span class="nov-label">Novedades de la fecha</span>' + chips.join('');
+  if (!chips.length) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = '';
+  bar.innerHTML = '<span class="nov-label">Novedades de la fecha</span>' + chips.join('');
 }
 
 async function init() {
