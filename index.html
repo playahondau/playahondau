@@ -2302,6 +2302,9 @@ async function init() {
       if (!f.dia_hora.includes(' · ')) f.dia_hora += ' · ' + ov.hora + 'h';
       if (!f.lugar) f.lugar = ov.lugar;
     });
+    // Máster — manual, no está en lud-stats (actualizar cada fecha)
+    fixture.push({categoria:'Máster', local:'Playa Honda U.', visitante:'Entreamigos', dia_hora:'Sáb 13 jun.', lugar:'Complejo S.M.U', _ts:'2026-06-13'});
+    fixture.sort((a,b) => a._ts > b._ts ? 1 : -1);
     renderFixture(fixture);
     renderPartidos(data.partidos);
     renderRendimiento(data.partidos);
