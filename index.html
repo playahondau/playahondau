@@ -2291,6 +2291,17 @@ async function init() {
     });
     renderTicker(recentResultados);
     renderResultados(recentResultados, extra);
+    // Overrides manuales hora/lugar cuando lud-stats no los tiene — actualizar acá cada fecha
+    const FIXTURE_OV = {
+      'Mayor':   {hora:'15:30', lugar:'Cancha Ceibos'},
+      'Reserva': {hora:'15:30', lugar:'Cancha Ceibos'}
+    };
+    fixture.forEach(f => {
+      const ov = FIXTURE_OV[f.categoria];
+      if (!ov) return;
+      if (!f.dia_hora.includes(' · ')) f.dia_hora += ' · ' + ov.hora + 'h';
+      if (!f.lugar) f.lugar = ov.lugar;
+    });
     renderFixture(fixture);
     renderPartidos(data.partidos);
     renderRendimiento(data.partidos);
