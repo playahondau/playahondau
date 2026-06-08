@@ -108,7 +108,12 @@ function doGet(e) {
           resultados.push({categoria:p.cat,resultado:res,local:'Playa Honda U.',visitante:opp,goles_local:nos,goles_visitante:riv,fecha:fechaStr,_ts:m.date,lugar:lugarVal,goleadores:golesArr.join('; ')});
           jugados.push({local:m.home_team.name,visitante:m.away_team.name,goles_local:m.home_score,goles_visitante:m.away_score,resultado:res,fecha_str:fechaStr,_ts:m.date});
         } else {
-          proximos.push({local:m.home_team.name,visitante:m.away_team.name,fecha_str:fechaStr,_ts:m.date});
+          var lugarProx = '';
+          if (m.ground) { lugarProx = (typeof m.ground==='object') ? (m.ground.name||'') : String(m.ground); }
+          if (!lugarProx && m.venue) { lugarProx = (typeof m.venue==='object') ? (m.venue.name||'') : String(m.venue); }
+          var dp = new Date(m.date);
+          var horaProx = ('0'+dp.getHours()).slice(-2)+':'+('0'+dp.getMinutes()).slice(-2);
+          proximos.push({local:m.home_team.name,visitante:m.away_team.name,fecha_str:fechaStr,hora:horaProx,lugar:lugarProx,_ts:m.date});
         }
       }
       jugados.sort(function(a,b){return a._ts<b._ts?-1:1;});
@@ -116,16 +121,14 @@ function doGet(e) {
       partidos[p.cat] = {jugados:jugados, proximos:proximos};
     }
     resultados.sort(function(a,b){return b._ts>a._ts?1:-1;});
-    var wf   = JSON.parse(UrlFetchApp.fetch(LUD_BASE+'/weekend-fixture/',{muteHttpExceptions:true}).getContentText());
-    var CMAP = {'Mayores':'Mayor','Reserva':'Reserva','Pre Senior':'Pre Senior','Sub 20':'Sub 20','Sub 18':'Sub 18'};
+    // Fixture desde proximos (ya filtrado por status≠finished en lud-backend)
     var fixture = [];
-    var cats = wf.categories||{};
-    for (var cat in cats) {
-      var cms = cats[cat];
-      for (var k=0;k<cms.length;k++) {
-        var cm = cms[k];
-        if (cm.local!==TEAM_NAME && cm.visitante!==TEAM_NAME) continue;
-        fixture.push({categoria:CMAP[cat]||cat,local:cm.local,visitante:cm.visitante,dia_hora:cm.dia+' · '+cm.hora+'h',lugar:cm.cancha,_ts:cm.datetime_iso});
+    for (var fi = 0; fi < PHASES.length; fi++) {
+      var fcat = PHASES[fi].cat;
+      var prxs = partidos[fcat] ? partidos[fcat].proximos : [];
+      for (var k = 0; k < prxs.length; k++) {
+        var pr = prxs[k];
+        fixture.push({categoria:fcat,local:pr.local,visitante:pr.visitante,dia_hora:pr.fecha_str+' · '+pr.hora+'h',lugar:pr.lugar||'',_ts:pr._ts});
       }
     }
     fixture.sort(function(a,b){return a._ts>b._ts?1:-1;});

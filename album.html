@@ -577,7 +577,7 @@ function abrirSobre() {
   document.getElementById('reveal-wrap').classList.remove('on');
   document.getElementById('btn-cerrar').style.display = 'none';
   document.getElementById('btn-siguiente').style.display = 'none';
-  document.querySelector('.new-lbl') && (document.querySelector('.new-lbl').textContent = '¡Nuevo jugador!');
+  const revLbl = document.querySelector('.reveal-lbl'); if (revLbl) revLbl.textContent = '¡Nuevo jugador!';
   document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
   document.getElementById('carta-inner').classList.remove('flipped');
   document.getElementById('c-front').classList.remove('shine');
@@ -679,7 +679,7 @@ document.getElementById('btn-siguiente').addEventListener('click', () => {
   document.getElementById('c-front').classList.remove('shine');
   document.getElementById('carta-flip').className = 'carta-flip';
   document.getElementById('reveal-hint').textContent = 'Tocá la carta para revelar';
-  document.getElementById('reveal-wrap').querySelector('.new-lbl').textContent = '¡Segundo jugador!';
+  const lbl2 = document.getElementById('reveal-wrap').querySelector('.reveal-lbl'); if (lbl2) lbl2.textContent = '¡Segundo jugador!';
   setTimeout(mostrarCarta, 750);
 });
 document.getElementById('btn-cerrar').addEventListener('click', cerrarPackScreen);
