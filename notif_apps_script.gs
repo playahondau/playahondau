@@ -132,6 +132,11 @@ function doGet(e) {
       }
     }
     fixture.sort(function(a,b){return a._ts>b._ts?1:-1;});
+    // Solo la próxima fecha: partidos dentro de los 5 días del primer partido
+    if (fixture.length > 0) {
+      var primerTs = new Date(fixture[0]._ts).getTime();
+      fixture = fixture.filter(function(f){ return new Date(f._ts).getTime() - primerTs <= 5*24*60*60*1000; });
+    }
     var out = ContentService.createTextOutput(JSON.stringify({resultados:resultados,fixture:fixture,partidos:partidos}));
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
