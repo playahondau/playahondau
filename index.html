@@ -2085,9 +2085,9 @@ function renderFixture(rows) {
   document.getElementById('fixtures-list').innerHTML = rows.map(r =>
     '<div class="fixture" data-dh="' + (r.dia_hora || '') + '">' +
     '<span class="fix-cat">' + r.categoria + '</span>' +
-    '<span class="fix-home">' + r.local + '</span>' +
+    '<span class="fix-home">' + _shortName(r.local) + '</span>' +
     '<span class="fix-vs">VS</span>' +
-    '<span class="fix-away">' + r.visitante + '</span>' +
+    '<span class="fix-away">' + _shortName(r.visitante) + '</span>' +
     '<div class="fix-info"><p class="fix-fecha">' + r.dia_hora + '</p><p class="fix-lugar">' + r.lugar + '</p></div>' +
     '</div>'
   ).join('');
