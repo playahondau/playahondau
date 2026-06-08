@@ -128,7 +128,8 @@ function doGet(e) {
       var prxs = partidos[fcat] ? partidos[fcat].proximos : [];
       if (prxs.length > 0) {
         var pr = prxs[0];
-        fixture.push({categoria:fcat,local:pr.local,visitante:pr.visitante,dia_hora:pr.fecha_str+' · '+pr.hora+'h',lugar:pr.lugar||'',_ts:pr._ts});
+        var dh = pr.fecha_str + (pr.hora && pr.hora !== '00:00' ? ' · ' + pr.hora + 'h' : '');
+        fixture.push({categoria:fcat,local:pr.local,visitante:pr.visitante,dia_hora:dh,lugar:pr.lugar||'',_ts:pr._ts});
       }
     }
     fixture.sort(function(a,b){return a._ts>b._ts?1:-1;});
