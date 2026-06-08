@@ -133,6 +133,17 @@ function doGet(e) {
       }
     }
     fixture.sort(function(a,b){return a._ts>b._ts?1:-1;});
+    // Overrides manuales cuando lud-stats no tiene hora/lugar — actualizar cada fecha si es necesario
+    var FIXTURE_OV = {
+      'Mayor':   {hora:'15:30', lugar:'Cancha Ceibos'},
+      'Reserva': {hora:'15:30', lugar:'Cancha Ceibos'}
+    };
+    fixture.forEach(function(f) {
+      var ov = FIXTURE_OV[f.categoria];
+      if (!ov) return;
+      if (f.dia_hora.indexOf(' · ') === -1) f.dia_hora = f.dia_hora + ' · ' + ov.hora + 'h';
+      if (!f.lugar) f.lugar = ov.lugar;
+    });
     var out = ContentService.createTextOutput(JSON.stringify({resultados:resultados,fixture:fixture,partidos:partidos}));
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
