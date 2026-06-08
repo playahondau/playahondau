@@ -121,22 +121,17 @@ function doGet(e) {
       partidos[p.cat] = {jugados:jugados, proximos:proximos};
     }
     resultados.sort(function(a,b){return b._ts>a._ts?1:-1;});
-    // Fixture desde proximos (ya filtrado por status≠finished en lud-backend)
+    // Fixture: solo el próximo partido de cada categoría (proximos ya está ordenado asc)
     var fixture = [];
     for (var fi = 0; fi < PHASES.length; fi++) {
       var fcat = PHASES[fi].cat;
       var prxs = partidos[fcat] ? partidos[fcat].proximos : [];
-      for (var k = 0; k < prxs.length; k++) {
-        var pr = prxs[k];
+      if (prxs.length > 0) {
+        var pr = prxs[0];
         fixture.push({categoria:fcat,local:pr.local,visitante:pr.visitante,dia_hora:pr.fecha_str+' · '+pr.hora+'h',lugar:pr.lugar||'',_ts:pr._ts});
       }
     }
     fixture.sort(function(a,b){return a._ts>b._ts?1:-1;});
-    // Solo la próxima fecha: partidos dentro de los 5 días del primer partido
-    if (fixture.length > 0) {
-      var primerTs = new Date(fixture[0]._ts).getTime();
-      fixture = fixture.filter(function(f){ return new Date(f._ts).getTime() - primerTs <= 7*24*60*60*1000; });
-    }
     var out = ContentService.createTextOutput(JSON.stringify({resultados:resultados,fixture:fixture,partidos:partidos}));
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
