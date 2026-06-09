@@ -1952,7 +1952,8 @@ async function fetchSheetExtra() {
     rows.slice(1).forEach(row => {
       if (!row.trim()) return;
       const cols = row.split('\t');
-      const cat = (cols[0] || '').trim().toLowerCase();
+      const catRaw = (cols[0] || '').trim().toLowerCase();
+      const cat = catRaw === 'presenior' ? 'pre senior' : catRaw;
       map[cat] = {
         localia:    (cols[4] || '').trim(),
         goleadores: (cols[7] || '').trim(),
