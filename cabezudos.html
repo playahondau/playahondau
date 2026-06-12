@@ -649,6 +649,158 @@ let p2sel      = 'titan';
 let gameFrames = 0;        // frames jugados (solo avanza en state==='playing')
 let gameTime   = GAME_DURATION; // segundos restantes (calculado a partir de gameFrames)
 
+// ── Power-ups ─────────────────────────────────────────────
+let pu_ballR  = BALL_R;   // radio efectivo de la pelota
+let pu_goalH  = GOAL_H;   // altura efectiva del arco
+let pu_pscale = 1.0;      // escala visual del jugador
+let pu_speed  = 1.0;      // multiplicador de velocidad
+
+let puItems    = [];      // items flotando en el campo
+let puEffects  = {};      // efectos activos: { type: { endFrame } }
+let puNotif    = null;    // notificación flotante: { label, color, timer }
+let puNextSpawn = 0;      // frame en el que aparece el próximo item
+
+const PU_R           = 15;
+const PU_DUR         = 450;   // frames (~7.5s)
+const PU_SPAWN_EVERY = 540;   // frames (~9s)
+const PU_DEFS = [
+  { type:'big_ball',   label:'¡Pelota GIGANTE!',    color:'#e53935', letter:'B+' },
+  { type:'small_ball', label:'¡Pelota mini!',        color:'#78909c', letter:'B-' },
+  { type:'big_goal',   label:'¡Arcos GRANDES!',      color:'#f9a825', letter:'G+' },
+  { type:'small_goal', label:'¡Arcos chicos!',       color:'#1565c0', letter:'G-' },
+  { type:'giant',      label:'¡Cabezudos GRANDES!',  color:'#8e24aa', letter:'↑↑' },
+  { type:'tiny',       label:'¡Cabezudos chicos!',   color:'#00897b', letter:'↓↓' },
+  { type:'speed',      label:'¡TURBO!',              color:'#e65100', letter:'>>' },
+];
+
+function recomputePu() {
+  pu_ballR  = puEffects.big_ball   ? BALL_R * 2.0
+            : puEffects.small_ball ? BALL_R * 0.5
+            : BALL_R;
+  pu_goalH  = puEffects.big_goal   ? GOAL_H * 1.5
+            : puEffects.small_goal ? GOAL_H * 0.6
+            : GOAL_H;
+  pu_pscale = puEffects.giant ? 1.55 : puEffects.tiny ? 0.58 : 1.0;
+  pu_speed  = puEffects.speed ? 1.65 : 1.0;
+}
+
+function applyPu(type) {
+  const conflicts = { big_ball:'small_ball', small_ball:'big_ball', big_goal:'small_goal', small_goal:'big_goal', giant:'tiny', tiny:'giant' };
+  if (conflicts[type]) delete puEffects[conflicts[type]];
+  puEffects[type] = { endFrame: gameFrames + PU_DUR };
+  recomputePu();
+}
+
+function spawnPuItem() {
+  if (puItems.length >= 2) return;
+  const def = PU_DEFS[Math.floor(Math.random() * PU_DEFS.length)];
+  puItems.push({
+    x: GOAL_W + 70 + Math.random() * (LW - GOAL_W * 2 - 140),
+    y: GROUND_Y - 110 - Math.random() * 120,
+    type: def.type, label: def.label, color: def.color, letter: def.letter,
+    life: 600, phase: Math.random() * Math.PI * 2,
+  });
+}
+
+function updatePu() {
+  if (gameFrames >= puNextSpawn) {
+    spawnPuItem();
+    puNextSpawn = gameFrames + PU_SPAWN_EVERY;
+  }
+  puItems = puItems.filter(p => { p.life--; return p.life > 0; });
+
+  for (let i = puItems.length - 1; i >= 0; i--) {
+    const pu = puItems[i];
+    const puY = pu.y + Math.sin(pu.phase + gameFrames * 0.05) * 8;
+    const dx = ball.x - pu.x, dy = ball.y - puY;
+    if (Math.sqrt(dx*dx + dy*dy) < pu_ballR + PU_R) {
+      applyPu(pu.type);
+      puNotif = { label: pu.label, color: pu.color, timer: 140 };
+      puItems.splice(i, 1);
+      break;
+    }
+  }
+
+  let changed = false;
+  for (const type of Object.keys(puEffects)) {
+    if (gameFrames >= puEffects[type].endFrame) { delete puEffects[type]; changed = true; }
+  }
+  if (changed) recomputePu();
+  if (puNotif) puNotif.timer--;
+}
+
+function drawPuItems() {
+  puItems.forEach(pu => {
+    const puY = pu.y + Math.sin(pu.phase + gameFrames * 0.05) * 8;
+    ctx.save();
+    ctx.translate(pu.x, puY);
+
+    // Pulso de brillo exterior
+    const pulse = 0.5 + 0.5 * Math.sin(pu.phase + gameFrames * 0.08);
+    ctx.beginPath();
+    ctx.arc(0, 0, PU_R + 5 * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = pu.color + '40';
+    ctx.fill();
+
+    // Círculo principal
+    ctx.beginPath();
+    ctx.arc(0, 0, PU_R, 0, Math.PI * 2);
+    ctx.fillStyle = '#111827';
+    ctx.fill();
+    ctx.strokeStyle = pu.color;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Letra
+    ctx.font = 'bold 9px Barlow Condensed, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = pu.color;
+    ctx.fillText(pu.letter, 0, 0);
+
+    ctx.restore();
+  });
+}
+
+function drawPuEffects() {
+  const hudY = LH - 50;
+
+  // Notificación flotante
+  if (puNotif && puNotif.timer > 0) {
+    const alpha = Math.min(1, puNotif.timer / 35);
+    const yOff  = puNotif.timer < 80 ? (80 - puNotif.timer) * 0.4 : 0;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold 24px Bebas Neue, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#000';
+    ctx.fillText(puNotif.label, LW / 2 + 2, hudY - 34 + yOff);
+    ctx.fillStyle = puNotif.color;
+    ctx.fillText(puNotif.label, LW / 2, hudY - 36 + yOff);
+    ctx.restore();
+  }
+
+  // Píldoras de efectos activos
+  let px = 8;
+  const pillY = hudY - 16;
+  ctx.font = 'bold 8px Barlow Condensed, sans-serif';
+  for (const type of Object.keys(puEffects)) {
+    const def = PU_DEFS.find(d => d.type === type);
+    if (!def) continue;
+    const secLeft = Math.max(1, Math.ceil((puEffects[type].endFrame - gameFrames) / 60));
+    const text = def.letter + ' ' + secLeft + 's';
+    const tw = ctx.measureText(text).width + 10;
+    ctx.fillStyle = def.color + 'cc';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(px, pillY, tw, 13, 3); else ctx.rect(px, pillY, tw, 13);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, px + 5, pillY + 9);
+    px += tw + 5;
+  }
+}
+
 // ── Jugadores y pelota ────────────────────────────────────
 let p1, p2, ball;
 
@@ -725,7 +877,8 @@ function updatePlayer(pl, left, right, jumpEdge) {
   if (left)  { pl.vx -= 1.3; pl.facingR = false; }
   if (right) { pl.vx += 1.3; pl.facingR = true;  }
   if (!left && !right) pl.vx *= 0.76;
-  pl.vx = Math.max(-P_SPEED, Math.min(P_SPEED, pl.vx));
+  const effSpd = P_SPEED * pu_speed;
+  pl.vx = Math.max(-effSpd, Math.min(effSpd, pl.vx));
 
   // Salto (máx 2 saltos aéreos)
   if (jumpEdge && pl.jumpUsed < 2) {
@@ -779,23 +932,23 @@ function updateBall() {
   ball.y  += ball.vy;
 
   // Piso
-  if (ball.y + BALL_R > GROUND_Y) {
-    ball.y  = GROUND_Y - BALL_R;
+  if (ball.y + pu_ballR > GROUND_Y) {
+    ball.y  = GROUND_Y - pu_ballR;
     ball.vy *= -0.56;
     ball.vx *= 0.93;
     if (Math.abs(ball.vy) < 1.2) ball.vy = 0;
   }
   // Techo
-  if (ball.y - BALL_R < 0) { ball.y = BALL_R; ball.vy = Math.abs(ball.vy) * 0.7; }
+  if (ball.y - pu_ballR < 0) { ball.y = pu_ballR; ball.vy = Math.abs(ball.vy) * 0.7; }
 
   // Pared izquierda (parte que NO es el arco)
-  if (ball.x - BALL_R < 0) {
-    ball.x = BALL_R;
-    ball.vx = Math.abs(ball.vx) * 0.45; // efecto red
+  if (ball.x - pu_ballR < 0) {
+    ball.x = pu_ballR;
+    ball.vx = Math.abs(ball.vx) * 0.45;
   }
   // Pared derecha
-  if (ball.x + BALL_R > LW) {
-    ball.x = LW - BALL_R;
+  if (ball.x + pu_ballR > LW) {
+    ball.x = LW - pu_ballR;
     ball.vx = -Math.abs(ball.vx) * 0.45;
   }
 
@@ -808,38 +961,31 @@ function updateBall() {
 }
 
 function bounceCrossbar() {
-  var cy = GROUND_Y - GOAL_H; // y del travesaño
+  var cy = GROUND_Y - pu_goalH; // y del travesaño (usa altura efectiva)
 
   function checkCrossbar() {
-    // CCD: ¿la pelota cruzó de arriba hacia abajo este frame?
-    // (prevY por encima o en el travesaño, ahora por debajo)
-    if (ball.prevY <= cy + BALL_R && ball.y + BALL_R > cy) {
-      // Vino desde arriba → devolver por encima del travesaño (NO es gol)
-      ball.y  = cy - BALL_R - 1;
+    if (ball.prevY <= cy + pu_ballR && ball.y + pu_ballR > cy) {
+      ball.y  = cy - pu_ballR - 1;
       ball.vy = -Math.abs(ball.vy) * 0.55;
       ball.vx *= 0.75;
       return;
     }
-    // Underside: pelota dentro del arco golpeando el travesaño desde abajo
-    if (ball.y - BALL_R < cy + POST_R && ball.y > cy && ball.vy < 0) {
-      ball.y  = cy + BALL_R + POST_R;
+    if (ball.y - pu_ballR < cy + POST_R && ball.y > cy && ball.vy < 0) {
+      ball.y  = cy + pu_ballR + POST_R;
       ball.vy = Math.abs(ball.vy) * 0.55;
       ball.vx *= 0.80;
     }
   }
 
-  // Arco izquierdo: travesaño de x=0 a x=GOAL_W
-  if (ball.x < GOAL_W + BALL_R && ball.x > -BALL_R) checkCrossbar();
-
-  // Arco derecho: travesaño de x=LW-GOAL_W a x=LW
-  if (ball.x > LW - GOAL_W - BALL_R && ball.x < LW + BALL_R) checkCrossbar();
+  if (ball.x < GOAL_W + pu_ballR && ball.x > -pu_ballR) checkCrossbar();
+  if (ball.x > LW - GOAL_W - pu_ballR && ball.x < LW + pu_ballR) checkCrossbar();
 }
 
 function bouncePost(px, py) {
   // Colisión pelota-poste (esfera-punto)
   const dx = ball.x - px, dy = ball.y - py;
   const d  = Math.sqrt(dx*dx + dy*dy);
-  const md = BALL_R + POST_R;
+  const md = pu_ballR + POST_R;
   if (d < md && d > 0.01) {
     const nx = dx/d, ny = dy/d;
     ball.x = px + nx * md;
@@ -854,7 +1000,7 @@ function bouncePost(px, py) {
 function collideBallHead(pl) {
   const dx = ball.x - pl.x, dy = ball.y - pl.y;
   const d  = Math.sqrt(dx*dx + dy*dy);
-  const md = BALL_R + HEAD_R;
+  const md = pu_ballR + HEAD_R;
   if (d < md && d > 0.01) {
     const nx = dx/d, ny = dy/d;
     // Separar
@@ -897,8 +1043,8 @@ function collidePlayerPlayer() {
 
 // ── Detección de gol ──────────────────────────────────────
 function checkGoal() {
-  const inLeft  = ball.x < GOAL_LINE     && ball.y > GROUND_Y - GOAL_H + 5 && ball.y < GROUND_Y;
-  const inRight = ball.x > LW - GOAL_LINE && ball.y > GROUND_Y - GOAL_H + 5 && ball.y < GROUND_Y;
+  const inLeft  = ball.x < GOAL_LINE      && ball.y > GROUND_Y - pu_goalH + 5 && ball.y < GROUND_Y;
+  const inRight = ball.x > LW - GOAL_LINE && ball.y > GROUND_Y - pu_goalH + 5 && ball.y < GROUND_Y;
   if (inLeft)  { p2.score++; goalSide = 1; triggerGoal(); }
   if (inRight) { p1.score++; goalSide = 0; triggerGoal(); }
 }
@@ -939,7 +1085,7 @@ function tryKick(pl) {
   const dy   = ball.y - pl.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
 
-  if (dist < KICK_REACH) {
+  if (dist < HEAD_R + pu_ballR + 22) {
     // Golpe fuerte en la dirección que enfrenta el jugador
     ball.vx  = dir * 13 + pl.vx * 0.4;
     ball.vy  = -6 + pl.vy * 0.3;
@@ -1194,7 +1340,7 @@ function drawField() {
 
 function drawGoal(side) {
   const gx = side === 0 ? 0 : LW - GOAL_W;
-  const gy = GROUND_Y - GOAL_H;
+  const gy = GROUND_Y - pu_goalH;
 
   // Red (fondo translúcido)
   ctx.fillStyle = 'rgba(255,255,255,.03)';
@@ -1270,7 +1416,7 @@ function drawPlayerSprite(pl) {
     // Sprite anclado por el FONDO: pies siempre en GROUND_Y (= pl.y + HEAD_R).
     // La física sigue usando pl.y = GROUND_Y - HEAD_R → esfera de colisión
     // llega hasta el suelo, garantizando impacto con pelota rasante.
-    const charH  = SPRITE_H;                // altura fija proporcional al arco
+    const charH  = SPRITE_H * pu_pscale;    // altura escalada por power-up
     const charW  = charH * (sw / sh);       // ancho según aspecto real del sprite
     const yBottom = HEAD_R;                 // en coords traducidas, fondo = HEAD_R debajo de pl.y
 
@@ -1321,34 +1467,35 @@ function drawBallSprite() {
   // Sombra proyectada en el piso
   const dist = GROUND_Y - by;
   const sf   = Math.max(0.25, 1 - dist / 280);
+  const br   = pu_ballR; // radio efectivo
   ctx.fillStyle = `rgba(0,0,0,${0.28 * sf})`;
   ctx.beginPath();
-  ctx.ellipse(bx, GROUND_Y, BALL_R * sf, BALL_R * 0.36 * sf, 0, 0, Math.PI*2);
+  ctx.ellipse(bx, GROUND_Y, br * sf, br * 0.36 * sf, 0, 0, Math.PI*2);
   ctx.fill();
 
   // Pelota
   ctx.save();
   ctx.translate(bx, by);
 
-  const gr = ctx.createRadialGradient(-BALL_R*.3, -BALL_R*.35, 1, 0, 0, BALL_R);
+  const gr = ctx.createRadialGradient(-br*.3, -br*.35, 1, 0, 0, br);
   gr.addColorStop(0, '#ffffff');
   gr.addColorStop(1, '#c0c0c0');
 
   ctx.beginPath();
-  ctx.arc(0, 0, BALL_R, 0, Math.PI*2);
+  ctx.arc(0, 0, br, 0, Math.PI*2);
   ctx.fillStyle = gr;
   ctx.fill();
   ctx.strokeStyle = '#555';
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // Patrón de fútbol (pentágonos simplificados)
+  // Patrón de fútbol
   ctx.fillStyle = '#222';
-  hexPatch(0, 0, BALL_R * 0.37);
+  hexPatch(0, 0, br * 0.37);
   const pa = (Math.PI * 2) / 5;
   for (let i = 0; i < 5; i++) {
     const a = i * pa - Math.PI/2;
-    hexPatch(Math.cos(a)*BALL_R*0.65, Math.sin(a)*BALL_R*0.65, BALL_R*0.26);
+    hexPatch(Math.cos(a)*br*0.65, Math.sin(a)*br*0.65, br*0.26);
   }
 
   ctx.restore();
@@ -1557,10 +1704,12 @@ function renderFrame() {
   drawField();
 
   if (state === 'playing' || state === 'goal') {
+    drawPuItems();
     drawBallSprite();
     drawPlayerSprite(p1);
     drawPlayerSprite(p2);
     drawHUD();
+    drawPuEffects();
     drawGoalFlash();
     drawConfetti();
     drawGoalText();
@@ -1639,6 +1788,7 @@ function loop() {
     collideBallHead(p2);
     collidePlayerPlayer();
     checkGoal();
+    updatePu();
     updateXaxa();
     renderFrame();
   } else if (state === 'goal' || state === 'countdown') {
@@ -1827,6 +1977,8 @@ function launchGame() {
   prevJumpP2 = false;
   gameFrames = 0;
   gameTime   = GAME_DURATION;
+  puItems = []; puEffects = {}; puNotif = null; puNextSpawn = PU_SPAWN_EVERY;
+  pu_ballR = BALL_R; pu_goalH = GOAL_H; pu_pscale = 1; pu_speed = 1;
   state      = 'playing';
   syncTouchUI();
   overlay.classList.add('hidden');

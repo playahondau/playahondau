@@ -2294,8 +2294,7 @@ async function init() {
     renderResultados(recentResultados, extra);
     // Overrides manuales hora/lugar cuando lud-stats no los tiene — actualizar acá cada fecha
     const FIXTURE_OV = {
-      'Reserva': {hora:'15:30', lugar:'Cancha Ceibos'},
-      'Sub 20':  {hora:'15:30', lugar:'Cancha Ceibos'}
+      'Reserva': {hora:'15:30', lugar:'Cancha Ceibos'}
     };
     fixture.forEach(f => {
       const ov = FIXTURE_OV[f.categoria];
@@ -2303,6 +2302,9 @@ async function init() {
       if (!f.dia_hora.includes(' · ')) f.dia_hora += ' · ' + ov.hora + 'h';
       if (!f.lugar) f.lugar = ov.lugar;
     });
+    // Partidos suspendidos esta fecha (sacar de FIXTURE_SUSPENDIDOS cuando vuelvan)
+    const FIXTURE_SUSPENDIDOS = new Set(['Sub 20']);
+    fixture = fixture.filter(f => !FIXTURE_SUSPENDIDOS.has(f.categoria));
     // Máster — manual, no está en lud-stats (actualizar cada fecha)
     fixture.push({categoria:'Máster', local:'Playa Honda U.', visitante:'Entreamigos', dia_hora:'Sáb 13 jun.', lugar:'Complejo S.M.U', _ts:'2026-06-13'});
     fixture.sort((a,b) => a._ts > b._ts ? 1 : -1);
