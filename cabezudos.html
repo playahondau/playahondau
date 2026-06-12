@@ -48,8 +48,16 @@
       border-radius: 10px;
       z-index: 10;
       overflow: hidden;
+      touch-action: auto;
     }
     #overlay.hidden { display: none; }
+
+    /* Botones del overlay: asegurar que el tap funcione en mobile */
+    .ov-btn, .bh-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
 
     /* Centered wrapper (menú / gameover) */
     .ov-centered {
@@ -1377,7 +1385,7 @@ function drawHUD() {
     ctx.textAlign = 'left';
     ctx.font = '600 9px Barlow Condensed, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.32)';
-    const hint1 = mode === 'local' ? 'P1: A D · W salto · S patada' : 'Flechas: mover  ·  Espacio: patear';
+    const hint1 = mode === 'local' ? 'P1: A D · W salto · S patada' : '← → mover  ·  ↑ salto  ·  Espacio: patear';
     const hint2 = mode === 'local' ? 'P2: ← → · ↑ salto · ↓ patada' : '';
     ctx.fillText(hint1, 12, row1 + 2);
     if (hint2) ctx.fillText(hint2, 12, row2 - 2);
@@ -1581,7 +1589,11 @@ function loop() {
     gameTime = Math.max(0, GAME_DURATION - Math.floor(gameFrames / 60));
     if (gameTime <= 0) { showGameover(); raf = requestAnimationFrame(loop); return; }
 
-    const ljP1 = !!(keys['KeyW'] || keys['Space'] || TC.p1u);
+    // Controles P1 — en modo CPU usa flechas + espacio; en 2J usa WASD
+    const cpuMode = mode === 'cpu';
+    const ljP1 = cpuMode
+      ? !!(keys['ArrowUp'] || keys['KeyW'] || TC.p1u)
+      : !!(keys['KeyW'] || keys['Space'] || TC.p1u);
     const ljP2 = !!(keys['ArrowUp'] || TC.p2u);
 
     const jP1 = ljP1 && !prevJumpP1;
@@ -1589,12 +1601,18 @@ function loop() {
     prevJumpP1 = ljP1;
     prevJumpP2 = ljP2;
 
-    const lP1 = !!(keys['KeyA'] || TC.p1l);
-    const rP1 = !!(keys['KeyD'] || TC.p1r);
+    const lP1 = cpuMode
+      ? !!(keys['ArrowLeft']  || keys['KeyA'] || TC.p1l)
+      : !!(keys['KeyA'] || TC.p1l);
+    const rP1 = cpuMode
+      ? !!(keys['ArrowRight'] || keys['KeyD'] || TC.p1r)
+      : !!(keys['KeyD'] || TC.p1r);
     updatePlayer(p1, lP1, rP1, jP1);
 
-    // Patada P1: S / ShiftLeft / botón táctil
-    const kP1Now = !!(keys['KeyS'] || keys['ShiftLeft'] || TC.p1k);
+    // Patada P1: en CPU=Espacio; en 2J=S/ShiftLeft; siempre botón táctil
+    const kP1Now = cpuMode
+      ? !!(keys['Space'] || keys['KeyS'] || keys['ShiftLeft'] || TC.p1k)
+      : !!(keys['KeyS'] || keys['ShiftLeft'] || TC.p1k);
     if (kP1Now && !prevKickP1) tryKick(p1);
     prevKickP1 = kP1Now;
 
