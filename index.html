@@ -852,12 +852,11 @@
           <div class="part-row jugado draw"><span class="part-fecha">S&aacute;b 23 may.</span><span class="part-equipos">Playa Honda <b>2 &ndash; 2</b> City Park Rojo</span><span class="part-loc">Visitante</span></div>
           <div class="part-row jugado loss"><span class="part-fecha">S&aacute;b 30 may.</span><span class="part-equipos">Playa Honda <b>3 &ndash; 4</b> Frentymano Negro</span><span class="part-loc">Visitante</span></div>
           <div class="part-row jugado loss"><span class="part-fecha">S&aacute;b 7 jun.</span><span class="part-equipos">Playa Honda <b>0 &ndash; 2</b> Malvin 03</span><span class="part-loc">Visitante</span></div>
-        </div>
+          <div class="part-row jugado draw"><span class="part-fecha">S&aacute;b 14 jun.</span><span class="part-equipos">Playa Honda <b>2 &ndash; 2</b> Entreamigos</span><span class="part-loc">Local</span></div>
       </div>
       <div class="part-col">
         <p class="part-subtitulo">Pr&oacute;ximos partidos</p>
         <div class="part-list">
-          <div class="part-row proximo"><span class="part-fecha">Fecha 8</span><span class="part-equipos">Vs Entreamigos</span><span class="part-loc">Complejo S.M.U</span></div>
           <div class="part-row proximo"><span class="part-fecha">Fecha 9</span><span class="part-equipos">Vs Alas Rojas</span><span class="part-loc">Santa Rita</span></div>
           <div class="part-row proximo"><span class="part-fecha">Fecha 10</span><span class="part-equipos">Vs Nueva Boyada</span><span class="part-loc">Santa Rita</span></div>
           <div class="part-row proximo"><span class="part-fecha">Fecha 11</span><span class="part-equipos">Vs Come</span><span class="part-loc">Complejo Villa Mar&iacute;a</span></div>
@@ -2285,10 +2284,10 @@ async function init() {
       : resultados;
     // Máster — actualización manual vía HTML (Federación Fútbol Master, liga aparte)
     recentResultados.push({
-      categoria: 'Máster', resultado: 'derrota',
-      local: 'Malvin 03', visitante: 'Playa Honda U.',
-      goles_local: 2, goles_visitante: 0,
-      fecha: 'Sáb 6 jun.', _ts: '2000-01-01'
+      categoria: 'Máster', resultado: 'empate',
+      local: 'Playa Honda U.', visitante: 'Entreamigos',
+      goles_local: 2, goles_visitante: 2,
+      fecha: 'Sáb 14 jun.', _ts: '2000-01-01'
     });
     renderTicker(recentResultados);
     renderResultados(recentResultados, extra);
@@ -2306,7 +2305,7 @@ async function init() {
     const FIXTURE_SUSPENDIDOS = new Set(['Sub 20']);
     fixture = fixture.filter(f => !FIXTURE_SUSPENDIDOS.has(f.categoria));
     // Máster — manual, no está en lud-stats (actualizar cada fecha)
-    fixture.push({categoria:'Máster', local:'Playa Honda U.', visitante:'Entreamigos', dia_hora:'Sáb 13 jun.', lugar:'Complejo S.M.U', _ts:'2026-06-13'});
+    fixture.push({categoria:'Máster', local:'Alas Rojas', visitante:'Playa Honda U.', dia_hora:'Sáb 21 jun.', lugar:'Santa Rita', _ts:'2026-06-21'});
     fixture.sort((a,b) => a._ts > b._ts ? 1 : -1);
     renderFixture(fixture);
     renderPartidos(data.partidos);
@@ -3120,10 +3119,10 @@ document.addEventListener('DOMContentLoaded',function(){
       wdl:[3,1,1]
     },
     mas:{
-      fechas:['Fecha 1','Fecha 2','Fecha 4','Fecha 5','Fecha 6','Fecha 7'],
-      gf:[2,1,3,2,3,0], gc:[0,5,2,2,4,2],
-      pts:[3,3,6,7,7,7],
-      wdl:[2,1,3]
+      fechas:['Fecha 1','Fecha 2','Fecha 4','Fecha 5','Fecha 6','Fecha 7','Fecha 8'],
+      gf:[2,1,3,2,3,0,2], gc:[0,5,2,2,4,2,2],
+      pts:[3,3,6,7,7,7,8],
+      wdl:[2,2,3]
     }
   };
 
