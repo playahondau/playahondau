@@ -2313,7 +2313,7 @@ async function init() {
     renderHistorial(data.partidos);
     // Novedades manuales (overrides del Sheet)
     extra['sub 18'] = Object.assign(extra['sub 18'] || {}, { novedad: '' });
-    extra['mayor']  = Object.assign(extra['mayor']  || {}, { novedad: 'Mayor: segunda victoria al hilo · ¡A meterse en la pelea!', icono: '🔥' });
+    extra['mayor']  = Object.assign(extra['mayor']  || {}, { novedad: 'Mayor: segunda victoria al hilo para meterse en la pelea', icono: '🔥' });
     renderNovedades(extra);
     initCountdown(fixture);
     checkMatchDay(fixture);
