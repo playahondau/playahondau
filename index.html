@@ -184,8 +184,10 @@
     /* Centro: escudo */
     .loader-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);z-index:2;text-align:center;}
     .loader-escudo{width:110px;height:110px;object-fit:contain;border-radius:50%;animation:loaderLatido 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 22px rgba(96,165,250,.55));will-change:transform,opacity;}
-    .loader-club-name{margin:.7rem 0 0 0;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.3em;color:rgba(255,255,255,.55);text-transform:uppercase;}
-    @keyframes loaderLatido{from{transform:scale(1);opacity:.8;}to{transform:scale(1.08);opacity:1;}}
+    .loader-club-name{margin:.8rem 0 0 0;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.5em;color:var(--dorado);text-transform:uppercase;display:flex;align-items:center;gap:.7rem;white-space:nowrap;}
+    .loader-club-name::before,.loader-club-name::after{content:'';flex:1;height:1px;background:var(--dorado);opacity:.4;min-width:18px;}
+    .loader-bar-wrap{margin-top:1.6rem;width:160px;height:2px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-left:auto;margin-right:auto;}
+    .loader-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--dorado),#fff 80%);border-radius:2px;transition:width 2.6s cubic-bezier(.4,0,.2,1);}
     /* Bottom bar estilo Fortnite */
     .loader-bottom{position:absolute;bottom:0;left:0;right:0;z-index:2;padding:1.4rem 2.2rem 1.6rem;display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;}
     .loader-tip{max-width:520px;}
@@ -193,10 +195,7 @@
     .loader-tip-text{margin:0;font-family:'Barlow',sans-serif;font-size:.92rem;color:rgba(255,255,255,.88);line-height:1.45;}
     .loader-progress-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;min-width:160px;}
     .loader-progress-label{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;letter-spacing:.2em;color:rgba(255,255,255,.35);text-transform:uppercase;}
-    .loader-enter-btn{margin-top:1.8rem;background:transparent;border:2px solid rgba(255,255,255,.55);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.45em;padding:.7rem 3.2rem;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;border-radius:3px;}
-    .loader-enter-btn:hover{background:rgba(255,255,255,.08);border-color:#fff;box-shadow:0 0 24px rgba(255,255,255,.18),0 0 48px rgba(96,165,250,.15);}
-    .loader-enter-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transition:left .5s;}
-    .loader-enter-btn:hover::before{left:100%;}
+    @keyframes loaderLatido{from{transform:scale(1);opacity:.8;}to{transform:scale(1.08);opacity:1;}}
     @media(max-width:480px){
       .novedades-bar{gap:.35rem;padding:.4rem .9rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;}
       .novedades-bar::-webkit-scrollbar{display:none;}
@@ -501,7 +500,7 @@
   <div class="loader-center">
     <img src="escudo.png" alt="Playa Honda Universitario" class="loader-escudo">
     <p class="loader-club-name">Playa Honda Universitario</p>
-    <button class="loader-enter-btn" id="loader-enter-btn" onclick="entrarAlSitio()">ENTRAR</button>
+    <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
   </div>
   <div class="loader-bottom">
     <div class="loader-tip">
@@ -2649,18 +2648,20 @@ function startTypewriter() {
 }
 
 function entrarAlSitio() {
-  var audio = document.getElementById('loader-audio');
   var loader = document.getElementById('page-loader');
-  var btn = document.getElementById('loader-enter-btn');
-  btn.disabled = true;
-  btn.textContent = '...';
-
-  /* Ocultar loader */
-  setTimeout(function() {
-    loader.classList.add('oculto');
-    startTypewriter();
-  }, 900);
+  loader.classList.add('oculto');
+  startTypewriter();
 }
+
+(function arrancarLoader() {
+  var bar = document.getElementById('loader-bar');
+  var loader = document.getElementById('page-loader');
+  if (!bar || !loader) return;
+  // Arrancar barra: pequeño delay para que el navegador pinte el 0%
+  setTimeout(function() { bar.style.width = '100%'; }, 80);
+  // Cerrar loader cuando termina la transición (2.6s + 80ms + margen)
+  setTimeout(function() { entrarAlSitio(); }, 3000);
+})();
 </script>
 
 <!-- ===== MEJORAS ESTÉTICAS RONDA 2 ===== -->
