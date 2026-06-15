@@ -2171,7 +2171,9 @@ function renderPartidos(partidos) {
 
 /* ── Rendimiento: calcula datos de charts desde partidos dinámicos ── */
 function renderRendimiento(partidos) {
-  if (!partidos || !window.updateChartWithData) return;
+  if (!partidos) return;
+  window._ludPartidos = partidos;
+  if (!window.updateChartWithData) return;
   var cats = [
     {key:'Mayor',cKey:'may'},{key:'Reserva',cKey:'res'},{key:'Pre Senior',cKey:'pre'},
     {key:'Sub 20',cKey:'s20'},{key:'Sub 18',cKey:'s18'}
@@ -3137,6 +3139,8 @@ document.addEventListener('DOMContentLoaded',function(){
     var goles=chartInstances['goles-'+key];
     if(goles){goles.data.labels=nd.fechas;goles.data.datasets[0].data=nd.gf;goles.data.datasets[1].data=nd.gc;goles.update();}
   };
+  // Si lud-stats llegó antes de que Chart.js estuviera listo, aplicar ahora
+  if (window._ludPartidos) renderRendimiento(window._ludPartidos);
 
   function buildCharts(key){
     if(chartInstances['pie-'+key]) return;
