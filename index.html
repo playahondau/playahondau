@@ -2306,6 +2306,7 @@ async function init() {
     fixture = fixture.filter(f => !FIXTURE_SUSPENDIDOS.has(f.categoria));
     // Máster — manual, no está en lud-stats (actualizar cada fecha)
     fixture.push({categoria:'Máster', local:'Alas Rojas', visitante:'Playa Honda U.', dia_hora:'Sáb 21 jun.', lugar:'Santa Rita', _ts:'2026-06-21'});
+    fixture.push({categoria:'Sub 18', local:'Anglo School Univ.', visitante:'Playa Honda U.', dia_hora:'Dom 21 jun. · 15:30h', lugar:'Anglo', _ts:'2026-06-21'});
     fixture.sort((a,b) => a._ts > b._ts ? 1 : -1);
     renderFixture(fixture);
     renderPartidos(data.partidos);
