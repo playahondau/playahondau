@@ -2277,7 +2277,7 @@ async function init() {
     const [resp, extra] = await Promise.all([fetch(GAS_API), fetchSheetExtra()]);
     const data       = await resp.json();
     const resultados = Array.isArray(data.resultados) ? data.resultados : [];
-    const fixture    = Array.isArray(data.fixture)    ? data.fixture    : [];
+    let fixture      = Array.isArray(data.fixture)    ? data.fixture    : [];
     window._fixtureRows = fixture;
     const latestTs = resultados.length ? new Date(resultados[0]._ts) : null;
     const recentResultados = latestTs
