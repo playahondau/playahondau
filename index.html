@@ -591,6 +591,7 @@
         <li><a href="#" onclick="abrirPenales();return false;">⚽ Penales</a></li>
         <li><a href="cabezudos.html">🗿 Cabezudos</a></li>
         <li><a href="album.html">🎴 Álbum</a></li>
+        <li><a href="#" onclick="abrirJuego();return false;">🎮 Juego</a></li>
       </ul>
     </li>
   </ul>
@@ -615,6 +616,7 @@
   <a class="mobile-sub" href="#" onclick="closeMobileNav();abrirPenales();return false;">⚽ Penales</a>
   <a class="mobile-sub" href="cabezudos.html">🗿 Cabezudos</a>
   <a class="mobile-sub" href="album.html">🎴 Álbum</a>
+  <a class="mobile-sub" href="#" onclick="closeMobileNav();abrirJuego();return false;">🎮 Juego</a>
   <a class="mobile-sub" href="#" onclick="abrirBuscador(event);closeMobileNav()">🔍 Buscar jugador</a>
   <a href="https://www.instagram.com/playahondau/" target="_blank" style="color:var(--dorado-light)">@playahondau</a>
 </div>
@@ -3286,6 +3288,15 @@ document.addEventListener('DOMContentLoaded',function(){
   </div>
 </div>
 
+<!-- ── PLAYA JUEGO MODAL ── -->
+<div id="playa-juego-modal">
+  <div class="pj-inner">
+    <canvas id="pj-canvas"></canvas>
+    <div class="pj-hint">WASD/Flechas: mover &nbsp;|&nbsp; SPACE: red &nbsp;|&nbsp; R: reiniciar &nbsp;|&nbsp; ENTER: continuar</div>
+    <button class="pj-close" onclick="cerrarJuego()">✕ CERRAR</button>
+  </div>
+</div>
+
 <!-- ── SHARE MODAL ── -->
 <div id="share-modal">
   <div id="share-modal-inner">
@@ -3306,6 +3317,15 @@ document.addEventListener('DOMContentLoaded',function(){
 .md-close:hover{color:#fff;}
 body.match-day{padding-top:38px;}
 body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-shadow:0 0 24px rgba(244,196,48,.2)!important;}
+
+/* ── Playa Juego Modal ── */
+#playa-juego-modal{display:none;position:fixed;inset:0;z-index:10004;background:rgba(0,0,0,.95);align-items:center;justify-content:center;padding:.5rem;overscroll-behavior:contain;}
+#playa-juego-modal.open{display:flex;}
+.pj-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;width:100%;max-width:min(820px,98vw);}
+#pj-canvas{display:block;max-width:100%;max-height:min(75vh,660px);border-radius:6px;image-rendering:pixelated;cursor:default;}
+.pj-hint{color:rgba(200,160,48,.55);font-family:monospace;font-size:10px;letter-spacing:.05em;text-align:center;}
+.pj-close{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.55);font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;padding:.35rem 1.8rem;cursor:pointer;border-radius:3px;}
+.pj-close:hover{color:#fff;border-color:#fff;}
 
 /* ── Share Modal ── */
 #share-modal{display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:1rem;}
@@ -5372,6 +5392,401 @@ function generarMemeBielsa() {
     document.getElementById('share-modal').classList.add('open');
   }
 }
+
+/* ════════════════════════════════════════════════════
+   PLAYA HONDA FC — EL JUEGO  (Bad Ice Cream style)
+   ════════════════════════════════════════════════════ */
+var PlayaJuego = (function(){
+  var COLS=17,ROWS=13,CS=48,HUD_H=56;
+  var GW=COLS*CS, GH=ROWS*CS+HUD_H;
+  var NAVY='#0d2a5a',GOLD='#c8a030',ERED='#c0242b';
+  var T={EMPTY:0,WALL:1,NET:2};
+  var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
+  var keys={},jp={};
+  var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer;
+
+  var CHARS=[{name:'Algorta',num:'11'},{name:'Rodriguez',num:'6'}];
+
+  var LEVELS=[
+    { char:0, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW','W...............W','W.WWW.....WWW...W','W...............W','W...B..W....B...W','W......W........W','W......W........W','W...............W','W...B...........W','W..........WWW..W','W...............W','W...............W','WWWWWWWWWWWWWWWWW'],
+      enemies:[{col:8,row:5,dx:1,dy:0},{col:14,row:3,dx:0,dy:1}]
+    },
+    { char:1, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW','W...............W','W.W.W.WWW.W.W..BW','W...............W','WB.WWW...WWW....W','W...............W','W...W.B.B.W.....W','W...W.....W.....W','WB.WWW...WWW....W','W...............W','W.W.W.WWW.W.W..BW','W.....B.........W','WWWWWWWWWWWWWWWWW'],
+      enemies:[{col:8,row:1,dx:1,dy:0},{col:8,row:11,dx:-1,dy:0},{col:1,row:6,dx:0,dy:1}]
+    },
+    { char:0, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW','W.B.W.....W.B...W','W.W.W.WWW.W.W.WWW','W.W...W.W...W...W','W.WWWWW.WWWWW.W.W','W...............W','W.WWWWW.WWWWW.W.W','W.W...W.W...W...W','W.W.W.WWW.W.W.WWW','W.B.W.....W.B...W','W...W.W.W.W.....W','WB..........B...W','WWWWWWWWWWWWWWWWW'],
+      enemies:[{col:8,row:1,dx:1,dy:0},{col:15,row:6,dx:0,dy:1},{col:8,row:11,dx:-1,dy:0},{col:1,row:6,dx:0,dy:-1}]
+    }
+  ];
+
+  function consume(k){ if(jp[k]){delete jp[k];return true;}return false; }
+  function isSolid(c,r){ if(c<0||c>=COLS||r<0||r>=ROWS)return true; return grid[r][c]===1||grid[r][c]===2; }
+  function dirDelta(d){ return{up:{dc:0,dr:-1},down:{dc:0,dr:1},left:{dc:-1,dr:0},right:{dc:1,dr:0}}[d]; }
+
+  function parseLevel(idx){
+    level=idx;
+    var lv=LEVELS[idx];
+    grid=[]; balls=[];
+    for(var r=0;r<ROWS;r++){
+      grid[r]=[];
+      for(var c=0;c<COLS;c++){
+        var ch=lv.map[r][c];
+        if(ch==='W'){grid[r][c]=1;}
+        else if(ch==='B'){grid[r][c]=0;balls.push({col:c,row:r});}
+        else grid[r][c]=0;
+      }
+    }
+    player={col:lv.player.col,row:lv.player.row,dir:'right',moveTimer:0,MOVE_DELAY:145,animTick:0};
+    enemies=lv.enemies.map(function(e){return{col:e.col,row:e.row,dx:e.dx,dy:e.dy,moveTimer:0,MOVE_DELAY:340+Math.random()*80,animTick:0};});
+    invTimer=0; deathTimer=0;
+  }
+
+  function startGame(){ lives=3; parseLevel(0); gameScreen='play'; }
+
+  /* ── update ── */
+  function update(dt){
+    animF+=dt;
+    if(gameScreen==='title'){
+      if(consume('Enter')||consume('Space'))startGame();
+      return;
+    }
+    if(gameScreen==='levelwin'){
+      if(consume('Enter')||consume('Space')){
+        if(level+1<LEVELS.length){parseLevel(level+1);gameScreen='play';}
+        else gameScreen='win';
+      }
+      return;
+    }
+    if(gameScreen==='dead'){
+      deathTimer+=dt;
+      if(deathTimer>1800&&(consume('Enter')||consume('Space')||consume('KeyR'))){
+        if(lives>0){parseLevel(level);gameScreen='play';}else gameScreen='gameover';
+      }
+      return;
+    }
+    if(gameScreen==='gameover'){ if(consume('Enter')||consume('Space')||consume('KeyR'))startGame(); return; }
+    if(gameScreen==='win'){ if(consume('Enter')||consume('Space'))gameScreen='title'; return; }
+
+    /* play */
+    if(consume('KeyR')){parseLevel(level);return;}
+    invTimer=Math.max(0,invTimer-dt);
+    updatePlayer(dt); updateEnemies(dt);
+    balls=balls.filter(function(b){return!(b.col===player.col&&b.row===player.row);});
+    if(invTimer===0){
+      var hit=enemies.some(function(e){return e.col===player.col&&e.row===player.row;});
+      if(hit){lives--;deathTimer=0;gameScreen='dead';}
+    }
+    if(balls.length===0)gameScreen='levelwin';
+  }
+
+  function updatePlayer(dt){
+    var p=player, wantDir=null;
+    if(keys['ArrowUp']||keys['KeyW'])wantDir='up';
+    if(keys['ArrowDown']||keys['KeyS'])wantDir='down';
+    if(keys['ArrowLeft']||keys['KeyA'])wantDir='left';
+    if(keys['ArrowRight']||keys['KeyD'])wantDir='right';
+    if(wantDir)p.dir=wantDir;
+    p.moveTimer+=dt;
+    if(wantDir&&p.moveTimer>=p.MOVE_DELAY){
+      p.moveTimer=0;
+      var d=dirDelta(p.dir),nc=p.col+d.dc,nr=p.row+d.dr;
+      if(!isSolid(nc,nr)){p.col=nc;p.row=nr;p.animTick=(p.animTick+1)%4;}
+    }
+    if(consume('Space')||consume('KeyZ')){
+      var d2=dirDelta(p.dir),tc=p.col+d2.dc,tr=p.row+d2.dr;
+      if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS){
+        if(grid[tr][tc]===2){grid[tr][tc]=0;}
+        else if(grid[tr][tc]===0){
+          var blocked=enemies.some(function(e){return e.col===tc&&e.row===tr;})||balls.some(function(b){return b.col===tc&&b.row===tr;});
+          if(!blocked)grid[tr][tc]=2;
+        }
+      }
+    }
+  }
+
+  function updateEnemies(dt){
+    enemies.forEach(function(e){
+      e.moveTimer+=dt;
+      if(e.moveTimer<e.MOVE_DELAY)return;
+      e.moveTimer=0; e.animTick=(e.animTick+1)%4;
+      var nc=e.col+e.dx,nr=e.row+e.dy;
+      if(isSolid(nc,nr)){
+        var opts=[{dx:-e.dx,dy:-e.dy},{dx:-e.dx,dy:e.dy},{dx:e.dx,dy:-e.dy}];
+        var moved=false;
+        for(var i=0;i<opts.length;i++){
+          var nnc=e.col+opts[i].dx,nnr=e.row+opts[i].dy;
+          if(!isSolid(nnc,nnr)){e.dx=opts[i].dx;e.dy=opts[i].dy;e.col=nnc;e.row=nnr;moved=true;break;}
+        }
+        if(!moved){e.dx=-e.dx;e.dy=-e.dy;}
+      }else{e.col=nc;e.row=nr;}
+    });
+  }
+
+  /* ── draw helpers ── */
+  function drawShield(x,y,r){
+    ctx.fillStyle=NAVY; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=GOLD; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle=GOLD; ctx.fillRect(x-r*.55,y-r*.55,r*1.1,r*.22);
+    ctx.beginPath(); ctx.arc(x,y-r*.44,r*.25,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x+r*.55,y-r*.44); ctx.lineTo(x+r*.55,y-r*.1); ctx.stroke();
+    ctx.fillStyle=GOLD; ctx.font='bold '+Math.floor(r*.6)+'px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('PH',x,y+r*.2);
+  }
+
+  function drawPlayerSprite(cx,cy,ci,dir,tick,alpha){
+    ctx.save(); ctx.globalAlpha=alpha;
+    var s=CS*.82;
+    ctx.fillStyle='rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(cx,cy+s*.42,s*.27,s*.08,0,0,Math.PI*2); ctx.fill();
+    var lo=(tick%2===0)?s*.08:-s*.08;
+    ctx.fillStyle='#1a1a2e'; ctx.fillRect(cx-s*.17,cy+s*.15,s*.15,s*.28+lo); ctx.fillRect(cx+s*.02,cy+s*.15,s*.15,s*.28-lo);
+    ctx.fillStyle='#111'; ctx.fillRect(cx-s*.2,cy+s*.38+lo,s*.2,s*.08); ctx.fillRect(cx+s*.01,cy+s*.38-lo,s*.2,s*.08);
+    ctx.fillStyle=NAVY; ctx.beginPath(); ctx.roundRect(cx-s*.28,cy-s*.1,s*.56,s*.3,s*.06); ctx.fill();
+    ctx.fillStyle=GOLD; ctx.font='bold '+Math.floor(s*.22)+'px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(CHARS[ci].num,cx,cy+s*.02);
+    ctx.fillStyle=NAVY; ctx.fillRect(cx-s*.42,cy-s*.05,s*.14,s*.22); ctx.fillRect(cx+s*.28,cy-s*.05,s*.14,s*.22);
+    ctx.fillStyle='#e8c49a'; ctx.beginPath(); ctx.arc(cx-s*.35,cy+s*.19,s*.07,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+s*.35,cy+s*.19,s*.07,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy-s*.24,s*.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#222';
+    var ey=cy-s*.26;
+    if(dir==='left'){ctx.beginPath();ctx.arc(cx-s*.12,ey,s*.04,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx-s*.04,ey,s*.04,0,Math.PI*2);ctx.fill();}
+    else if(dir==='right'){ctx.beginPath();ctx.arc(cx+s*.04,ey,s*.04,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+s*.12,ey,s*.04,0,Math.PI*2);ctx.fill();}
+    else{ctx.beginPath();ctx.arc(cx-s*.07,ey,s*.04,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+s*.07,ey,s*.04,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='#2a1a0a'; ctx.beginPath(); ctx.arc(cx,cy-s*.34,s*.18,Math.PI,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawEnemySprite(cx,cy,tick){
+    var s=CS*.78; ctx.save();
+    ctx.fillStyle='rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(cx,cy+s*.42,s*.25,s*.07,0,0,Math.PI*2); ctx.fill();
+    var lo=(tick%2===0)?s*.08:-s*.08;
+    ctx.fillStyle='#1a1a2e'; ctx.fillRect(cx-s*.15,cy+s*.15,s*.13,s*.25+lo); ctx.fillRect(cx+s*.02,cy+s*.15,s*.13,s*.25-lo);
+    ctx.fillStyle=ERED; ctx.beginPath(); ctx.roundRect(cx-s*.25,cy-s*.1,s*.5,s*.27,s*.05); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.3)'; ctx.fillRect(cx-s*.05,cy-s*.1,s*.1,s*.27);
+    ctx.fillStyle=ERED; ctx.fillRect(cx-s*.38,cy-s*.05,s*.12,s*.2); ctx.fillRect(cx+s*.26,cy-s*.05,s*.12,s*.2);
+    ctx.fillStyle='#e8c49a'; ctx.beginPath(); ctx.arc(cx,cy-s*.22,s*.18,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#900'; ctx.beginPath(); ctx.arc(cx-s*.07,cy-s*.24,s*.04,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+s*.07,cy-s*.24,s*.04,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-s*.13,cy-s*.31); ctx.lineTo(cx-s*.02,cy-s*.28); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+s*.13,cy-s*.31); ctx.lineTo(cx+s*.02,cy-s*.28); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawBall(cx,cy){
+    var r=CS*.3;
+    ctx.fillStyle='#f0f0f0'; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#222';
+    ctx.beginPath(); ctx.arc(cx,cy,r*.24,0,Math.PI*2); ctx.fill();
+    for(var i=0;i<5;i++){
+      var a=Math.PI*1.5+i*Math.PI*.4;
+      ctx.beginPath(); ctx.arc(cx+Math.cos(a)*r*.38,cy+Math.sin(a)*r*.38,r*.16,0,Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle='rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(cx-r*.28,cy-r*.28,r*.14,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawNet(col,row){
+    var x=col*CS,y=row*CS+HUD_H;
+    ctx.fillStyle='rgba(255,255,255,.16)'; ctx.fillRect(x+1,y+1,CS-2,CS-2);
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1; ctx.strokeRect(x+2,y+2,CS-4,CS-4);
+    ctx.strokeStyle='rgba(255,255,255,.25)';
+    for(var i=1;i<4;i++){
+      ctx.beginPath();ctx.moveTo(x+i*(CS/4),y+2);ctx.lineTo(x+i*(CS/4),y+CS-2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+2,y+i*(CS/4));ctx.lineTo(x+CS-2,y+i*(CS/4));ctx.stroke();
+    }
+  }
+
+  function drawWall(col,row){
+    var x=col*CS,y=row*CS+HUD_H;
+    ctx.fillStyle='#091d3e'; ctx.fillRect(x,y,CS,CS);
+    ctx.fillStyle='#0d2a5a'; ctx.fillRect(x+2,y+2,CS-4,CS*.28);
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1; ctx.strokeRect(x+1,y+1,CS-2,CS-2);
+    ctx.beginPath(); ctx.moveTo(x,y+CS*.5); ctx.lineTo(x+CS,y+CS*.5); ctx.stroke();
+  }
+
+  function drawField(){
+    ctx.fillStyle='#1a4a1a'; ctx.fillRect(0,HUD_H,GW,ROWS*CS);
+    for(var c=0;c<COLS;c++){
+      if(c%2===0){ctx.fillStyle='rgba(0,0,0,.05)';ctx.fillRect(c*CS,HUD_H,CS,ROWS*CS);}
+    }
+    ctx.strokeStyle='rgba(255,255,255,.035)'; ctx.lineWidth=1;
+    for(var c2=0;c2<=COLS;c2++){ctx.beginPath();ctx.moveTo(c2*CS,HUD_H);ctx.lineTo(c2*CS,HUD_H+ROWS*CS);ctx.stroke();}
+    for(var r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,HUD_H+r*CS);ctx.lineTo(GW,HUD_H+r*CS);ctx.stroke();}
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(GW/2,HUD_H+ROWS*CS/2,CS*1.8,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(GW/2,HUD_H);ctx.lineTo(GW/2,HUD_H+ROWS*CS);ctx.stroke();
+  }
+
+  function drawHUD(){
+    ctx.fillStyle='#040d1a'; ctx.fillRect(0,0,GW,HUD_H);
+    ctx.fillStyle=GOLD; ctx.fillRect(0,HUD_H-2,GW,2);
+    drawShield(28,HUD_H/2,16);
+    ctx.fillStyle=GOLD; ctx.font='bold 13px monospace'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('NIVEL '+(level+1),50,HUD_H*.3);
+    ctx.fillStyle='rgba(200,160,48,.7)'; ctx.font='11px monospace';
+    ctx.fillText(CHARS[LEVELS[level].char].name.toUpperCase(),50,HUD_H*.72);
+    ctx.fillStyle='#fff'; ctx.font='bold 13px monospace'; ctx.textAlign='center';
+    ctx.fillText('⚽ x'+balls.length,GW/2,HUD_H/2);
+    for(var i=0;i<3;i++){
+      var lx=GW-26-i*26,ly=HUD_H/2;
+      if(i<lives){
+        ctx.fillStyle='#f0f0f0'; ctx.beginPath(); ctx.arc(lx,ly,8,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(lx,ly,3.5,0,Math.PI*2); ctx.fill();
+      }else{ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(lx,ly,8,0,Math.PI*2);ctx.stroke();}
+    }
+  }
+
+  function drawGameplay(){
+    drawField();
+    for(var r=0;r<ROWS;r++) for(var c=0;c<COLS;c++){
+      if(grid[r][c]===1)drawWall(c,r);
+      else if(grid[r][c]===2)drawNet(c,r);
+    }
+    balls.forEach(function(b){
+      drawBall(b.col*CS+CS/2,b.row*CS+CS/2+HUD_H+Math.sin(animF/200+b.col+b.row)*3);
+    });
+    var alpha=invTimer>0?(Math.floor(invTimer/80)%2===0?.3:1):1;
+    drawPlayerSprite(player.col*CS+CS/2,player.row*CS+CS/2+HUD_H,LEVELS[level].char,player.dir,player.animTick,alpha);
+    enemies.forEach(function(e){drawEnemySprite(e.col*CS+CS/2,e.row*CS+CS/2+HUD_H,e.animTick);});
+    var d2=dirDelta(player.dir),tc=player.col+d2.dc,tr=player.row+d2.dr;
+    if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS&&grid[tr][tc]===0){
+      ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(tc*CS+2,tr*CS+2+HUD_H,CS-4,CS-4);
+    }
+    drawHUD();
+  }
+
+  function drawTitle(){
+    ctx.fillStyle='#040d1a'; ctx.fillRect(0,0,GW,GH);
+    ctx.fillStyle='rgba(255,255,255,.4)';
+    for(var i=0;i<50;i++){ctx.fillRect((i*137.5)%GW,(i*79.3)%GH,1,1);}
+    drawShield(GW/2,GH*.2,48);
+    ctx.fillStyle=GOLD; ctx.font='bold 40px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('PLAYA HONDA FC',GW/2,GH*.46);
+    ctx.fillStyle='#fff'; ctx.font='16px monospace'; ctx.fillText('EL JUEGO',GW/2,GH*.55);
+    if(Math.floor(animF/500)%2===0){
+      ctx.fillStyle='rgba(200,160,48,.9)'; ctx.font='13px monospace';
+      ctx.fillText('▶  PRESIONÁ ENTER PARA JUGAR  ◀',GW/2,GH*.72);
+    }
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font='10px monospace';
+    ctx.fillText('WASD/Flechas: mover  |  Space: red  |  R: reiniciar',GW/2,GH*.87);
+  }
+
+  function drawOverlay(color,alpha){ ctx.fillStyle=color; ctx.globalAlpha=alpha; ctx.fillRect(0,0,GW,GH); ctx.globalAlpha=1; }
+
+  function drawLevelWin(){
+    drawGameplay(); drawOverlay('rgba(4,13,26,1)',.8);
+    ctx.fillStyle=GOLD; ctx.font='bold 34px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('¡NIVEL '+(level+1)+' COMPLETADO!',GW/2,GH*.34);
+    drawPlayerSprite(GW/2,GH*.52,LEVELS[level].char,'right',Math.floor(animF/150)%4,1);
+    ctx.fillStyle='#fff'; ctx.font='16px monospace';
+    ctx.fillText('¡ '+CHARS[LEVELS[level].char].name.toUpperCase()+' ANOTA !',GW/2,GH*.68);
+    if(Math.floor(animF/500)%2===0){
+      ctx.fillStyle=GOLD; ctx.font='13px monospace';
+      ctx.fillText(level+1<LEVELS.length?'ENTER → Nivel '+(level+2):'ENTER → Final',GW/2,GH*.8);
+    }
+  }
+
+  function drawDead(){
+    drawGameplay(); drawOverlay('rgba(4,13,26,1)',.78);
+    ctx.fillStyle=ERED; ctx.font='bold 44px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    var shx=deathTimer<600?(Math.random()*6-3):0;
+    ctx.fillText('¡ PERDISTE !',GW/2+shx,GH*.38);
+    ctx.fillStyle='rgba(200,160,48,.85)'; ctx.font='18px monospace';
+    ctx.fillText('Vidas restantes: '+lives,GW/2,GH*.52);
+    if(deathTimer>1800&&Math.floor(animF/500)%2===0){
+      ctx.fillStyle='#fff'; ctx.font='13px monospace'; ctx.fillText('ENTER / SPACE para continuar',GW/2,GH*.66);
+    }
+  }
+
+  function drawGameOver(){
+    ctx.fillStyle='#040d1a'; ctx.fillRect(0,0,GW,GH);
+    drawShield(GW/2,GH*.24,38);
+    ctx.fillStyle=ERED; ctx.font='bold 40px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('GAME OVER',GW/2,GH*.47);
+    ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='14px monospace';
+    ctx.fillText('¡El rival ganó esta vez!',GW/2,GH*.59);
+    if(Math.floor(animF/500)%2===0){ctx.fillStyle=GOLD;ctx.font='13px monospace';ctx.fillText('ENTER para volver a intentar',GW/2,GH*.72);}
+  }
+
+  function drawWin(){
+    ctx.fillStyle='#040d1a'; ctx.fillRect(0,0,GW,GH);
+    for(var i=0;i<70;i++){
+      var t2=(animF*.001+i*.3)%1,cx2=(i*137.5+animF*.05)%GW,cy2=t2*GH;
+      ctx.fillStyle=i%3===0?GOLD:i%3===1?'#fff':NAVY; ctx.fillRect(cx2,cy2,4,4);
+    }
+    drawShield(GW/2,GH*.16,48);
+    ctx.fillStyle=GOLD; ctx.font='bold 32px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('¡ CAMPEONES !',GW/2,GH*.44);
+    ctx.fillStyle='#fff'; ctx.font='bold 16px monospace'; ctx.fillText('LIGA UNIVERSITARIA 2026',GW/2,GH*.54);
+    ctx.fillStyle='rgba(200,160,48,.8)'; ctx.font='13px monospace'; ctx.fillText('PLAYA HONDA UNIVERSITARIO',GW/2,GH*.63);
+    drawPlayerSprite(GW/2-55,GH*.79,0,'right',Math.floor(animF/180)%4,1);
+    drawPlayerSprite(GW/2+55,GH*.79,1,'left',Math.floor(animF/180)%4,1);
+    ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font='10px monospace';
+    ctx.fillText('Algorta #11',GW/2-55,GH*.9); ctx.fillText('Rodriguez #6',GW/2+55,GH*.9);
+    if(Math.floor(animF/600)%2===0){ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='11px monospace';ctx.fillText('ENTER para volver al título',GW/2,GH*.96);}
+  }
+
+  /* ── game loop ── */
+  function loop(ts){
+    if(!running)return;
+    var dt=Math.min(ts-lastT,50); lastT=ts; animF+=dt;
+    update(dt);
+    ctx.fillStyle='#040d1a'; ctx.fillRect(0,0,GW,GH);
+    if(gameScreen==='title')drawTitle();
+    else if(gameScreen==='play')drawGameplay();
+    else if(gameScreen==='levelwin')drawLevelWin();
+    else if(gameScreen==='dead')drawDead();
+    else if(gameScreen==='gameover')drawGameOver();
+    else if(gameScreen==='win')drawWin();
+    for(var k in jp)delete jp[k];
+    rafId=requestAnimationFrame(loop);
+  }
+
+  /* ── key handling (only when modal open) ── */
+  function onKeyDown(e){
+    if(!running)return;
+    if(!keys[e.code])jp[e.code]=true;
+    keys[e.code]=true;
+    if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.code)>=0)e.preventDefault();
+  }
+  function onKeyUp(e){ keys[e.code]=false; }
+
+  /* ── public API ── */
+  function init(){
+    canvas=document.getElementById('pj-canvas');
+    ctx=canvas.getContext('2d');
+    canvas.width=GW; canvas.height=GH;
+    // Scale display
+    var maxW=Math.min(window.innerWidth*.96,820);
+    var maxH=Math.min(window.innerHeight*.72,660);
+    var s=Math.min(maxW/GW, maxH/GH);
+    canvas.style.width=Math.floor(GW*s)+'px';
+    canvas.style.height=Math.floor(GH*s)+'px';
+  }
+
+  function open(){
+    document.getElementById('playa-juego-modal').classList.add('open');
+    document.addEventListener('keydown',onKeyDown);
+    document.addEventListener('keyup',onKeyUp);
+    if(!running){
+      running=true; gameScreen='title'; animF=0; lastT=performance.now();
+      rafId=requestAnimationFrame(loop);
+    }
+  }
+
+  function close(){
+    running=false;
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    document.removeEventListener('keydown',onKeyDown);
+    document.removeEventListener('keyup',onKeyUp);
+    keys={}; jp={};
+    document.getElementById('playa-juego-modal').classList.remove('open');
+  }
+
+  return{init:init,open:open,close:close};
+})();
+
+function abrirJuego(){ PlayaJuego.init(); PlayaJuego.open(); }
+function cerrarJuego(){ PlayaJuego.close(); }
 
 </script>
 
