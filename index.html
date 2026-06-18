@@ -83,7 +83,7 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
     body{font-family:'Barlow',sans-serif;background:var(--fondo);color:var(--blanco);overflow-x:hidden;}
-    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;background:rgba(4,15,50,0.97);border-bottom:1px solid rgba(200,151,43,0.15);}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;background:rgba(4,15,50,0.97);border-bottom:1px solid rgba(255,255,255,.1);}
     .nav-logo{display:flex;align-items:center;gap:.75rem;text-decoration:none;}
     .nav-escudo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--dorado);}
     .nav-logo span{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--dorado);letter-spacing:.08em;white-space:nowrap;}
@@ -216,7 +216,7 @@
     }
     .ticker{background:linear-gradient(90deg,#1a3a8f 0%,#2050b8 50%,#1a3a8f 100%);overflow:hidden;padding:.65rem 0;white-space:nowrap;}
     .ticker-inner{display:inline-block;animation:ticker 35s linear infinite;}
-    .ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--negro);padding:0 3rem;}
+    .ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:#ffffff;padding:0 3rem;}
     .sep{opacity:.4;}
     @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
     section{padding:5.5rem 4rem;}
@@ -235,6 +235,9 @@
     /* Botón flotante newsletter */
     .fab-newsletter{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dorado-light);color:var(--blanco);border:none;border-radius:50px;padding:.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s;z-index:9998;}
     .fab-newsletter:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.6);}
+    .fab-install{position:fixed;bottom:4.5rem;right:1.5rem;background:#071428;color:#ffffff;border:1px solid rgba(255,255,255,.25);border-radius:50px;padding:.6rem 1.3rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:none;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s,opacity .3s;z-index:9997;}
+    .fab-install:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.6);background:rgba(255,255,255,.1);}
+    .fab-install.visible{display:flex;}
     .resultados-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:rgba(255,255,255,.04);}
     .resultado-card{background:var(--card-bg);padding:1.5rem;position:relative;overflow:hidden;transition:background var(--transition),transform var(--transition),box-shadow var(--transition);}
     .resultado-card:hover{background:#0d2255;transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
@@ -882,7 +885,7 @@
 .part-content{display:none;}
 .part-content.active{display:block;}
 .part-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
-.part-subtitulo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dorado);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid rgba(200,151,43,.2);}
+.part-subtitulo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dorado);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid rgba(255,255,255,.12);}
 .part-list{display:flex;flex-direction:column;gap:2px;}
 .part-row{display:grid;grid-template-columns:90px 1fr 70px;align-items:center;gap:.8rem;padding:.6rem .8rem;background:#0a1d4a;border-left:3px solid transparent;font-size:.82rem;}
 .part-row.jugado.win{border-left-color:#4ade80;}
@@ -1105,10 +1108,10 @@ function showPartidos(name) {
 .tabla thead th:nth-child(2){text-align:left;}
 .tabla tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;}
 .tabla tbody tr:hover{background:rgba(255,255,255,.03);}
-.tabla tbody tr.playa{background:rgba(255,255,255,.12);border-left:3px solid var(--dorado);}
-.tabla tbody tr.playa:hover{background:rgba(27,58,107,.45);}
+.tabla tbody tr.playa{background:rgba(255,255,255,.18);border-left:4px solid var(--dorado);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+.tabla tbody tr.playa:hover{background:rgba(255,255,255,.22);}
 .tabla tbody td{padding:.65rem .8rem;text-align:center;color:var(--gris);}
-.tabla tbody td:nth-child(2){text-align:left;color:var(--blanco);font-weight:500;}
+.tabla tbody td:nth-child(2){text-align:left;color:var(--blanco);font-weight:500;}.tabla tbody tr.playa td:nth-child(2){color:#ffffff;font-weight:700;letter-spacing:.02em;}
 .tabla tbody td.pts{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--dorado);font-weight:700;}
 </style>
 <script>
@@ -2752,12 +2755,12 @@ function entrarAlSitio() {
 }
 .resultado-card:hover {
   background:
-    linear-gradient(#111827, #111827) padding-box,
+    linear-gradient(#0d2255, #0d2255) padding-box,
     conic-gradient(from var(--border-angle),
-      rgba(200,151,43,.9)  0%,
-      rgba(96,165,250,.6) 30%,
-      rgba(200,151,43,.9) 60%,
-      rgba(96,165,250,.6) 100%
+      rgba(255,255,255,.7)  0%,
+      rgba(200,220,255,.4) 30%,
+      rgba(255,255,255,.7) 60%,
+      rgba(200,220,255,.4) 100%
     ) border-box !important;
   animation: borderSpin 2.5s linear infinite;
 }
@@ -2832,10 +2835,10 @@ nav.scrolled {
 /* ── 8. Marcador más prominente en cards ── */
 .res-score {
   font-size: 2.6rem !important;
-  background: rgba(200,151,43,.12) !important;
+  background: rgba(255,255,255,.08) !important;
   padding: .3rem 1rem !important;
   letter-spacing: .04em;
-  text-shadow: 0 0 20px rgba(200,151,43,.3);
+  text-shadow: 0 0 20px rgba(255,255,255,.2);
 }
 
 /* ── 9. Fila Playa Honda con gradiente lateral ── */
@@ -5014,6 +5017,7 @@ window.abrirBuscador = function(e) {
 })();
 </script>
 
+<button class="fab-install" id="fab-install" aria-label="Instalar app">⬇ INSTALAR APP</button>
 <button class="fab-newsletter" id="fab-newsletter" aria-label="Suscribirse al newsletter">✉ SUSCRIBIRME</button>
 
 <!-- ===== ANIMACIONES 3D — PLAYA HONDA UNIVERSITARIO ===== -->
@@ -5152,6 +5156,30 @@ window.abrirBuscador = function(e) {
     card.style.transition = 'transform .5s cubic-bezier(.23,1,.32,1)';
     card.style.transform  = '';
   }, { passive: true });
+})();
+
+/* ── PWA Install prompt ── */
+(function(){
+  var deferredPrompt = null;
+  var btn = document.getElementById('fab-install');
+  if (!btn) return;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    btn.classList.add('visible');
+  });
+  btn.addEventListener('click', function() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(choice) {
+      deferredPrompt = null;
+      btn.classList.remove('visible');
+    });
+  });
+  window.addEventListener('appinstalled', function() {
+    btn.classList.remove('visible');
+    deferredPrompt = null;
+  });
 })();
 </script>
 
