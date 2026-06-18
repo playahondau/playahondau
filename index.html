@@ -5403,23 +5403,23 @@ var PlayaJuego = (function(){
   var NAVY='#0d2a5a',GOLD='#c8a030',ERED='#c0242b';
   var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
   var keys={},jp={};
-  var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer;
+  var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer,levelTimer;
   var escudoImg=null;
 
   var CHARS=[{name:'Algorta',num:'11'},{name:'Rodriguez',num:'6'}];
 
   var LEVELS=[
-    { char:0, player:{col:1,row:1},
+    { char:0, time:90, player:{col:1,row:1},
       map:['WWWWWWWWWWWWWWWWW','W...............W','W.WWW.....WWW...W','W...............W','W...B..W....B...W','W......W........W','W......W........W','W...............W','W...B...........W','W..........WWW..W','W...............W','W...............W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:5,dx:1,dy:0},{col:14,row:3,dx:0,dy:1}]
+      enemies:[{col:8,row:5,dx:1,dy:0,type:'bouncer'},{col:14,row:3,dx:0,dy:1,type:'chaser'}]
     },
-    { char:1, player:{col:1,row:1},
+    { char:1, time:80, player:{col:1,row:1},
       map:['WWWWWWWWWWWWWWWWW','W...............W','W.W.W.WWW.W.W..BW','W...............W','WB.WWW...WWW....W','W...............W','W...W.B.B.W.....W','W...W.....W.....W','WB.WWW...WWW....W','W...............W','W.W.W.WWW.W.W..BW','W.....B.........W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:1,dx:1,dy:0},{col:8,row:11,dx:-1,dy:0},{col:1,row:6,dx:0,dy:1}]
+      enemies:[{col:8,row:1,dx:1,dy:0,type:'bouncer'},{col:8,row:11,dx:-1,dy:0,type:'bouncer'},{col:1,row:6,dx:0,dy:1,type:'chaser'}]
     },
-    { char:0, player:{col:1,row:1},
+    { char:0, time:70, player:{col:1,row:1},
       map:['WWWWWWWWWWWWWWWWW','W.B.W.....W.B...W','W.W.W.WWW.W.W.WWW','W.W...W.W...W...W','W.WWWWW.WWWWW.W.W','W...............W','W.WWWWW.WWWWW.W.W','W.W...W.W...W...W','W.W.W.WWW.W.W.WWW','W.B.W.....W.B...W','W...W.W.W.W.....W','WB..........B...W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:1,dx:1,dy:0},{col:15,row:6,dx:0,dy:1},{col:8,row:11,dx:-1,dy:0},{col:1,row:6,dx:0,dy:-1}]
+      enemies:[{col:8,row:1,dx:1,dy:0,type:'bouncer'},{col:15,row:6,dx:0,dy:1,type:'chaser'},{col:8,row:11,dx:-1,dy:0,type:'bouncer'},{col:1,row:6,dx:0,dy:-1,type:'chaser'}]
     }
   ];
 
@@ -5445,9 +5445,10 @@ var PlayaJuego = (function(){
     var sc=lv.player.col, sr=lv.player.row;
     player={col:sc,row:sr,px:sc*CS+CS/2,py:sr*CS+CS/2,dir:'right',moveTimer:0,animTick:0,moving:false};
     enemies=lv.enemies.map(function(e){
-      return{col:e.col,row:e.row,px:e.col*CS+CS/2,py:e.row*CS+CS/2,dx:e.dx,dy:e.dy,moveTimer:0,MOVE_DELAY:380+Math.random()*80,animTick:0};
+      return{col:e.col,row:e.row,px:e.col*CS+CS/2,py:e.row*CS+CS/2,dx:e.dx,dy:e.dy,
+             type:e.type||'bouncer',moveTimer:0,MOVE_DELAY:(e.type==='chaser'?480:360)+Math.random()*80,animTick:0};
     });
-    invTimer=0; deathTimer=0;
+    invTimer=0; deathTimer=0; levelTimer=lv.time*1000;
   }
 
   function startGame(){ lives=3; parseLevel(0); gameScreen='play'; }
@@ -5473,6 +5474,10 @@ var PlayaJuego = (function(){
 
     if(consume('KeyR')){parseLevel(level);return;}
     invTimer=Math.max(0,invTimer-dt);
+
+    /* timer countdown */
+    levelTimer-=dt;
+    if(levelTimer<=0){lives--;deathTimer=0;gameScreen='dead';return;}
 
     updatePlayer(dt);
     updateEnemies(dt);
@@ -5503,8 +5508,11 @@ var PlayaJuego = (function(){
       var d2=dirDelta(p.dir),tc=p.col+d2.dc,tr=p.row+d2.dr;
       if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS){
         if(grid[tr][tc]===2){
-          /* romper solo el primero */
-          grid[tr][tc]=0;
+          /* romper toda la fila continua de redes */
+          var bc=tc,br=tr;
+          while(bc>=0&&bc<COLS&&br>=0&&br<ROWS&&grid[br][bc]===2){
+            grid[br][bc]=0; bc+=d2.dc; br+=d2.dr;
+          }
         } else if(grid[tr][tc]===0){
           /* llenar toda la fila hasta la primera pared/red/pelota/enemigo */
           var fc=tc,fr=tr;
@@ -5525,16 +5533,33 @@ var PlayaJuego = (function(){
       e.moveTimer+=dt;
       if(e.moveTimer<e.MOVE_DELAY)return;
       e.moveTimer=0; e.animTick=(e.animTick+1)%4;
-      var nc=e.col+e.dx,nr=e.row+e.dy;
-      if(isSolid(nc,nr)){
-        var opts=[{dx:-e.dx,dy:-e.dy},{dx:-e.dx,dy:e.dy},{dx:e.dx,dy:-e.dy}];
-        var moved=false;
-        for(var i=0;i<opts.length;i++){
-          var nnc=e.col+opts[i].dx,nnr=e.row+opts[i].dy;
-          if(!isSolid(nnc,nnr)){e.dx=opts[i].dx;e.dy=opts[i].dy;e.col=nnc;e.row=nnr;moved=true;break;}
+
+      if(e.type==='chaser'){
+        /* perseguidor: calcula dirección hacia el jugador cada paso */
+        var ddx=player.col-e.col, ddy=player.row-e.row;
+        var tryOrder=[];
+        if(Math.abs(ddx)>=Math.abs(ddy)){
+          tryOrder=[{dc:ddx>0?1:-1,dr:0},{dc:0,dr:ddy>0?1:-1},{dc:ddx>0?-1:1,dr:0},{dc:0,dr:ddy>0?-1:1}];
+        }else{
+          tryOrder=[{dc:0,dr:ddy>0?1:-1},{dc:ddx>0?1:-1,dr:0},{dc:0,dr:ddy>0?-1:1},{dc:ddx>0?-1:1,dr:0}];
         }
-        if(!moved){e.dx=-e.dx;e.dy=-e.dy;}
-      }else{e.col=nc;e.row=nr;}
+        for(var t=0;t<tryOrder.length;t++){
+          var nc2=e.col+tryOrder[t].dc,nr2=e.row+tryOrder[t].dr;
+          if(!isSolid(nc2,nr2)){e.col=nc2;e.row=nr2;break;}
+        }
+      } else {
+        /* rebotador: dirección fija, rebota en paredes */
+        var nc=e.col+e.dx,nr=e.row+e.dy;
+        if(isSolid(nc,nr)){
+          var opts=[{dx:-e.dx,dy:-e.dy},{dx:-e.dx,dy:e.dy},{dx:e.dx,dy:-e.dy}];
+          var moved=false;
+          for(var i=0;i<opts.length;i++){
+            var nnc=e.col+opts[i].dx,nnr=e.row+opts[i].dy;
+            if(!isSolid(nnc,nnr)){e.dx=opts[i].dx;e.dy=opts[i].dy;e.col=nnc;e.row=nnr;moved=true;break;}
+          }
+          if(!moved){e.dx=-e.dx;e.dy=-e.dy;}
+        }else{e.col=nc;e.row=nr;}
+      }
     });
   }
 
@@ -5610,21 +5635,22 @@ var PlayaJuego = (function(){
     ctx.restore();
   }
 
-  function drawEnemySprite(cx,cy,tick){
+  function drawEnemySprite(cx,cy,tick,type){
     var s=CS*.84; ctx.save();
+    var jerseyColor=type==='chaser'?'#e07800':ERED; /* naranja=perseguidor, rojo=rebotador */
     ctx.fillStyle='rgba(0,0,0,.25)';
     ctx.beginPath(); ctx.ellipse(cx,cy+s*.44,s*.28,s*.08,0,0,Math.PI*2); ctx.fill();
     var lo=(tick%2===0)?s*.1:-s*.1;
     ctx.fillStyle='#0a0a1a';
     ctx.fillRect(cx-s*.16,cy+s*.14,s*.14,s*.28+lo);
     ctx.fillRect(cx+s*.02,cy+s*.14,s*.14,s*.28-lo);
-    /* red jersey */
-    ctx.fillStyle=ERED;
+    /* jersey */
+    ctx.fillStyle=jerseyColor;
     ctx.beginPath(); ctx.roundRect(cx-s*.27,cy-s*.11,s*.54,s*.3,s*.06); ctx.fill();
     /* white stripe */
     ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(cx-s*.05,cy-s*.11,s*.1,s*.3);
     /* arms */
-    ctx.fillStyle=ERED;
+    ctx.fillStyle=jerseyColor;
     ctx.fillRect(cx-s*.4,cy-s*.06,s*.13,s*.22); ctx.fillRect(cx+s*.27,cy-s*.06,s*.13,s*.22);
     /* head */
     ctx.fillStyle='#e8c49a';
@@ -5751,13 +5777,20 @@ var PlayaJuego = (function(){
     ctx.fillStyle='rgba(200,160,48,.75)'; ctx.font='bold 11px monospace';
     ctx.fillText(CHARS[LEVELS[level].char].name.toUpperCase(),55,HUD_H*.72);
 
-    /* balls counter — center */
+    /* balls counter — left-center */
     var bc=balls.length;
     ctx.textAlign='center';
     ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='10px monospace';
-    ctx.fillText('PELOTAS',GW/2,HUD_H*.25);
-    ctx.fillStyle='#fff'; ctx.font='bold 22px monospace';
-    ctx.fillText(bc,GW/2,HUD_H*.7);
+    ctx.fillText('⚽ '+bc,GW*0.42,HUD_H*.5);
+
+    /* timer — right-center */
+    var secs=Math.max(0,Math.ceil(levelTimer/1000));
+    var timerWarn=secs<=15;
+    ctx.fillStyle=timerWarn?(Math.floor(animF/250)%2===0?'#ff4444':'#ffaa00'):'rgba(255,255,255,.85)';
+    ctx.font='bold 22px monospace';
+    ctx.fillText(secs,GW*0.58,HUD_H*.5);
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font='10px monospace';
+    ctx.fillText('seg',GW*0.58,HUD_H*.75);
 
     /* lives — right side */
     ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='10px monospace'; ctx.textAlign='right';
@@ -5795,7 +5828,7 @@ var PlayaJuego = (function(){
       ctx.strokeStyle='rgba(100,180,255,.35)'; ctx.lineWidth=2; ctx.strokeRect(tc*CS+1,tr*CS+HUD_H+1,CS-2,CS-2);
     }
     /* enemies */
-    enemies.forEach(function(e){ drawEnemySprite(e.px,e.py+HUD_H,e.animTick); });
+    enemies.forEach(function(e){ drawEnemySprite(e.px,e.py+HUD_H,e.animTick,e.type); });
     /* player */
     var alpha=invTimer>0?(Math.floor(invTimer/80)%2===0?.25:1):1;
     drawPlayerSprite(player.px,player.py+HUD_H,LEVELS[level].char,player.dir,player.animTick,alpha);
