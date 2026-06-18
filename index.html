@@ -677,7 +677,7 @@
   <p class="section-label reveal">Pr&oacute;xima fecha</p>
   <h2 class="section-title reveal">Fixture</h2>
   <div class="gold-line reveal"></div>
-  <div style="text-align:right;margin-bottom:1rem;"><button class="btn-outline" style="font-size:.78rem;padding:.45rem 1.1rem;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--blanco);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;" onclick="generarImagenFixture()">📤 Compartir fixture</button></div>
+  <div style="text-align:right;margin-bottom:1rem;"><button class="btn-outline" style="font-size:.78rem;padding:.45rem 1.1rem;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--blanco);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;" onclick="generarMemeBielsa()">🤳 PROX. FECHA</button></div>
   <div class="fixtures-list" id="fixtures-list"><div class="skel-card skeleton" style="height:70px;margin-bottom:2px;"></div><div class="skel-card skeleton" style="height:70px;margin-bottom:2px;"></div><div class="skel-card skeleton" style="height:70px;"></div></div>
 </section>
 
@@ -3311,7 +3311,7 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 #share-modal{display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.88);align-items:center;justify-content:center;padding:1rem;}
 #share-modal.open{display:flex;}
 #share-modal-inner{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:500px;width:100%;}
-#share-canvas{max-width:min(440px,88vw);max-height:min(440px,88vw);border-radius:6px;display:block;}
+#share-canvas{max-width:min(400px,88vw);max-height:min(72vh,600px);border-radius:6px;display:block;}
 .share-modal-btns{display:flex;gap:.8rem;}
 .share-modal-btns button{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:.12em;padding:.55rem 2rem;border-radius:3px;cursor:pointer;border:none;}
 .share-modal-btns button:first-child{background:var(--dorado);color:#040812;}
@@ -5198,26 +5198,25 @@ window.abrirBuscador = function(e) {
   });
 })();
 
-/* ── Generador imagen PRÓX. FECHA ── */
-function generarImagenFixture() {
+/* ── Meme Bielsa: PROX. FECHA ── */
+function generarMemeBielsa() {
   var filas = window._fixtureRows || [];
   if (!filas.length) { alert('Fixture no cargado aún, intentá en unos segundos.'); return; }
 
-  var W = 1080, rowH = 158, headerH = 300, footerH = 110;
-  var H = headerH + filas.length * rowH + footerH;
   var canvas = document.getElementById('share-canvas');
-  var ctx = canvas.getContext('2d');
-  canvas.width = W; canvas.height = H;
+  var ctx    = canvas.getContext('2d');
+  var bielsa = new Image(), esc = new Image(), pendientes = 2;
 
-  var escudo = new Image();
-  escudo.onload  = function(){ dibujar(escudo); };
-  escudo.onerror = function(){ dibujar(null); };
-  escudo.src = 'escudo.png';
+  function listo() { if (--pendientes === 0) renderizar(); }
+  bielsa.onload = listo; bielsa.onerror = listo;
+  esc.onload    = listo; esc.onerror    = listo;
+  bielsa.src = 'bielsa.jpeg';
+  esc.src    = 'escudo.png';
 
   function colorRival(name) {
     var h = 0;
     for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
-    return 'hsl(' + (Math.abs(h) % 360) + ',60%,36%)';
+    return 'hsl(' + (Math.abs(h) % 360) + ',55%,35%)';
   }
   function siglas(name) {
     var n = name.replace(/playa\s*honda\s*(universitario)?/gi,'').trim();
@@ -5225,100 +5224,150 @@ function generarImagenFixture() {
     var w = n.split(/\s+/).filter(Boolean);
     return w.length >= 2 ? (w[0][0]+w[1][0]).toUpperCase() : n.substring(0,2).toUpperCase();
   }
-  function circulo(name, esPlaya, cx, cy, esc) {
-    ctx.save();
-    ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI*2);
-    if (esPlaya && esc) {
-      ctx.clip(); ctx.drawImage(esc, cx-52, cy-52, 104, 104);
-    } else {
-      ctx.fillStyle = colorRival(name); ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 30px "Bebas Neue",Arial,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(siglas(name), cx, cy);
-    }
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI*2); ctx.stroke();
-  }
-  function shortN(n) { return n.length > 18 ? n.substring(0,17)+'.' : n; }
 
-  function dibujar(esc) {
-    /* fondo */
-    var grd = ctx.createLinearGradient(0,0,0,H);
-    grd.addColorStop(0,'#071428'); grd.addColorStop(1,'#040d22');
-    ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+  function dibujarCard(octx, CW, CH, escImg) {
+    var rowH   = Math.min(Math.floor((CH - 175) / Math.max(filas.length, 1)), 120);
+    var circR  = Math.floor(CW * 0.082);
 
-    /* bordes club: izq azul / der blanco */
-    ctx.fillStyle = '#1a3a8f'; ctx.fillRect(0,0,16,H);
-    ctx.fillStyle = '#ffffff';  ctx.fillRect(W-16,0,16,H);
-    var half = Math.floor((W-32)/2);
-    ctx.fillStyle = '#1a3a8f'; ctx.fillRect(16,0,half,12);      ctx.fillRect(16,H-12,half,12);
-    ctx.fillStyle = '#ffffff';  ctx.fillRect(16+half,0,half,12); ctx.fillRect(16+half,H-12,half,12);
+    var bg = octx.createLinearGradient(0, 0, 0, CH);
+    bg.addColorStop(0, '#08090f'); bg.addColorStop(1, '#040408');
+    octx.fillStyle = bg; octx.fillRect(0, 0, CW, CH);
 
-    /* escudo header */
-    if (esc) {
-      ctx.save(); ctx.beginPath(); ctx.arc(W/2,82,48,0,Math.PI*2);
-      ctx.clip(); ctx.drawImage(esc,W/2-48,34,96,96); ctx.restore();
-    }
+    /* borde izquierdo degradé azul→violeta→rojo (igual al original) */
+    var brd = octx.createLinearGradient(0, 0, 0, CH);
+    brd.addColorStop(0,   '#1a3a8f');
+    brd.addColorStop(0.5, '#7c3aed');
+    brd.addColorStop(1,   '#dc2626');
+    octx.fillStyle = brd; octx.fillRect(0, 0, 7, CH);
 
     /* título */
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 104px "Bebas Neue",Arial,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText('PRÓX. FECHA', W/2, 228);
+    var tsz = Math.floor(CW * 0.118);
+    octx.fillStyle = '#ffffff';
+    octx.font = 'bold ' + tsz + 'px "Bebas Neue",Arial,sans-serif';
+    octx.textAlign = 'left'; octx.textBaseline = 'alphabetic';
+    octx.fillText('PROX. FECHA', 22, Math.floor(CH * 0.13));
 
-    /* subtítulo */
-    ctx.fillStyle = 'rgba(255,255,255,.5)';
-    ctx.font = '600 26px "Barlow Condensed",Arial,sans-serif';
-    ctx.fillText('PLAYA HONDA UNIVERSITARIO  ·  LIGA UNIVERSITARIA', W/2, 266);
+    octx.fillStyle = 'rgba(255,255,255,.42)';
+    octx.font = '600 ' + Math.floor(CW * 0.031) + 'px "Barlow Condensed",Arial,sans-serif';
+    octx.fillText('PLAYA HONDA UNIVERSITARIO', 22, Math.floor(CH * 0.13) + Math.floor(tsz * 0.62));
 
-    /* separador */
-    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(40,282); ctx.lineTo(W-40,282); ctx.stroke();
+    octx.strokeStyle = 'rgba(255,255,255,.1)'; octx.lineWidth = 1;
+    octx.beginPath(); octx.moveTo(16, Math.floor(CH * 0.175)); octx.lineTo(CW - 16, Math.floor(CH * 0.175)); octx.stroke();
 
-    /* filas */
-    filas.forEach(function(f, i) {
-      var y = headerH + i * rowH + rowH/2;
-      if (i > 0) {
-        ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(60, y-rowH/2); ctx.lineTo(W-60, y-rowH/2); ctx.stroke();
+    var startY = Math.floor(CH * 0.19);
+
+    filas.forEach(function(f, idx) {
+      var midY   = startY + idx * rowH + rowH / 2;
+      var cx     = CW / 2;
+      var gap    = CW * 0.29;
+      var localN = f.local      || '';
+      var visitN = f.visitante  || '';
+      var esPlayaL = localN.toLowerCase().indexOf('playa') >= 0;
+      var esPlayaV = visitN.toLowerCase().indexOf('playa') >= 0;
+
+      if (idx > 0) {
+        octx.strokeStyle = 'rgba(255,255,255,.07)'; octx.lineWidth = 1;
+        octx.beginPath(); octx.moveTo(16, midY - rowH / 2); octx.lineTo(CW - 16, midY - rowH / 2); octx.stroke();
       }
 
-      var localN  = f.local    || '';
-      var visitN  = f.visitante || '';
-      var playaIzq = localN.toLowerCase().indexOf('playa') >= 0;
-      var playaDer = visitN.toLowerCase().indexOf('playa') >= 0;
+      function dibujaCirculo(name, esPlaya, x, y) {
+        octx.save(); octx.beginPath(); octx.arc(x, y, circR, 0, Math.PI * 2);
+        if (esPlaya && escImg && escImg.naturalWidth) {
+          octx.clip(); octx.drawImage(escImg, x - circR, y - circR, circR * 2, circR * 2);
+        } else {
+          octx.fillStyle = colorRival(name); octx.fill();
+          octx.fillStyle = '#fff';
+          octx.font = 'bold ' + Math.floor(circR * 0.9) + 'px "Bebas Neue",Arial,sans-serif';
+          octx.textAlign = 'center'; octx.textBaseline = 'middle';
+          octx.fillText(siglas(name), x, y);
+        }
+        octx.restore();
+        octx.strokeStyle = 'rgba(255,255,255,.22)'; octx.lineWidth = 1.5;
+        octx.beginPath(); octx.arc(x, y, circR, 0, Math.PI * 2); octx.stroke();
+      }
 
-      circulo(localN,  playaIzq, 195, y-14, esc);
-      circulo(visitN,  playaDer, 885, y-14, esc);
+      var circY = midY - Math.floor(rowH * 0.08);
+      dibujaCirculo(localN, esPlayaL, cx - gap, circY);
+      dibujaCirculo(visitN, esPlayaV, cx + gap, circY);
 
-      /* VS */
-      ctx.fillStyle = 'rgba(255,255,255,.9)';
-      ctx.font = 'bold 58px "Bebas Neue",Arial,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('V', W/2, y-14);
+      octx.fillStyle = 'rgba(255,255,255,.88)';
+      octx.font = 'bold ' + Math.floor(CW * 0.07) + 'px "Bebas Neue",Arial,sans-serif';
+      octx.textAlign = 'center'; octx.textBaseline = 'middle';
+      octx.fillText('V', cx, circY);
 
-      /* nombres equipos */
-      ctx.fillStyle = 'rgba(255,255,255,.72)';
-      ctx.font = '600 21px "Barlow Condensed",Arial,sans-serif';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(shortN(localN).toUpperCase(), 195, y+50);
-      ctx.fillText(shortN(visitN).toUpperCase(), 885, y+50);
-
-      /* categoría + fecha */
-      ctx.fillStyle = '#93c5fd';
-      ctx.font = '700 22px "Barlow Condensed",Arial,sans-serif';
-      ctx.fillText(((f.categoria||'').toUpperCase())+'  ·  '+(f.dia_hora||''), W/2, y+50);
+      var labelY = circY + circR + Math.floor(rowH * 0.16);
+      var fsz    = Math.floor(CW * 0.027);
+      octx.font = '600 ' + fsz + 'px "Barlow Condensed",Arial,sans-serif';
+      octx.textBaseline = 'alphabetic';
+      octx.fillStyle = 'rgba(255,255,255,.62)';
+      octx.fillText((localN.length > 14 ? localN.substr(0,13) + '.' : localN).toUpperCase(), cx - gap, labelY);
+      octx.fillText((visitN.length > 14 ? visitN.substr(0,13) + '.' : visitN).toUpperCase(), cx + gap, labelY);
+      octx.fillStyle = '#93c5fd';
+      var catStr = (f.categoria || '').toUpperCase() + (f.dia_hora ? '  ·  ' + f.dia_hora : '');
+      octx.fillText(catStr, cx, labelY);
     });
+  }
 
-    /* footer */
-    ctx.strokeStyle = 'rgba(255,255,255,.1)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(40,H-footerH); ctx.lineTo(W-40,H-footerH); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.35)';
-    ctx.font = '600 24px "Barlow Condensed",Arial,sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('playahondau.github.io/playahondau', W/2, H-footerH/2);
+  /* Mapeo affine de triángulo fuente → destino */
+  function mapTri(dctx, src, sx1,sy1,sx2,sy2,sx3,sy3, dx1,dy1,dx2,dy2,dx3,dy3) {
+    dctx.save();
+    dctx.beginPath(); dctx.moveTo(dx1,dy1); dctx.lineTo(dx2,dy2); dctx.lineTo(dx3,dy3); dctx.closePath(); dctx.clip();
+    var d = sx1*(sy2-sy3) + sx2*(sy3-sy1) + sx3*(sy1-sy2);
+    if (Math.abs(d) < 0.001) { dctx.restore(); return; }
+    var a=(dx1*(sy2-sy3)+dx2*(sy3-sy1)+dx3*(sy1-sy2))/d;
+    var b=(dy1*(sy2-sy3)+dy2*(sy3-sy1)+dy3*(sy1-sy2))/d;
+    var c=(dx1*(sx3-sx2)+dx2*(sx1-sx3)+dx3*(sx2-sx1))/d;
+    var e=(dy1*(sx3-sx2)+dy2*(sx1-sx3)+dy3*(sx2-sx1))/d;
+    var f=(dx1*(sx2*sy3-sx3*sy2)+dx2*(sx3*sy1-sx1*sy3)+dx3*(sx1*sy2-sx2*sy1))/d;
+    var g=(dy1*(sx2*sy3-sx3*sy2)+dy2*(sx3*sy1-sx1*sy3)+dy3*(sx1*sy2-sx2*sy1))/d;
+    dctx.transform(a,b,c,e,f,g); dctx.drawImage(src,0,0); dctx.restore();
+  }
+  function mapQuad(dctx, src, x0,y0,x1,y1,x2,y2,x3,y3) {
+    var W=src.width, H=src.height;
+    mapTri(dctx,src, 0,0,W,0,W,H, x0,y0,x1,y1,x2,y2);
+    mapTri(dctx,src, 0,0,W,H,0,H, x0,y0,x2,y2,x3,y3);
+  }
+
+  function renderizar() {
+    var BW = bielsa.naturalWidth || 1179;
+    var BH = bielsa.naturalHeight || 1492;
+    canvas.width = BW; canvas.height = BH;
+    ctx.drawImage(bielsa, 0, 0, BW, BH);
+
+    /* card en canvas offscreen */
+    var CW = 600, CH = 175 + filas.length * 112 + 20;
+    var off = document.createElement('canvas');
+    off.width = CW; off.height = CH;
+    dibujarCard(off.getContext('2d'), CW, CH, esc);
+
+    /* ── Pantalla del celular (panel 3) ── */
+    ctx.globalAlpha = 0.97;
+    mapQuad(ctx, off, 376,1042, 812,1010, 820,1388, 382,1418);
+    ctx.globalAlpha = 1;
+
+    /* ── Lente izquierdo ── */
+    var llX=290, llY=655, llRx=168, llRy=74;
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(llX,llY,llRx,llRy,-0.04,0,Math.PI*2); ctx.clip();
+    ctx.globalAlpha = 0.80;
+    var ls = (llRx * 2.2) / CW;
+    ctx.drawImage(off, llX - CW*ls*0.3, llY - llRy*1.1, CW*ls, CH*ls);
+    ctx.globalAlpha = 1; ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(llX,llY,llRx,llRy,-0.04,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle = 'rgba(15,45,150,0.26)'; ctx.fill(); ctx.restore();
+
+    /* ── Lente derecho ── */
+    var rlX=762, rlY=668, rlRx=192, rlRy=78;
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(rlX,rlY,rlRx,rlRy,0.04,0,Math.PI*2); ctx.clip();
+    ctx.globalAlpha = 0.80;
+    var rs = (rlRx * 2.2) / CW;
+    ctx.drawImage(off, rlX - CW*rs*0.3, rlY - rlRy*1.1, CW*rs, CH*rs);
+    ctx.globalAlpha = 1; ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(rlX,rlY,rlRx,rlRy,0.04,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle = 'rgba(15,45,150,0.26)'; ctx.fill(); ctx.restore();
 
     document.getElementById('share-modal').classList.add('open');
   }
