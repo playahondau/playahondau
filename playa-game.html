@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playa Honda FC - El Juego</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #040d1a; display: flex; flex-direction: column; align-items: center;
+         justify-content: center; min-height: 100vh; font-family: monospace; overflow: hidden; }
+  canvas { display: block; image-rendering: pixelated; }
+  #info { color: #c8a030; font-size: 11px; margin-top: 6px; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info">WASD / Flechas: mover &nbsp;|&nbsp; SPACE / Z: red &nbsp;|&nbsp; R: reiniciar &nbsp;|&nbsp; ENTER: continuar</div>
+<script>
+/* ═══════════════════════════════════════════════════
+   PLAYA HONDA FC — El Juego  (Bad Ice Cream style)
+   ═══════════════════════════════════════════════════ */
+
+const COLS = 17, ROWS = 13, CS = 48;          // grid size
+const W = COLS * CS, H = ROWS * CS + 56;      // canvas dims (56 = HUD)
+const HUD_H = 56;
+const NAVY = '#0d2a5a', GOLD = '#c8a030', RED = '#c0242b';
+
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+canvas.width = W; canvas.height = H;
+
+// ── Scale canvas to fit window ──────────────────────
+function scaleCanvas() {
+  const sx = window.innerWidth  / W;
+  const sy = window.innerHeight / (H + 24);
+  const s  = Math.min(sx, sy, 1.4);
+  canvas.style.width  = (W * s) + 'px';
+  canvas.style.height = (H * s) + 'px';
+}
+scaleCanvas();
+window.addEventListener('resize', scaleCanvas);
+
+/* ═══════════════ TILE TYPES ═══════════════ */
+const T = { EMPTY:0, WALL:1, NET:2, BALL:3 };
+
+/* ═══════════════ LEVEL DATA ═══════════════ */
+// W=wall, .=empty, B=ball, 1/2=enemy start
+// Borders are always wall
+const LEVELS = [
+  { // LEVEL 1 — simple
+    player: {col:1, row:1},
+    character: 0,
+    map: [
+      'WWWWWWWWWWWWWWWWW',
+      'W...............W',
+      'W.WWW.....WWW...W',
+      'W...............W',
+      'W...B..W....B...W',
+      'W......W........W',
+      'W......W........W',
+      'W...............W',
+      'W...B...........W',
+      'W..........WWW..W',
+      'W...............W',
+      'W...............W',
+      'WWWWWWWWWWWWWWWWW',
+    ],
+    enemies: [
+      {col:8,  row:5,  dx:1, dy:0},
+      {col:14, row:3,  dx:0, dy:1},
+    ]
+  },
+  { // LEVEL 2 — medium
+    player: {col:1, row:1},
+    character: 1,
+    map: [
+      'WWWWWWWWWWWWWWWWW',
+      'W...............W',
+      'W.W.W.WWW.W.W..BW',
+      'W...............W',
+      'WB.WWW...WWW....W',
+      'W...............W',
+      'W...W.B.B.W.....W',
+      'W...W.....W.....W',
+      'WB.WWW...WWW....W',
+      'W...............W',
+      'W.W.W.WWW.W.W..BW',
+      'W.....B.........W',
+      'WWWWWWWWWWWWWWWWW',
+    ],
+    enemies: [
+      {col:8,  row:1,  dx:1, dy:0},
+      {col:8,  row:11, dx:-1,dy:0},
+      {col:1,  row:6,  dx:0, dy:1},
+    ]
+  },
+  { // LEVEL 3 — labyrinth
+    player: {col:1, row:1},
+    character: 0,
+    map: [
+      'WWWWWWWWWWWWWWWWW',
+      'W.B.W.....W.B...W',
+      'W.W.W.WWW.W.W.WWW',
+      'W.W...W.W...W...W',
+      'W.WWWWW.WWWWW.W.W',
+      'W...............W',
+      'W.WWWWW.WWWWW.W.W',
+      'W.W...W.W...W...W',
+      'W.W.W.WWW.W.W.WWW',
+      'W.B.W.....W.B...W',
+      'W...W.W.W.W.....W',
+      'WB..........B...W',
+      'WWWWWWWWWWWWWWWWW',
+    ],
+    enemies: [
+      {col:8,  row:1,  dx:1, dy:0},
+      {col:15, row:6,  dx:0, dy:1},
+      {col:8,  row:11, dx:-1,dy:0},
+      {col:1,  row:6,  dx:0, dy:-1},
+    ]
+  }
+];
+
+const CHARACTERS = [
+  { name: 'Algorta', number: '11' },
+  { name: 'Rodriguez', number: '6'  },
+];
+
+/* ═══════════════ GAME STATE ═══════════════ */
+let state, level, grid, player, enemies, balls, lives, invTimer, deathTimer;
+let gameScreen = 'title'; // title | play | dead | levelwin | gameover | win
+let animFrame = 0;
+
+function parseLevel(lvlIdx) {
+  level = lvlIdx;
+  const lvl = LEVELS[lvlIdx];
+  const mapStr = lvl.map;
+
+  grid = [];
+  balls = [];
+  for (let r = 0; r < ROWS; r++) {
+    grid[r] = [];
+    for (let c = 0; c < COLS; c++) {
+      const ch = mapStr[r][c];
+      if (ch === 'W') grid[r][c] = T.WALL;
+      else if (ch === 'B') { grid[r][c] = T.EMPTY; balls.push({col:c, row:r}); }
+      else grid[r][c] = T.EMPTY;
+    }
+  }
+
+  player = {
+    col: lvl.player.col, row: lvl.player.row,
+    dir: 'right', moving: false,
+    moveTimer: 0, MOVE_DELAY: 145,
+    animTick: 0
+  };
+
+  enemies = lvl.enemies.map(e => ({
+    col: e.col, row: e.row,
+    dx: e.dx, dy: e.dy,
+    moveTimer: 0, MOVE_DELAY: 340 + Math.random() * 80,
+    animTick: 0
+  }));
+
+  invTimer  = 0;
+  deathTimer= 0;
+}
+
+function startGame() {
+  lives = 3;
+  parseLevel(0);
+  gameScreen = 'play';
+}
+
+/* ═══════════════ INPUT ═══════════════ */
+const keys = {};
+const justPressed = {};
+window.addEventListener('keydown', e => {
+  if (!keys[e.code]) justPressed[e.code] = true;
+  keys[e.code] = true;
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))
+    e.preventDefault();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+function consumeKey(code) {
+  if (justPressed[code]) { delete justPressed[code]; return true; }
+  return false;
+}
+
+/* ═══════════════ COLLISION ═══════════════ */
+function isSolid(c, r) {
+  if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return true;
+  return grid[r][c] === T.WALL || grid[r][c] === T.NET;
+}
+
+/* ═══════════════ GAME LOGIC ═══════════════ */
+function update(dt) {
+  // Clear justPressed at end of frame (set flag here)
+  if (gameScreen === 'title') {
+    if (consumeKey('Enter') || consumeKey('Space')) startGame();
+    return;
+  }
+  if (gameScreen === 'levelwin') {
+    if (consumeKey('Enter') || consumeKey('Space')) {
+      if (level + 1 < LEVELS.length) { parseLevel(level + 1); gameScreen = 'play'; }
+      else gameScreen = 'win';
+    }
+    return;
+  }
+  if (gameScreen === 'dead') {
+    deathTimer += dt;
+    if (deathTimer > 1800 && (consumeKey('Enter') || consumeKey('Space') || consumeKey('KeyR'))) {
+      if (lives > 0) { parseLevel(level); gameScreen = 'play'; }
+      else gameScreen = 'gameover';
+    }
+    return;
+  }
+  if (gameScreen === 'gameover') {
+    if (consumeKey('Enter') || consumeKey('Space') || consumeKey('KeyR')) startGame();
+    return;
+  }
+  if (gameScreen === 'win') {
+    if (consumeKey('Enter') || consumeKey('Space')) { gameScreen = 'title'; }
+    return;
+  }
+
+  // ── play ──
+  if (consumeKey('KeyR')) { parseLevel(level); return; }
+
+  invTimer = Math.max(0, invTimer - dt);
+  animFrame += dt;
+
+  updatePlayer(dt);
+  updateEnemies(dt);
+  checkBallPickup();
+  checkEnemyCollision();
+
+  if (balls.length === 0) gameScreen = 'levelwin';
+}
+
+function dirDelta(dir) {
+  return { up:{dc:0,dr:-1}, down:{dc:0,dr:1}, left:{dc:-1,dr:0}, right:{dc:1,dr:0} }[dir];
+}
+
+function updatePlayer(dt) {
+  const p = player;
+  p.moveTimer += dt;
+
+  // Determine direction from keys
+  let wantDir = null;
+  if (keys['ArrowUp']   || keys['KeyW']) wantDir = 'up';
+  if (keys['ArrowDown'] || keys['KeyS']) wantDir = 'down';
+  if (keys['ArrowLeft'] || keys['KeyA']) wantDir = 'left';
+  if (keys['ArrowRight']|| keys['KeyD']) wantDir = 'right';
+
+  if (wantDir) p.dir = wantDir;
+
+  // Move
+  if (wantDir && p.moveTimer >= p.MOVE_DELAY) {
+    p.moveTimer = 0;
+    const {dc, dr} = dirDelta(p.dir);
+    const nc = p.col + dc, nr = p.row + dr;
+    if (!isSolid(nc, nr)) { p.col = nc; p.row = nr; p.animTick = (p.animTick + 1) % 4; }
+  }
+
+  // Space / Z — place or break net
+  if (consumeKey('Space') || consumeKey('KeyZ')) {
+    const {dc, dr} = dirDelta(p.dir);
+    const tc = p.col + dc, tr = p.row + dr;
+    if (tc >= 0 && tc < COLS && tr >= 0 && tr < ROWS) {
+      if (grid[tr][tc] === T.NET) {
+        grid[tr][tc] = T.EMPTY;
+      } else if (grid[tr][tc] === T.EMPTY) {
+        // Check no enemy or ball on that cell
+        const blocked = enemies.some(e => e.col === tc && e.row === tr)
+                     || balls.some(b => b.col === tc && b.row === tr);
+        if (!blocked) grid[tr][tc] = T.NET;
+      }
+    }
+  }
+}
+
+function updateEnemies(dt) {
+  enemies.forEach(e => {
+    e.moveTimer += dt;
+    if (e.moveTimer < e.MOVE_DELAY) return;
+    e.moveTimer = 0;
+    e.animTick  = (e.animTick + 1) % 4;
+
+    const nc = e.col + e.dx, nr = e.row + e.dy;
+    if (isSolid(nc, nr)) {
+      // Try to bounce: reverse both axes, try one, try other
+      const opts = [
+        {dx:-e.dx, dy:-e.dy},
+        {dx:-e.dx, dy: e.dy},
+        {dx: e.dx, dy:-e.dy},
+      ];
+      let moved = false;
+      for (const o of opts) {
+        const nnc = e.col + o.dx, nnr = e.row + o.dy;
+        if (!isSolid(nnc, nnr)) {
+          e.dx = o.dx; e.dy = o.dy;
+          e.col = nnc; e.row = nnr;
+          moved = true; break;
+        }
+      }
+      if (!moved) { e.dx = -e.dx; e.dy = -e.dy; } // stuck, just flip
+    } else {
+      e.col = nc; e.row = nr;
+    }
+  });
+}
+
+function checkBallPickup() {
+  balls = balls.filter(b => !(b.col === player.col && b.row === player.row));
+}
+
+function checkEnemyCollision() {
+  if (invTimer > 0) return;
+  const hit = enemies.some(e => e.col === player.col && e.row === player.row);
+  if (hit) {
+    lives--;
+    deathTimer = 0;
+    gameScreen = 'dead';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   DRAWING
+   ═══════════════════════════════════════════════════ */
+
+function drawShield(x, y, r) {
+  // Shield shape: navy circle + gold mortarboard
+  ctx.fillStyle = NAVY;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = GOLD; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+  // mortarboard (cap)
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(x - r*0.55, y - r*0.55, r*1.1, r*0.22);
+  ctx.beginPath(); ctx.arc(x, y - r*0.44, r*0.25, 0, Math.PI*2); ctx.fill();
+  // tassel
+  ctx.strokeStyle = GOLD; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x + r*0.55, y - r*0.44); ctx.lineTo(x + r*0.55, y - r*0.1); ctx.stroke();
+  // PH letters
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold ' + Math.floor(r*0.62) + 'px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('PH', x, y + r*0.2);
+}
+
+function drawPlayerSprite(cx, cy, charIdx, dir, tick, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const s = CS * 0.82;
+  const x = cx - s/2, y = cy - s/2;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(cx, cy + s*0.42, s*0.28, s*0.08, 0, 0, Math.PI*2); ctx.fill();
+
+  // Legs (animation)
+  const legOff = (tick % 2 === 0) ? s*0.08 : -s*0.08;
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(cx - s*0.18, cy + s*0.15, s*0.16, s*0.28 + legOff);
+  ctx.fillRect(cx + s*0.02,  cy + s*0.15, s*0.16, s*0.28 - legOff);
+
+  // Shoes
+  ctx.fillStyle = '#111';
+  ctx.fillRect(cx - s*0.2,  cy + s*0.38 + legOff, s*0.2, s*0.08);
+  ctx.fillRect(cx + s*0.01, cy + s*0.38 - legOff, s*0.2, s*0.08);
+
+  // Body (jersey navy)
+  ctx.fillStyle = NAVY;
+  ctx.beginPath();
+  ctx.roundRect(cx - s*0.28, cy - s*0.1, s*0.56, s*0.3, s*0.06);
+  ctx.fill();
+
+  // Jersey number
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold ' + Math.floor(s*0.22) + 'px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(CHARACTERS[charIdx].number, cx, cy + s*0.02);
+
+  // Arms
+  const armY = cy - s*0.05;
+  ctx.fillStyle = NAVY;
+  ctx.fillRect(cx - s*0.42, armY, s*0.14, s*0.22);
+  ctx.fillRect(cx + s*0.28, armY, s*0.14, s*0.22);
+  // Hands
+  ctx.fillStyle = '#e8c49a';
+  ctx.beginPath(); ctx.arc(cx - s*0.35, armY + s*0.24, s*0.07, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + s*0.35, armY + s*0.24, s*0.07, 0, Math.PI*2); ctx.fill();
+
+  // Head
+  ctx.fillStyle = '#e8c49a';
+  ctx.beginPath(); ctx.arc(cx, cy - s*0.24, s*0.2, 0, Math.PI*2); ctx.fill();
+
+  // Eyes (based on direction)
+  ctx.fillStyle = '#222';
+  const eyeY = cy - s*0.26;
+  if (dir === 'left') {
+    ctx.beginPath(); ctx.arc(cx - s*0.12, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - s*0.04, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+  } else if (dir === 'right') {
+    ctx.beginPath(); ctx.arc(cx + s*0.04, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + s*0.12, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(cx - s*0.07, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + s*0.07, eyeY, s*0.04, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Hair (short dark)
+  ctx.fillStyle = '#2a1a0a';
+  ctx.beginPath();
+  ctx.arc(cx, cy - s*0.34, s*0.18, Math.PI, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawEnemySprite(cx, cy, tick) {
+  const s = CS * 0.78;
+  ctx.save();
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(cx, cy + s*0.42, s*0.26, s*0.07, 0, 0, Math.PI*2); ctx.fill();
+
+  // Legs
+  const legOff = (tick % 2 === 0) ? s*0.08 : -s*0.08;
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(cx - s*0.16, cy + s*0.15, s*0.14, s*0.26 + legOff);
+  ctx.fillRect(cx + s*0.02,  cy + s*0.15, s*0.14, s*0.26 - legOff);
+
+  // Body (red jersey)
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.roundRect(cx - s*0.26, cy - s*0.1, s*0.52, s*0.28, s*0.05);
+  ctx.fill();
+
+  // White stripes on jersey
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillRect(cx - s*0.06, cy - s*0.1, s*0.12, s*0.28);
+
+  // Arms
+  ctx.fillStyle = RED;
+  ctx.fillRect(cx - s*0.4,  cy - s*0.05, s*0.13, s*0.2);
+  ctx.fillRect(cx + s*0.27, cy - s*0.05, s*0.13, s*0.2);
+
+  // Head
+  ctx.fillStyle = '#e8c49a';
+  ctx.beginPath(); ctx.arc(cx, cy - s*0.23, s*0.19, 0, Math.PI*2); ctx.fill();
+
+  // Eyes (menacing)
+  ctx.fillStyle = '#900';
+  ctx.beginPath(); ctx.arc(cx - s*0.07, cy - s*0.25, s*0.045, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + s*0.07, cy - s*0.25, s*0.045, 0, Math.PI*2); ctx.fill();
+
+  // Angry eyebrows
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - s*0.13, cy - s*0.32); ctx.lineTo(cx - s*0.02, cy - s*0.29); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + s*0.13, cy - s*0.32); ctx.lineTo(cx + s*0.02, cy - s*0.29); ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawBall(cx, cy) {
+  const r = CS * 0.3;
+  // White ball
+  ctx.fillStyle = '#f0f0f0';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+
+  // Pentagon patches (simplified: 5 black circles/arcs)
+  ctx.fillStyle = '#222';
+  const patches = [
+    {a: Math.PI*1.5,    d: r*0.38},
+    {a: Math.PI*1.5 + Math.PI*0.4*1, d: r*0.38},
+    {a: Math.PI*1.5 + Math.PI*0.4*2, d: r*0.38},
+    {a: Math.PI*1.5 + Math.PI*0.4*3, d: r*0.38},
+    {a: Math.PI*1.5 + Math.PI*0.4*4, d: r*0.38},
+  ];
+  // Center patch
+  ctx.beginPath(); ctx.arc(cx, cy, r*0.24, 0, Math.PI*2); ctx.fill();
+  patches.forEach(p => {
+    const px = cx + Math.cos(p.a) * p.d;
+    const py = cy + Math.sin(p.a) * p.d;
+    ctx.beginPath(); ctx.arc(px, py, r*0.16, 0, Math.PI*2); ctx.fill();
+  });
+  // Shine
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath(); ctx.arc(cx - r*0.28, cy - r*0.28, r*0.15, 0, Math.PI*2); ctx.fill();
+}
+
+function drawNet(col, row) {
+  const x = col * CS, y = row * CS + HUD_H;
+  // Net block (white semi-transparent with grid pattern)
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillRect(x+1, y+1, CS-2, CS-2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 1;
+  // Outer frame
+  ctx.strokeRect(x+2, y+2, CS-4, CS-4);
+  // Net grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  for (let i = 1; i < 4; i++) {
+    ctx.beginPath(); ctx.moveTo(x + i*(CS/4), y+2); ctx.lineTo(x + i*(CS/4), y+CS-2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+2, y + i*(CS/4)); ctx.lineTo(x+CS-2, y + i*(CS/4)); ctx.stroke();
+  }
+}
+
+function drawWall(col, row) {
+  const x = col * CS, y = row * CS + HUD_H;
+  // Stadium wall: dark blue with lighter top
+  ctx.fillStyle = '#091d3e';
+  ctx.fillRect(x, y, CS, CS);
+  ctx.fillStyle = '#0d2a5a';
+  ctx.fillRect(x+2, y+2, CS-4, CS*0.3);
+  // Brick texture
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x+1, y+1, CS-2, CS-2);
+  ctx.beginPath(); ctx.moveTo(x, y+CS*0.5); ctx.lineTo(x+CS, y+CS*0.5); ctx.stroke();
+}
+
+function drawFieldBg() {
+  // Green field
+  ctx.fillStyle = '#1a4a1a';
+  ctx.fillRect(0, HUD_H, W, ROWS*CS);
+
+  // Subtle grass stripes
+  for (let c = 0; c < COLS; c++) {
+    if (c % 2 === 0) {
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.fillRect(c*CS, HUD_H, CS, ROWS*CS);
+    }
+  }
+
+  // Grid lines (very faint)
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let c = 0; c <= COLS; c++) {
+    ctx.beginPath(); ctx.moveTo(c*CS, HUD_H); ctx.lineTo(c*CS, HUD_H + ROWS*CS); ctx.stroke();
+  }
+  for (let r = 0; r <= ROWS; r++) {
+    ctx.beginPath(); ctx.moveTo(0, HUD_H + r*CS); ctx.lineTo(W, HUD_H + r*CS); ctx.stroke();
+  }
+
+  // Center circle
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(W/2, HUD_H + ROWS*CS/2, CS*1.8, 0, Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2, HUD_H); ctx.lineTo(W/2, HUD_H + ROWS*CS); ctx.stroke();
+}
+
+function drawHUD() {
+  // Background
+  ctx.fillStyle = '#040d1a';
+  ctx.fillRect(0, 0, W, HUD_H);
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(0, HUD_H-2, W, 2);
+
+  // Shield
+  drawShield(30, HUD_H/2, 18);
+
+  // Level
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 13px monospace';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('NIVEL ' + (level+1), 56, HUD_H*0.3);
+
+  // Character name
+  ctx.fillStyle = 'rgba(200,160,48,0.75)';
+  ctx.font = '11px monospace';
+  ctx.fillText(CHARACTERS[LEVELS[level].character].name.toUpperCase(), 56, HUD_H*0.7);
+
+  // Balls remaining
+  const bc = balls.length;
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 13px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚽ x' + bc, W/2, HUD_H/2);
+
+  // Lives (mini balls on right)
+  for (let i = 0; i < 3; i++) {
+    const lx = W - 30 - i*28, ly = HUD_H/2;
+    if (i < lives) {
+      ctx.fillStyle = '#f0f0f0';
+      ctx.beginPath(); ctx.arc(lx, ly, 9, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#222';
+      ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#f0f0f0';
+      ctx.beginPath(); ctx.arc(lx+1, ly-1, 1.5, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(lx, ly, 9, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+}
+
+function drawGame() {
+  drawFieldBg();
+
+  // Draw tiles
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === T.WALL) drawWall(c, r);
+      else if (grid[r][c] === T.NET) drawNet(c, r);
+    }
+  }
+
+  // Draw balls
+  balls.forEach(b => {
+    const cx = b.col*CS + CS/2, cy = b.row*CS + CS/2 + HUD_H;
+    // Float animation
+    const fly = Math.sin(animFrame/200 + b.col + b.row) * 3;
+    drawBall(cx, cy + fly);
+  });
+
+  // Draw player
+  const px = player.col*CS + CS/2, py = player.row*CS + CS/2 + HUD_H;
+  const charIdx = LEVELS[level].character;
+  const alpha = invTimer > 0 ? (Math.floor(invTimer/80) % 2 === 0 ? 0.3 : 1) : 1;
+  drawPlayerSprite(px, py, charIdx, player.dir, player.animTick, alpha);
+
+  // Draw enemies
+  enemies.forEach(e => {
+    const ex = e.col*CS + CS/2, ey = e.row*CS + CS/2 + HUD_H;
+    drawEnemySprite(ex, ey, e.animTick);
+  });
+
+  drawHUD();
+
+  // Net placement indicator (ghost)
+  if (gameScreen === 'play') {
+    const {dc, dr} = dirDelta(player.dir);
+    const tc = player.col + dc, tr = player.row + dr;
+    if (tc >= 0 && tc < COLS && tr >= 0 && tr < ROWS && grid[tr][tc] === T.EMPTY) {
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(tc*CS+2, tr*CS+2+HUD_H, CS-4, CS-4);
+    }
+  }
+}
+
+/* ═══════════════ SCREEN DRAWING ═══════════════ */
+function drawTitle() {
+  ctx.fillStyle = '#040d1a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  for (let i = 0; i < 60; i++) {
+    const sx = (i * 137.5) % W, sy = (i * 79.3) % H;
+    ctx.fillRect(sx, sy, 1, 1);
+  }
+
+  // Big shield
+  drawShield(W/2, H*0.22, 52);
+
+  // Title
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 44px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('PLAYA HONDA FC', W/2, H*0.48);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px monospace';
+  ctx.fillText('EL JUEGO', W/2, H*0.57);
+
+  // Blink prompt
+  if (Math.floor(animFrame / 500) % 2 === 0) {
+    ctx.fillStyle = 'rgba(200,160,48,0.9)';
+    ctx.font = '14px monospace';
+    ctx.fillText('▶  PRESIONÁ ENTER PARA JUGAR  ◀', W/2, H*0.73);
+  }
+
+  // Controls hint
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '11px monospace';
+  ctx.fillText('WASD/Flechas: mover   Space: red   R: reiniciar', W/2, H*0.87);
+}
+
+function drawLevelWin() {
+  drawGame();
+  // Overlay
+  ctx.fillStyle = 'rgba(4,13,26,0.82)';
+  ctx.fillRect(0, 0, W, H);
+
+  const charIdx = LEVELS[level].character;
+
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 38px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('¡NIVEL ' + (level+1) + ' COMPLETADO!', W/2, H*0.35);
+
+  // Celebrate player sprite
+  drawPlayerSprite(W/2, H*0.52, charIdx, 'right', Math.floor(animFrame/150) % 4, 1);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px monospace';
+  ctx.fillText('¡ ' + CHARACTERS[charIdx].name.toUpperCase() + ' ANOTA !', W/2, H*0.67);
+
+  if (Math.floor(animFrame / 500) % 2 === 0) {
+    ctx.fillStyle = GOLD;
+    ctx.font = '14px monospace';
+    const next = level + 1 < LEVELS.length ? 'ENTER → Nivel ' + (level+2) : 'ENTER → Final';
+    ctx.fillText(next, W/2, H*0.78);
+  }
+}
+
+function drawDead() {
+  drawGame();
+  ctx.fillStyle = 'rgba(4,13,26,0.8)';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = RED;
+  ctx.font = 'bold 48px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  // Shake
+  const shx = deathTimer < 600 ? (Math.random()*6-3) : 0;
+  ctx.fillText('¡ PERDISTE !', W/2 + shx, H*0.38);
+
+  ctx.fillStyle = 'rgba(200,160,48,0.85)';
+  ctx.font = '20px monospace';
+  ctx.fillText('Vidas restantes: ' + lives, W/2, H*0.52);
+
+  if (deathTimer > 1800 && Math.floor(animFrame/500) % 2 === 0) {
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px monospace';
+    ctx.fillText('ENTER / SPACE para continuar', W/2, H*0.66);
+  }
+}
+
+function drawGameOver() {
+  ctx.fillStyle = '#040d1a';
+  ctx.fillRect(0, 0, W, H);
+  drawShield(W/2, H*0.25, 40);
+
+  ctx.fillStyle = RED;
+  ctx.font = 'bold 44px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('GAME OVER', W/2, H*0.48);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '15px monospace';
+  ctx.fillText('¡El rival ganó esta vez!', W/2, H*0.6);
+
+  if (Math.floor(animFrame/500) % 2 === 0) {
+    ctx.fillStyle = GOLD;
+    ctx.font = '14px monospace';
+    ctx.fillText('ENTER para volver a intentar', W/2, H*0.73);
+  }
+}
+
+function drawWin() {
+  ctx.fillStyle = '#040d1a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Confetti dots
+  for (let i = 0; i < 80; i++) {
+    const t = (animFrame * 0.001 + i * 0.3) % 1;
+    const cx2 = (i * 137.5 + animFrame*0.05) % W;
+    const cy2 = t * H;
+    ctx.fillStyle = i%3===0 ? GOLD : i%3===1 ? '#fff' : NAVY;
+    ctx.fillRect(cx2, cy2, 5, 5);
+  }
+
+  drawShield(W/2, H*0.18, 52);
+
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 36px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('¡ CAMPEONES !', W/2, H*0.46);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('LIGA UNIVERSITARIA 2026', W/2, H*0.56);
+
+  ctx.fillStyle = 'rgba(200,160,48,0.8)';
+  ctx.font = '15px monospace';
+  ctx.fillText('PLAYA HONDA UNIVERSITARIO', W/2, H*0.65);
+
+  // Both players celebrating
+  drawPlayerSprite(W/2 - 60, H*0.79, 0, 'right', Math.floor(animFrame/180) % 4, 1);
+  drawPlayerSprite(W/2 + 60, H*0.79, 1, 'left',  Math.floor(animFrame/180) % 4, 1);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px monospace';
+  ctx.fillText('Algorta  #11', W/2 - 60, H*0.9);
+  ctx.fillText('Rodriguez  #6', W/2 + 60, H*0.9);
+
+  if (Math.floor(animFrame/600) % 2 === 0) {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '12px monospace';
+    ctx.fillText('ENTER para volver al título', W/2, H*0.96);
+  }
+}
+
+/* ═══════════════ MAIN LOOP ═══════════════ */
+let lastTime = 0;
+
+function loop(ts) {
+  const dt = Math.min(ts - lastTime, 50); // cap at 50ms
+  lastTime = ts;
+  animFrame += dt;
+
+  update(dt);
+
+  // Clear
+  ctx.fillStyle = '#040d1a';
+  ctx.fillRect(0, 0, W, H);
+
+  switch(gameScreen) {
+    case 'title':    drawTitle();    break;
+    case 'play':     drawGame();     break;
+    case 'levelwin': drawLevelWin(); break;
+    case 'dead':     drawDead();     break;
+    case 'gameover': drawGameOver(); break;
+    case 'win':      drawWin();      break;
+  }
+
+  // Clear justPressed at end of frame
+  for (const k in justPressed) delete justPressed[k];
+
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
