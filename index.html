@@ -677,6 +677,7 @@
   <p class="section-label reveal">Pr&oacute;xima fecha</p>
   <h2 class="section-title reveal">Fixture</h2>
   <div class="gold-line reveal"></div>
+  <div style="text-align:right;margin-bottom:1rem;"><button class="btn-outline" style="font-size:.78rem;padding:.45rem 1.1rem;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--blanco);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;" onclick="generarImagenFixture()">📤 Compartir fixture</button></div>
   <div class="fixtures-list" id="fixtures-list"><div class="skel-card skeleton" style="height:70px;margin-bottom:2px;"></div><div class="skel-card skeleton" style="height:70px;margin-bottom:2px;"></div><div class="skel-card skeleton" style="height:70px;"></div></div>
 </section>
 
@@ -5196,6 +5197,133 @@ window.abrirBuscador = function(e) {
     deferredPrompt = null;
   });
 })();
+
+/* ── Generador imagen PRÓX. FECHA ── */
+function generarImagenFixture() {
+  var filas = window._fixtureRows || [];
+  if (!filas.length) { alert('Fixture no cargado aún, intentá en unos segundos.'); return; }
+
+  var W = 1080, rowH = 158, headerH = 300, footerH = 110;
+  var H = headerH + filas.length * rowH + footerH;
+  var canvas = document.getElementById('share-canvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = W; canvas.height = H;
+
+  var escudo = new Image();
+  escudo.onload  = function(){ dibujar(escudo); };
+  escudo.onerror = function(){ dibujar(null); };
+  escudo.src = 'escudo.png';
+
+  function colorRival(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+    return 'hsl(' + (Math.abs(h) % 360) + ',60%,36%)';
+  }
+  function siglas(name) {
+    var n = name.replace(/playa\s*honda\s*(universitario)?/gi,'').trim();
+    if (!n) return 'PH';
+    var w = n.split(/\s+/).filter(Boolean);
+    return w.length >= 2 ? (w[0][0]+w[1][0]).toUpperCase() : n.substring(0,2).toUpperCase();
+  }
+  function circulo(name, esPlaya, cx, cy, esc) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI*2);
+    if (esPlaya && esc) {
+      ctx.clip(); ctx.drawImage(esc, cx-52, cy-52, 104, 104);
+    } else {
+      ctx.fillStyle = colorRival(name); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 30px "Bebas Neue",Arial,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(siglas(name), cx, cy);
+    }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI*2); ctx.stroke();
+  }
+  function shortN(n) { return n.length > 18 ? n.substring(0,17)+'.' : n; }
+
+  function dibujar(esc) {
+    /* fondo */
+    var grd = ctx.createLinearGradient(0,0,0,H);
+    grd.addColorStop(0,'#071428'); grd.addColorStop(1,'#040d22');
+    ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+
+    /* bordes club: izq azul / der blanco */
+    ctx.fillStyle = '#1a3a8f'; ctx.fillRect(0,0,16,H);
+    ctx.fillStyle = '#ffffff';  ctx.fillRect(W-16,0,16,H);
+    var half = Math.floor((W-32)/2);
+    ctx.fillStyle = '#1a3a8f'; ctx.fillRect(16,0,half,12);      ctx.fillRect(16,H-12,half,12);
+    ctx.fillStyle = '#ffffff';  ctx.fillRect(16+half,0,half,12); ctx.fillRect(16+half,H-12,half,12);
+
+    /* escudo header */
+    if (esc) {
+      ctx.save(); ctx.beginPath(); ctx.arc(W/2,82,48,0,Math.PI*2);
+      ctx.clip(); ctx.drawImage(esc,W/2-48,34,96,96); ctx.restore();
+    }
+
+    /* título */
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 104px "Bebas Neue",Arial,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('PRÓX. FECHA', W/2, 228);
+
+    /* subtítulo */
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.font = '600 26px "Barlow Condensed",Arial,sans-serif';
+    ctx.fillText('PLAYA HONDA UNIVERSITARIO  ·  LIGA UNIVERSITARIA', W/2, 266);
+
+    /* separador */
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(40,282); ctx.lineTo(W-40,282); ctx.stroke();
+
+    /* filas */
+    filas.forEach(function(f, i) {
+      var y = headerH + i * rowH + rowH/2;
+      if (i > 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(60, y-rowH/2); ctx.lineTo(W-60, y-rowH/2); ctx.stroke();
+      }
+
+      var localN  = f.local    || '';
+      var visitN  = f.visitante || '';
+      var playaIzq = localN.toLowerCase().indexOf('playa') >= 0;
+      var playaDer = visitN.toLowerCase().indexOf('playa') >= 0;
+
+      circulo(localN,  playaIzq, 195, y-14, esc);
+      circulo(visitN,  playaDer, 885, y-14, esc);
+
+      /* VS */
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.font = 'bold 58px "Bebas Neue",Arial,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('V', W/2, y-14);
+
+      /* nombres equipos */
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
+      ctx.font = '600 21px "Barlow Condensed",Arial,sans-serif';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(shortN(localN).toUpperCase(), 195, y+50);
+      ctx.fillText(shortN(visitN).toUpperCase(), 885, y+50);
+
+      /* categoría + fecha */
+      ctx.fillStyle = '#93c5fd';
+      ctx.font = '700 22px "Barlow Condensed",Arial,sans-serif';
+      ctx.fillText(((f.categoria||'').toUpperCase())+'  ·  '+(f.dia_hora||''), W/2, y+50);
+    });
+
+    /* footer */
+    ctx.strokeStyle = 'rgba(255,255,255,.1)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(40,H-footerH); ctx.lineTo(W-40,H-footerH); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '600 24px "Barlow Condensed",Arial,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('playahondau.github.io/playahondau', W/2, H-footerH/2);
+
+    document.getElementById('share-modal').classList.add('open');
+  }
+}
+
 </script>
 
 </body>
