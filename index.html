@@ -5404,6 +5404,7 @@ var PlayaJuego = (function(){
   var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
   var keys={},jp={};
   var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer;
+  var escudoImg=null;
 
   var CHARS=[{name:'Algorta',num:'11'},{name:'Rodriguez',num:'6'}];
 
@@ -5501,10 +5502,19 @@ var PlayaJuego = (function(){
     if(consume('Space')||consume('KeyZ')){
       var d2=dirDelta(p.dir),tc=p.col+d2.dc,tr=p.row+d2.dr;
       if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS){
-        if(grid[tr][tc]===2){grid[tr][tc]=0;}
-        else if(grid[tr][tc]===0){
-          var blocked=enemies.some(function(e){return e.col===tc&&e.row===tr;})||balls.some(function(b){return b.col===tc&&b.row===tr;});
-          if(!blocked)grid[tr][tc]=2;
+        if(grid[tr][tc]===2){
+          /* romper solo el primero */
+          grid[tr][tc]=0;
+        } else if(grid[tr][tc]===0){
+          /* llenar toda la fila hasta la primera pared/red/pelota/enemigo */
+          var fc=tc,fr=tr;
+          while(fc>=0&&fc<COLS&&fr>=0&&fr<ROWS&&grid[fr][fc]===0){
+            var ok=!enemies.some(function(e){return e.col===fc&&e.row===fr;})&&
+                   !balls.some(function(b){return b.col===fc&&b.row===fr;});
+            if(!ok)break;
+            grid[fr][fc]=2;
+            fc+=d2.dc; fr+=d2.dr;
+          }
         }
       }
     }
@@ -5806,7 +5816,14 @@ var PlayaJuego = (function(){
       var yy=((animF*.04+j*GH/5))%GH;
       ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(GW,yy); ctx.stroke();
     }
-    drawShield(GW/2,GH*.2,52);
+    /* escudo real o fallback dibujado */
+    var er=56, ey2=GH*.2;
+    if(escudoImg&&escudoImg.naturalWidth){
+      ctx.save(); ctx.beginPath(); ctx.arc(GW/2,ey2,er,0,Math.PI*2); ctx.clip();
+      ctx.drawImage(escudoImg,GW/2-er,ey2-er,er*2,er*2); ctx.restore();
+      ctx.strokeStyle=GOLD; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(GW/2,ey2,er,0,Math.PI*2); ctx.stroke();
+    } else { drawShield(GW/2,ey2,52); }
     /* title with glow */
     ctx.shadowColor=GOLD; ctx.shadowBlur=20;
     ctx.fillStyle=GOLD; ctx.font='bold 42px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -5916,6 +5933,7 @@ var PlayaJuego = (function(){
     var s=Math.min(maxW/GW,maxH/GH);
     canvas.style.width=Math.floor(GW*s)+'px';
     canvas.style.height=Math.floor(GH*s)+'px';
+    if(!escudoImg){ escudoImg=new Image(); escudoImg.src='escudo.png'; }
   }
 
   function open(){
