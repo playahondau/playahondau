@@ -5403,7 +5403,7 @@ var PlayaJuego = (function(){
   var NAVY='#0d2a5a',GOLD='#c8a030',ERED='#c0242b';
   var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
   var keys={},jp={};
-  var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer,levelTimer;
+  var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer,levelTimer,levelIntroTimer;
   var particles=[],iceAnims={};
   var escudoImg=null,titanSpr=null,rodoSpr=null;
   var playerChar=0,charCursor=0;
@@ -5414,17 +5414,60 @@ var PlayaJuego = (function(){
   ];
 
   var LEVELS=[
-    { char:0, time:90, player:{col:1,row:1},
-      map:['WWWWWWWWWWWWWWWWW','W...............W','W.WWW.....WWW...W','W...............W','W...B..W....B...W','W......W........W','W......W........W','W...............W','W...B...........W','W..........WWW..W','W...............W','W...............W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:5,dx:1,dy:0,type:'bouncer'},{col:14,row:3,dx:0,dy:1,type:'chaser'}]
+    /* Nivel 1 — tutorial: 1 rebotador, mapa abierto */
+    { time:100, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW',
+           'W...............W',
+           'W.WWW.....WWW...W',
+           'W...............W',
+           'W...B..W....B...W',
+           'W......W........W',
+           'W......W........W',
+           'W...............W',
+           'W...B.......B...W',
+           'W.......W.......W',
+           'W.......W.......W',
+           'W...............W',
+           'WWWWWWWWWWWWWWWWW'],
+      enemies:[{col:8,row:5,dx:1,dy:0,type:'bouncer'}]
     },
-    { char:1, time:80, player:{col:1,row:1},
-      map:['WWWWWWWWWWWWWWWWW','W...............W','W.W.W.WWW.W.W..BW','W...............W','WB.WWW...WWW....W','W...............W','W...W.B.B.W.....W','W...W.....W.....W','WB.WWW...WWW....W','W...............W','W.W.W.WWW.W.W..BW','W.....B.........W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:1,dx:1,dy:0,type:'bouncer'},{col:8,row:11,dx:-1,dy:0,type:'bouncer'},{col:1,row:6,dx:0,dy:1,type:'chaser'}]
+    /* Nivel 2 — dos rebotadores, sin perseguidor todavía */
+    { time:90, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW',
+           'W...............W',
+           'W.W.W.WWW.W.W..BW',
+           'W...............W',
+           'WB.WWW...WWW....W',
+           'W...............W',
+           'W...W.B.B.W.....W',
+           'W...W.....W.....W',
+           'WB.WWW...WWW....W',
+           'W...............W',
+           'W.W.W.WWW.W.W..BW',
+           'W...............W',
+           'WWWWWWWWWWWWWWWWW'],
+      enemies:[{col:8,row:1,dx:1,dy:0,type:'bouncer'},{col:8,row:11,dx:-1,dy:0,type:'bouncer'}]
     },
-    { char:0, time:70, player:{col:1,row:1},
-      map:['WWWWWWWWWWWWWWWWW','W.B.W.....W.B...W','W.W.W.WWW.W.W.WWW','W.W...W.W...W...W','W.WWWWW.WWWWW.W.W','W...............W','W.WWWWW.WWWWW.W.W','W.W...W.W...W...W','W.W.W.WWW.W.W.WWW','W.B.W.....W.B...W','W...W.W.W.W.....W','WB..........B...W','WWWWWWWWWWWWWWWWW'],
-      enemies:[{col:8,row:1,dx:1,dy:0,type:'bouncer'},{col:15,row:6,dx:0,dy:1,type:'chaser'},{col:8,row:11,dx:-1,dy:0,type:'bouncer'},{col:1,row:6,dx:0,dy:-1,type:'chaser'}]
+    /* Nivel 3 — 2 rebotadores + 1 perseguidor (difícil pero justo) */
+    { time:95, player:{col:1,row:1},
+      map:['WWWWWWWWWWWWWWWWW',
+           'W...............W',
+           'W.W.W.WWW.W.W..W',
+           'W...B.....B....W',
+           'W.W...WWW...W..W',
+           'W.............B.W',
+           'W...WWWWWWW....W',
+           'W.B.............W',
+           'W.W...WWW...W..W',
+           'W...B.....B....W',
+           'W.W.W.WWW.W.W..W',
+           'W...............W',
+           'WWWWWWWWWWWWWWWWW'],
+      enemies:[
+        {col:8,row:1, dx:1,dy:0,type:'bouncer'},
+        {col:8,row:11,dx:-1,dy:0,type:'bouncer'},
+        {col:15,row:5,dx:0,dy:1,type:'chaser'}
+      ]
     }
   ];
 
@@ -5465,19 +5508,24 @@ var PlayaJuego = (function(){
     if(gameScreen==='charsel'){
       if(consume('ArrowLeft')||consume('KeyA'))charCursor=0;
       if(consume('ArrowRight')||consume('KeyD'))charCursor=1;
-      if(consume('Enter')||consume('Space')){ playerChar=charCursor; parseLevel(0); gameScreen='play'; }
+      if(consume('Enter')||consume('Space')){ playerChar=charCursor; parseLevel(0); levelIntroTimer=4000; gameScreen='levelintro'; }
+      return;
+    }
+    if(gameScreen==='levelintro'){
+      levelIntroTimer-=dt;
+      if(levelIntroTimer<=0)gameScreen='play';
       return;
     }
     if(gameScreen==='levelwin'){
       if(consume('Enter')||consume('Space')){
-        if(level+1<LEVELS.length){parseLevel(level+1);gameScreen='play';}else gameScreen='win';
+        if(level+1<LEVELS.length){parseLevel(level+1);levelIntroTimer=4000;gameScreen='levelintro';}else gameScreen='win';
       }
       return;
     }
     if(gameScreen==='dead'){
       deathTimer+=dt;
       if(deathTimer>1800&&(consume('Enter')||consume('Space')||consume('KeyR'))){
-        if(lives>0){parseLevel(level);gameScreen='play';}else gameScreen='gameover';
+        if(lives>0){parseLevel(level);invTimer=2500;gameScreen='play';}else gameScreen='gameover';
       }
       return;
     }
@@ -6253,6 +6301,46 @@ var PlayaJuego = (function(){
     ctx.fillText('3 NIVELES · 2 PERSONAJES · ¡ESQUIVÁ Y SOBREVIVÍ!',GW/2,GH*.92);
   }
 
+  function drawLevelIntro(){
+    drawGameplay();
+    /* dark cinematic overlay */
+    ctx.fillStyle='rgba(2,8,22,0.82)';ctx.fillRect(0,0,GW,GH);
+    /* NIVEL X — gold, big */
+    ctx.save();
+    ctx.shadowColor=GOLD;ctx.shadowBlur=32;
+    ctx.fillStyle=GOLD;ctx.font='58px "Bebas Neue",monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('NIVEL '+(level+1),GW/2,GH*.34);
+    ctx.shadowBlur=0;ctx.restore();
+    /* countdown number with pulse on each beat */
+    var isGo=(levelIntroTimer<=1000);
+    var phase=(levelIntroTimer%1000)/1000;
+    var pulse=1+0.45*Math.pow(phase,2);
+    ctx.save();
+    ctx.translate(GW/2,GH*.56);
+    ctx.scale(pulse,pulse);
+    if(isGo){
+      ctx.shadowColor='#44ff88';ctx.shadowBlur=38;
+      ctx.fillStyle='#55ff88';
+    } else {
+      var beats=Math.ceil(levelIntroTimer/1000);
+      ctx.shadowColor='rgba(200,220,255,0.9)';ctx.shadowBlur=28;
+      ctx.fillStyle='#ffffff';
+    }
+    ctx.font='100px "Bebas Neue",monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(isGo?'¡YA!':Math.ceil(levelIntroTimer/1000),0,0);
+    ctx.shadowBlur=0;ctx.restore();
+    /* character name hint */
+    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='14px "Barlow Condensed",monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(CHARS[playerChar].name.toUpperCase()+' · #'+CHARS[playerChar].num,GW/2,GH*.76);
+    /* decorative lines */
+    ctx.strokeStyle='rgba(200,160,48,0.22)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(GW*.15,GH*.44);ctx.lineTo(GW*.85,GH*.44);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(GW*.15,GH*.69);ctx.lineTo(GW*.85,GH*.69);ctx.stroke();
+  }
+
   function drawOverlay(c,a){ctx.fillStyle=c;ctx.globalAlpha=a;ctx.fillRect(0,0,GW,GH);ctx.globalAlpha=1;}
 
   function drawLevelWin(){
@@ -6338,6 +6426,7 @@ var PlayaJuego = (function(){
     ctx.fillStyle='#edeacf'; ctx.fillRect(0,0,GW,GH);
     if(gameScreen==='title')drawTitle();
     else if(gameScreen==='charsel')drawCharSel();
+    else if(gameScreen==='levelintro')drawLevelIntro();
     else if(gameScreen==='play')drawGameplay();
     else if(gameScreen==='levelwin')drawLevelWin();
     else if(gameScreen==='dead')drawDead();
