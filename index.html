@@ -3323,7 +3323,7 @@ body.match-day .countdown-wrap{border-color:rgba(244,196,48,.6)!important;box-sh
 #playa-juego-modal.open{display:flex;}
 .pj-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;width:100%;max-width:min(820px,98vw);}
 #pj-canvas{display:block;max-width:100%;max-height:min(75vh,660px);border-radius:6px;image-rendering:pixelated;cursor:default;}
-.pj-hint{color:rgba(200,160,48,.55);font-family:monospace;font-size:10px;letter-spacing:.05em;text-align:center;}
+.pj-hint{color:rgba(200,160,48,.6);font-family:'Barlow Condensed',monospace;font-size:11px;font-weight:600;letter-spacing:.1em;text-align:center;text-transform:uppercase;}
 .pj-close{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.55);font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;padding:.35rem 1.8rem;cursor:pointer;border-radius:3px;}
 .pj-close:hover{color:#fff;border-color:#fff;}
 
@@ -5404,9 +5404,13 @@ var PlayaJuego = (function(){
   var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
   var keys={},jp={};
   var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer,levelTimer;
-  var escudoImg=null;
+  var escudoImg=null,titanSpr=null,rodoSpr=null;
+  var playerChar=0,charCursor=0;
 
-  var CHARS=[{name:'Algorta',num:'11'},{name:'Rodriguez',num:'6'}];
+  var CHARS=[
+    {name:'Titan',num:'11',key:'titan',stats:{vel:65,salto:70,hielo:90}},
+    {name:'Rodo', num:'6', key:'rodo', stats:{vel:90,salto:82,hielo:75}}
+  ];
 
   var LEVELS=[
     { char:0, time:90, player:{col:1,row:1},
@@ -5451,11 +5455,17 @@ var PlayaJuego = (function(){
     invTimer=0; deathTimer=0; levelTimer=lv.time*1000;
   }
 
-  function startGame(){ lives=3; parseLevel(0); gameScreen='play'; }
+  function startGame(){ lives=3; charCursor=playerChar; gameScreen='charsel'; }
 
   /* ── update ── */
   function update(dt){
     if(gameScreen==='title'){ if(consume('Enter')||consume('Space'))startGame(); return; }
+    if(gameScreen==='charsel'){
+      if(consume('ArrowLeft')||consume('KeyA'))charCursor=0;
+      if(consume('ArrowRight')||consume('KeyD'))charCursor=1;
+      if(consume('Enter')||consume('Space')){ playerChar=charCursor; parseLevel(0); gameScreen='play'; }
+      return;
+    }
     if(gameScreen==='levelwin'){
       if(consume('Enter')||consume('Space')){
         if(level+1<LEVELS.length){parseLevel(level+1);gameScreen='play';}else gameScreen='win';
@@ -5584,76 +5594,72 @@ var PlayaJuego = (function(){
     ctx.beginPath(); ctx.arc(x,y-r*.44,r*.25,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle=GOLD; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(x+r*.55,y-r*.44); ctx.lineTo(x+r*.55,y-r*.1); ctx.stroke();
-    ctx.fillStyle=GOLD; ctx.font='bold '+Math.floor(r*.6)+'px monospace';
+    ctx.fillStyle=GOLD; ctx.font=Math.floor(r*.6)+'px "Bebas Neue",monospace';
     ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('PH',x,y+r*.22);
   }
 
   function drawPlayerSprite(cx,cy,ci,dir,tick,alpha){
     ctx.save(); ctx.globalAlpha=alpha;
-    var s=CS*.92;
-    /* ground shadow */
-    ctx.fillStyle='rgba(0,0,0,0.22)';
-    ctx.beginPath();ctx.ellipse(cx,cy+s*.5,s*.35,s*.1,0,0,Math.PI*2);ctx.fill();
-    /* legs */
-    var lo=(tick%2===0)?s*.12:-s*.12;
-    ctx.fillStyle='#08081a';
-    ctx.beginPath();ctx.roundRect(cx-s*.18,cy+s*.1,s*.15,s*.35+lo,4);ctx.fill();
-    ctx.beginPath();ctx.roundRect(cx+s*.03,cy+s*.1,s*.15,s*.35-lo,4);ctx.fill();
-    /* boots (rounded ellipse) */
-    ctx.fillStyle='#1a1a28';
-    ctx.beginPath();ctx.ellipse(cx-s*.13,cy+s*.47+lo,s*.15,s*.08,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(cx+s*.11,cy+s*.47-lo,s*.15,s*.08,0,0,Math.PI*2);ctx.fill();
-    /* jersey body */
-    var jg=ctx.createLinearGradient(cx,cy-s*.15,cx,cy+s*.2);
-    jg.addColorStop(0,'#1a3e96');jg.addColorStop(1,'#0d2a5a');
-    ctx.fillStyle=jg;
-    ctx.beginPath();ctx.roundRect(cx-s*.33,cy-s*.15,s*.66,s*.36,s*.1);ctx.fill();
-    /* jersey gold collar */
-    ctx.fillStyle='rgba(200,160,48,0.7)';
-    ctx.fillRect(cx-s*.12,cy-s*.15,s*.24,s*.07);
-    /* jersey number */
-    ctx.fillStyle=GOLD;ctx.font='bold '+Math.floor(s*.26)+'px monospace';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(CHARS[ci].num,cx,cy+s*.04);
-    /* arms */
-    var ag=ctx.createLinearGradient(cx-s*.5,0,cx-s*.33,0);
-    ag.addColorStop(0,'#163a8a');ag.addColorStop(1,'#1a3e96');
-    ctx.fillStyle=ag;
-    ctx.beginPath();ctx.roundRect(cx-s*.5,cy-s*.12,s*.18,s*.3,5);ctx.fill();
-    ctx.beginPath();ctx.roundRect(cx+s*.32,cy-s*.12,s*.18,s*.3,5);ctx.fill();
-    /* hands */
-    ctx.fillStyle='#f0c888';
-    ctx.beginPath();ctx.ellipse(cx-s*.42,cy+s*.2,s*.1,s*.09,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(cx+s*.42,cy+s*.2,s*.1,s*.09,0,0,Math.PI*2);ctx.fill();
-    /* neck */
-    ctx.fillStyle='#f0c888';
-    ctx.fillRect(cx-s*.09,cy-s*.17,s*.18,s*.06);
-    /* HEAD — big cartoon head (key for the style) */
-    var hg=ctx.createRadialGradient(cx-s*.06,cy-s*.36,s*.04,cx,cy-s*.33,s*.3);
-    hg.addColorStop(0,'#fcd8a0');hg.addColorStop(1,'#e0a860');
-    ctx.fillStyle=hg;
-    ctx.beginPath();ctx.arc(cx,cy-s*.33,s*.3,0,Math.PI*2);ctx.fill();
-    /* hair cap */
-    ctx.fillStyle='#28100a';
-    ctx.beginPath();ctx.arc(cx,cy-s*.52,s*.26,Math.PI,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx-s*.26,cy-s*.33,s*.08,Math.PI*.8,Math.PI*1.8);ctx.fill();
-    /* eye whites */
-    var ex=(dir==='left')?-s*.08:(dir==='right')?s*.08:0;
-    var ey=cy-s*.34;
-    ctx.fillStyle='white';
-    ctx.beginPath();ctx.ellipse(cx+ex-s*.1,ey,s*.072,s*.082,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(cx+ex+s*.1,ey,s*.072,s*.082,0,0,Math.PI*2);ctx.fill();
-    /* pupils */
-    ctx.fillStyle='#1a0a05';
-    ctx.beginPath();ctx.arc(cx+ex-s*.1,ey+s*.01,s*.042,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+ex+s*.1,ey+s*.01,s*.042,0,Math.PI*2);ctx.fill();
-    /* eye shine */
-    ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.beginPath();ctx.arc(cx+ex-s*.08,ey-s*.025,s*.02,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+ex+s*.12,ey-s*.025,s*.02,0,Math.PI*2);ctx.fill();
-    /* mouth/smile */
-    ctx.strokeStyle='#904010';ctx.lineWidth=1.8;
-    ctx.beginPath();ctx.arc(cx+ex,ey+s*.14,s*.1,0.15,Math.PI-0.15);ctx.stroke();
+    var spr=(ci===0?titanSpr:rodoSpr);
+    var s=CS*0.9;
+    /* shadow */
+    ctx.fillStyle='rgba(0,0,0,0.24)';
+    ctx.beginPath();ctx.ellipse(cx,cy+s*.52,s*.38,s*.11,0,0,Math.PI*2);ctx.fill();
+    /* kick/hop bounce offset */
+    var bob=(tick===1||tick===3)?-s*.06:0;
+
+    if(spr&&spr.naturalWidth){
+      /* ── Sprite PNG cabezudo ── */
+      var sw=spr.naturalWidth,sh=spr.naturalHeight;
+      var charH=CS*1.18; /* más alto que la celda — la cabeza gigante domina */
+      var charW=charH*(sw/sh);
+      ctx.save();
+      /* flip horizontal para dirección izquierda */
+      if(dir==='left'){ ctx.translate(cx,0); ctx.scale(-1,1); ctx.drawImage(spr,-charW/2,cy-charH*0.74+bob,charW,charH); }
+      else { ctx.drawImage(spr,cx-charW/2,cy-charH*0.74+bob,charW,charH); }
+      ctx.restore();
+    } else {
+      /* ── Fallback: cabezudo dibujado — head enorme + cuerpo mini ── */
+      /* cuerpo tiny */
+      var jg=ctx.createLinearGradient(cx,cy-s*.05,cx,cy+s*.28);
+      jg.addColorStop(0,'#1a3e96');jg.addColorStop(1,'#0d2a5a');
+      ctx.fillStyle=jg;
+      ctx.beginPath();ctx.roundRect(cx-s*.2,cy-s*.05,s*.4,s*.26,s*.08);ctx.fill();
+      /* número jersey */
+      ctx.fillStyle=GOLD;ctx.font='bold '+Math.floor(s*.22)+'px "Bebas Neue",monospace';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(CHARS[ci].num,cx,cy+s*.1);
+      /* piernas cortas */
+      ctx.fillStyle='#0a0a1a';
+      var lo=(tick%2===0)?s*.08:-s*.08;
+      ctx.beginPath();ctx.roundRect(cx-s*.14,cy+s*.2,s*.11,s*.22+lo,3);ctx.fill();
+      ctx.beginPath();ctx.roundRect(cx+s*.03,cy+s*.2,s*.11,s*.22-lo,3);ctx.fill();
+      /* botas */
+      ctx.fillStyle='#181828';
+      ctx.beginPath();ctx.ellipse(cx-s*.1,cy+s*.44+lo,s*.12,s*.07,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+s*.08,cy+s*.44-lo,s*.12,s*.07,0,0,Math.PI*2);ctx.fill();
+      /* CABEZA ENORME (cabezudo style) */
+      var hr=s*.42; /* radio de la cabeza = casi la mitad del cell */
+      var hg=ctx.createRadialGradient(cx-hr*.15,cy-s*.4,hr*.05,cx,cy-s*.35,hr);
+      hg.addColorStop(0,'#fcd8a0');hg.addColorStop(1,'#e0a860');
+      ctx.fillStyle=hg;
+      ctx.beginPath();ctx.arc(cx,cy-s*.35+bob,hr,0,Math.PI*2);ctx.fill();
+      /* pelo */
+      ctx.fillStyle='#1a0a06';
+      ctx.beginPath();ctx.arc(cx,cy-s*.62+bob,hr*.86,Math.PI,Math.PI*2);ctx.fill();
+      /* ojos */
+      var ex=(dir==='left')?-s*.1:(dir==='right')?s*.1:0;
+      var ey=cy-s*.36+bob;
+      ctx.fillStyle='white';
+      ctx.beginPath();ctx.ellipse(cx+ex-s*.14,ey,s*.09,s*.1,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+ex+s*.14,ey,s*.09,s*.1,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#1a0a05';
+      ctx.beginPath();ctx.arc(cx+ex-s*.14,ey+s*.01,s*.055,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(cx+ex+s*.14,ey+s*.01,s*.055,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.beginPath();ctx.arc(cx+ex-s*.11,ey-s*.03,s*.025,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(cx+ex+s*.17,ey-s*.03,s*.025,0,Math.PI*2);ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -5939,24 +5945,24 @@ var PlayaJuego = (function(){
     /* level box */
     ctx.fillStyle='rgba(255,255,255,0.07)';
     ctx.beginPath();ctx.roundRect(60,7,66,HUD_H-14,6);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='9px monospace';
+    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='11px "Barlow Condensed",monospace';
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('NIVEL',93,17);
-    ctx.fillStyle=GOLD;ctx.font='bold 26px monospace';
+    ctx.fillStyle=GOLD;ctx.font='30px "Bebas Neue",monospace';
     ctx.fillText(level+1,93,HUD_H*.67);
 
     /* player name */
-    ctx.fillStyle='rgba(200,160,48,0.9)';ctx.font='bold 10px monospace';ctx.textAlign='left';
-    ctx.fillText('★ '+CHARS[LEVELS[level].char].name.toUpperCase(),134,HUD_H*.38);
-    ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font='9px monospace';
-    ctx.fillText('#'+CHARS[LEVELS[level].char].num,134,HUD_H*.7);
+    ctx.fillStyle='rgba(200,160,48,0.9)';ctx.font='14px "Bebas Neue",monospace';ctx.textAlign='left';
+    ctx.fillText('★ '+CHARS[playerChar].name.toUpperCase(),134,HUD_H*.38);
+    ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font='11px "Barlow Condensed",monospace';
+    ctx.fillText('#'+CHARS[playerChar].num,134,HUD_H*.7);
 
     /* ball counter box (center-left) */
     ctx.fillStyle='rgba(255,255,255,0.07)';
     ctx.beginPath();ctx.roundRect(GW*.38-48,7,96,HUD_H-14,6);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='11px "Barlow Condensed",monospace';ctx.textAlign='center';
     ctx.fillText('PELOTAS',GW*.38,17);
-    ctx.fillStyle='white';ctx.font='bold 24px monospace';
+    ctx.fillStyle='white';ctx.font='29px "Bebas Neue",monospace';
     ctx.fillText(balls.length,GW*.38,HUD_H*.67);
 
     /* timer box (center-right) */
@@ -5964,14 +5970,14 @@ var PlayaJuego = (function(){
     var warn=secs<=15;
     ctx.fillStyle=warn?(Math.floor(animF/200)%2===0?'rgba(255,40,40,0.18)':'rgba(255,140,0,0.12)'):'rgba(255,255,255,0.07)';
     ctx.beginPath();ctx.roundRect(GW*.58-48,7,96,HUD_H-14,6);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='11px "Barlow Condensed",monospace';ctx.textAlign='center';
     ctx.fillText('TIEMPO',GW*.58,17);
     ctx.fillStyle=warn?(Math.floor(animF/200)%2===0?'#ff4444':'#ffaa00'):'rgba(255,255,255,0.92)';
-    ctx.font='bold 24px monospace';
+    ctx.font='29px "Bebas Neue",monospace';
     ctx.fillText(secs+'s',GW*.58,HUD_H*.67);
 
     /* lives — mini soccer balls */
-    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='9px monospace';ctx.textAlign='right';
+    ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='11px "Barlow Condensed",monospace';ctx.textAlign='right';
     ctx.fillText('VIDAS',GW-12,13);
     for(var i=0;i<3;i++){
       var lx=GW-16-i*30,ly=HUD_H*.68,lr=12;
@@ -6015,8 +6021,103 @@ var PlayaJuego = (function(){
     enemies.forEach(function(e){ drawEnemySprite(e.px,e.py+HUD_H,e.animTick,e.type); });
     /* player */
     var alpha=invTimer>0?(Math.floor(invTimer/80)%2===0?.25:1):1;
-    drawPlayerSprite(player.px,player.py+HUD_H,LEVELS[level].char,player.dir,player.animTick,alpha);
+    drawPlayerSprite(player.px,player.py+HUD_H,playerChar,player.dir,player.animTick,alpha);
     drawHUD();
+  }
+
+  /* ── helper: stat bar ── */
+  function drawStatBar(x,y,w,h,val,color){
+    ctx.fillStyle='rgba(255,255,255,0.1)';
+    ctx.beginPath();ctx.roundRect(x,y,w,h,h/2);ctx.fill();
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.roundRect(x,y,w*val/100,h,h/2);ctx.fill();
+  }
+
+  function drawCharSel(){
+    /* bg */
+    var bg=ctx.createLinearGradient(0,0,0,GH);
+    bg.addColorStop(0,'#040f28');bg.addColorStop(1,'#020910');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,GW,GH);
+    /* top band */
+    var tb=ctx.createLinearGradient(0,0,0,72);
+    tb.addColorStop(0,'#0a1e44');tb.addColorStop(1,'#040f28');
+    ctx.fillStyle=tb;ctx.fillRect(0,0,GW,72);
+    ctx.fillStyle='rgba(200,160,48,0.35)';ctx.fillRect(0,69,GW,3);
+    /* escudo + título */
+    var er=24,ey2=36;
+    if(escudoImg&&escudoImg.naturalWidth){
+      ctx.save();ctx.beginPath();ctx.arc(GW/2-130,ey2,er,0,Math.PI*2);ctx.clip();
+      ctx.drawImage(escudoImg,GW/2-130-er,ey2-er,er*2,er*2);ctx.restore();
+      ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.beginPath();ctx.arc(GW/2-130,ey2,er,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.fillStyle=GOLD;ctx.font='34px "Bebas Neue",monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('ELEGÍ TU PERSONAJE',GW/2+10,36);
+    ctx.fillStyle='rgba(255,255,255,0.28)';ctx.font='12px "Barlow Condensed",monospace';
+    ctx.fillText('◀  A/D  ·  ENTER para confirmar  ▶',GW/2+10,57);
+
+    /* card layout */
+    var cardW=230,cardH=GH-105,cardY=80;
+    var cx1=GW/2-cardW/2-20,cx2=GW/2+cardW/2+20;
+    var centers=[cx1,cx2];
+    for(var ci=0;ci<2;ci++){
+      var ccx=centers[ci];
+      var sel=(charCursor===ci);
+      /* glow ring if selected */
+      if(sel){
+        ctx.shadowColor=GOLD;ctx.shadowBlur=22;
+      }
+      /* card bg */
+      ctx.fillStyle=sel?'rgba(200,160,48,0.1)':'rgba(255,255,255,0.04)';
+      ctx.strokeStyle=sel?GOLD:'rgba(255,255,255,0.15)';
+      ctx.lineWidth=sel?2.5:1.5;
+      ctx.beginPath();ctx.roundRect(ccx-cardW/2,cardY,cardW,cardH,14);
+      ctx.fill();ctx.stroke();
+      ctx.shadowBlur=0;
+      /* SELECTED label */
+      if(sel){
+        ctx.fillStyle=GOLD;
+        ctx.beginPath();ctx.roundRect(ccx-40,cardY-14,80,22,5);ctx.fill();
+        ctx.fillStyle='#000';ctx.font='bold 11px "Bebas Neue",monospace';
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('SELECCIONADO',ccx,cardY-3);
+      }
+      /* sprite cabezudo centrado en la card */
+      var spr=(ci===0?titanSpr:rodoSpr);
+      var sprH=cardH*0.55;
+      if(spr&&spr.naturalWidth){
+        var sprW2=sprH*(spr.naturalWidth/spr.naturalHeight);
+        ctx.drawImage(spr,ccx-sprW2/2,cardY+12,sprW2,sprH);
+      } else {
+        /* placeholder circle */
+        ctx.fillStyle=NAVY;ctx.beginPath();ctx.arc(ccx,cardY+sprH/2+12,sprH*0.38,0,Math.PI*2);ctx.fill();
+      }
+      /* name */
+      ctx.fillStyle='#fff';ctx.font='32px "Bebas Neue",monospace';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(CHARS[ci].name.toUpperCase(),ccx,cardY+sprH+30);
+      /* number badge */
+      var bx=ccx+cardW/2-22,by=cardY+sprH+14;
+      ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(bx,by,14,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#000';ctx.font='bold 14px "Bebas Neue",monospace';
+      ctx.fillText('#'+CHARS[ci].num,bx,by);
+      /* stats */
+      var sx=ccx-cardW/2+18,sw2=cardW-36,sy=cardY+sprH+52;
+      var statDefs=[['VEL','vel','#2eb82e'],['SALTO','salto','#1a8aff'],['HIELO','hielo','#44c8f8']];
+      ctx.font='11px "Barlow Condensed",monospace';
+      for(var si=0;si<statDefs.length;si++){
+        var sd=statDefs[si];
+        ctx.fillStyle='rgba(255,255,255,0.5)';ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillText(sd[0],sx,sy+si*22+6);
+        drawStatBar(sx+38,sy+si*22,sw2-38,8,CHARS[ci].stats[sd[1]],sd[2]);
+      }
+    }
+    /* arrow hints */
+    var pulse=0.5+0.5*Math.sin(animF*.006);
+    ctx.fillStyle='rgba(200,160,48,'+pulse+')';
+    ctx.font='bold 28px "Bebas Neue",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    if(charCursor===1)ctx.fillText('◀',centers[0]-cardW/2-18,GH/2);
+    if(charCursor===0)ctx.fillText('▶',centers[1]+cardW/2+18,GH/2);
   }
 
   function drawTitle(){
@@ -6069,22 +6170,22 @@ var PlayaJuego = (function(){
     ctx.beginPath();ctx.roundRect(GW/2-220,GH*.39,440,GH*.2,12);ctx.stroke();
     /* title text */
     ctx.shadowColor=GOLD;ctx.shadowBlur=22;
-    ctx.fillStyle=GOLD;ctx.font='bold 44px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=GOLD;ctx.font='50px "Bebas Neue",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('PLAYA HONDA FC',GW/2,GH*.46);
     ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(200,220,255,0.88)';ctx.font='bold 16px monospace';
+    ctx.fillStyle='rgba(200,220,255,0.88)';ctx.font='20px "Bebas Neue",monospace';
     ctx.fillText('⚽  E L   J U E G O  ⚽',GW/2,GH*.536);
     /* press start blink */
     if(Math.floor(animF/480)%2===0){
       ctx.fillStyle='rgba(255,255,255,0.08)';
       ctx.beginPath();ctx.roundRect(GW/2-170,GH*.69,340,32,8);ctx.fill();
-      ctx.fillStyle='rgba(200,160,48,0.95)';ctx.font='bold 14px monospace';
+      ctx.fillStyle='rgba(200,160,48,0.95)';ctx.font='18px "Bebas Neue",monospace';
       ctx.fillText('▶  PRESIONÁ ENTER PARA JUGAR  ◀',GW/2,GH*.706);
     }
-    ctx.fillStyle='rgba(255,255,255,0.28)';ctx.font='10px monospace';
+    ctx.fillStyle='rgba(255,255,255,0.28)';ctx.font='12px "Barlow Condensed",monospace';
     ctx.fillText('WASD/Flechas · SPACE: hielo · R: reiniciar',GW/2,GH*.87);
     /* level previews */
-    ctx.fillStyle='rgba(255,255,255,0.18)';ctx.font='9px monospace';
+    ctx.fillStyle='rgba(255,255,255,0.18)';ctx.font='11px "Barlow Condensed",monospace';
     ctx.fillText('3 NIVELES · 2 PERSONAJES · ¡ESQUIVÁ Y SOBREVIVÍ!',GW/2,GH*.92);
   }
 
@@ -6092,26 +6193,26 @@ var PlayaJuego = (function(){
 
   function drawLevelWin(){
     drawGameplay(); drawOverlay('#040d1a',.82);
-    ctx.fillStyle=GOLD; ctx.font='bold 34px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=GOLD; ctx.font='40px "Bebas Neue",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('¡NIVEL '+(level+1)+' COMPLETADO!',GW/2,GH*.32);
-    drawPlayerSprite(GW/2,GH*.52,LEVELS[level].char,'right',Math.floor(animF/150)%4,1);
-    ctx.fillStyle='#fff'; ctx.font='17px monospace';
-    ctx.fillText('¡ '+CHARS[LEVELS[level].char].name.toUpperCase()+' ANOTA !',GW/2,GH*.68);
+    drawPlayerSprite(GW/2,GH*.52,playerChar,'right',Math.floor(animF/150)%4,1);
+    ctx.fillStyle='#fff'; ctx.font='21px "Bebas Neue",monospace';
+    ctx.fillText('¡ '+CHARS[playerChar].name.toUpperCase()+' ANOTA !',GW/2,GH*.68);
     if(Math.floor(animF/500)%2===0){
-      ctx.fillStyle=GOLD; ctx.font='13px monospace';
+      ctx.fillStyle=GOLD; ctx.font='16px "Bebas Neue",monospace';
       ctx.fillText(level+1<LEVELS.length?'ENTER → Nivel '+(level+2):'ENTER → Final',GW/2,GH*.82);
     }
   }
 
   function drawDead(){
     drawGameplay(); drawOverlay('#040d1a',.8);
-    ctx.fillStyle=ERED; ctx.font='bold 46px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=ERED; ctx.font='52px "Bebas Neue",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
     var shx=deathTimer<600?(Math.random()*7-3.5):0;
     ctx.fillText('¡ PERDISTE !',GW/2+shx,GH*.37);
-    ctx.fillStyle='rgba(200,160,48,.85)'; ctx.font='18px monospace';
+    ctx.fillStyle='rgba(200,160,48,.85)'; ctx.font='22px "Bebas Neue",monospace';
     ctx.fillText('Vidas restantes: '+lives,GW/2,GH*.52);
     if(deathTimer>1800&&Math.floor(animF/500)%2===0){
-      ctx.fillStyle='#fff'; ctx.font='13px monospace'; ctx.fillText('ENTER / SPACE para continuar',GW/2,GH*.67);
+      ctx.fillStyle='#fff'; ctx.font='16px "Bebas Neue",monospace'; ctx.fillText('ENTER / SPACE para continuar',GW/2,GH*.67);
     }
   }
 
@@ -6130,13 +6231,13 @@ var PlayaJuego = (function(){
     }
     drawShield(GW/2,GH*.22,46);
     ctx.shadowColor='#ff2222';ctx.shadowBlur=28;
-    ctx.fillStyle=ERED;ctx.font='bold 50px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=ERED;ctx.font='56px "Bebas Neue",monospace';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('GAME OVER',GW/2,GH*.48);
     ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='16px monospace';
+    ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='20px "Bebas Neue",monospace';
     ctx.fillText('¡El rival ganó esta vez!',GW/2,GH*.59);
     if(Math.floor(animF/500)%2===0){
-      ctx.fillStyle=GOLD;ctx.font='13px monospace';
+      ctx.fillStyle=GOLD;ctx.font='16px "Bebas Neue",monospace';
       ctx.fillText('ENTER para volver a intentar',GW/2,GH*.74);
     }
   }
@@ -6151,16 +6252,18 @@ var PlayaJuego = (function(){
     }
     drawShield(GW/2,GH*.15,54);
     ctx.shadowColor=GOLD; ctx.shadowBlur=25;
-    ctx.fillStyle=GOLD; ctx.font='bold 36px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=GOLD; ctx.font='42px "Bebas Neue",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('¡ CAMPEONES !',GW/2,GH*.44);
     ctx.shadowBlur=0;
-    ctx.fillStyle='#fff'; ctx.font='bold 17px monospace'; ctx.fillText('LIGA UNIVERSITARIA 2026',GW/2,GH*.545);
-    ctx.fillStyle='rgba(200,160,48,.8)'; ctx.font='13px monospace'; ctx.fillText('PLAYA HONDA UNIVERSITARIO',GW/2,GH*.625);
-    drawPlayerSprite(GW/2-60,GH*.79,0,'right',Math.floor(animF/170)%4,1);
-    drawPlayerSprite(GW/2+60,GH*.79,1,'left',Math.floor(animF/170)%4,1);
-    ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='10px monospace';
-    ctx.fillText('Algorta #11',GW/2-60,GH*.9); ctx.fillText('Rodriguez #6',GW/2+60,GH*.9);
-    if(Math.floor(animF/600)%2===0){ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='11px monospace';ctx.fillText('ENTER para volver al título',GW/2,GH*.965);}
+    ctx.fillStyle='#fff'; ctx.font='22px "Bebas Neue",monospace'; ctx.fillText('LIGA UNIVERSITARIA 2026',GW/2,GH*.545);
+    ctx.fillStyle='rgba(200,160,48,.8)'; ctx.font='16px "Bebas Neue",monospace'; ctx.fillText('PLAYA HONDA UNIVERSITARIO',GW/2,GH*.625);
+    drawPlayerSprite(GW/2-60,GH*.79,playerChar,'right',Math.floor(animF/170)%4,1);
+    drawPlayerSprite(GW/2+60,GH*.79,1-playerChar,'left',Math.floor(animF/170)%4,1);
+    ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='12px "Barlow Condensed",monospace';
+    ctx.textAlign='center';
+    ctx.fillText(CHARS[playerChar].name+' #'+CHARS[playerChar].num,GW/2-60,GH*.9);
+    ctx.fillText(CHARS[1-playerChar].name+' #'+CHARS[1-playerChar].num,GW/2+60,GH*.9);
+    if(Math.floor(animF/600)%2===0){ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='12px "Barlow Condensed",monospace';ctx.fillText('ENTER para volver al título',GW/2,GH*.965);}
   }
 
   /* ── game loop ── */
@@ -6170,6 +6273,7 @@ var PlayaJuego = (function(){
     update(dt);
     ctx.fillStyle='#030d1e'; ctx.fillRect(0,0,GW,GH);
     if(gameScreen==='title')drawTitle();
+    else if(gameScreen==='charsel')drawCharSel();
     else if(gameScreen==='play')drawGameplay();
     else if(gameScreen==='levelwin')drawLevelWin();
     else if(gameScreen==='dead')drawDead();
@@ -6197,6 +6301,8 @@ var PlayaJuego = (function(){
     canvas.style.width=Math.floor(GW*s)+'px';
     canvas.style.height=Math.floor(GH*s)+'px';
     if(!escudoImg){ escudoImg=new Image(); escudoImg.src='escudo.png'; }
+    if(!titanSpr){ titanSpr=new Image(); titanSpr.src='titan-sprite.png'; }
+    if(!rodoSpr){ rodoSpr=new Image(); rodoSpr.src='rodo-sprite.png'; }
   }
 
   function open(){
