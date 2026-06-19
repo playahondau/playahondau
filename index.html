@@ -5404,6 +5404,7 @@ var PlayaJuego = (function(){
   var canvas,ctx,running=false,rafId=null,lastT=0,animF=0;
   var keys={},jp={};
   var gameScreen,level,grid,player,enemies,balls,lives,invTimer,deathTimer,levelTimer;
+  var particles=[],iceAnims={};
   var escudoImg=null,titanSpr=null,rodoSpr=null;
   var playerChar=0,charCursor=0;
 
@@ -5427,7 +5428,7 @@ var PlayaJuego = (function(){
     }
   ];
 
-  var MOVE_DELAY=210, LERP_SPEED=12;
+  var MOVE_DELAY=170, LERP_SPEED=14;
 
   function consume(k){ if(jp[k]){delete jp[k];return true;}return false; }
   function isSolid(c,r){ if(c<0||c>=COLS||r<0||r>=ROWS)return true; return grid[r][c]===1||grid[r][c]===2; }
@@ -5453,6 +5454,7 @@ var PlayaJuego = (function(){
              type:e.type||'bouncer',moveTimer:0,MOVE_DELAY:(e.type==='chaser'?480:360)+Math.random()*80,animTick:0};
     });
     invTimer=0; deathTimer=0; levelTimer=lv.time*1000;
+    particles=[]; iceAnims={};
   }
 
   function startGame(){ lives=3; charCursor=playerChar; gameScreen='charsel'; }
@@ -5492,8 +5494,15 @@ var PlayaJuego = (function(){
     updatePlayer(dt);
     updateEnemies(dt);
     smoothPositions(dt);
+    updateParticles(dt);
+    updateIceAnims(dt);
 
-    balls=balls.filter(function(b){return!(b.col===player.col&&b.row===player.row);});
+    balls=balls.filter(function(b){
+      if(b.col===player.col&&b.row===player.row){
+        spawnBallCollect(b.col*CS+CS/2,b.row*CS+CS/2+HUD_H); return false;
+      }
+      return true;
+    });
     if(invTimer===0){
       var hit=enemies.some(function(e){return e.col===player.col&&e.row===player.row;});
       if(hit){lives--;deathTimer=0;gameScreen='dead';}
@@ -5518,19 +5527,22 @@ var PlayaJuego = (function(){
       var d2=dirDelta(p.dir),tc=p.col+d2.dc,tr=p.row+d2.dr;
       if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS){
         if(grid[tr][tc]===2){
-          /* romper toda la fila continua de redes */
+          /* romper toda la fila continua — con partículas */
           var bc=tc,br=tr;
           while(bc>=0&&bc<COLS&&br>=0&&br<ROWS&&grid[br][bc]===2){
-            grid[br][bc]=0; bc+=d2.dc; br+=d2.dr;
+            grid[br][bc]=0;
+            spawnIceParticles(bc*CS+CS/2, br*CS+CS/2+HUD_H);
+            bc+=d2.dc; br+=d2.dr;
           }
         } else if(grid[tr][tc]===0){
-          /* llenar toda la fila hasta la primera pared/red/pelota/enemigo */
+          /* llenar fila — con animación por bloque */
           var fc=tc,fr=tr;
           while(fc>=0&&fc<COLS&&fr>=0&&fr<ROWS&&grid[fr][fc]===0){
             var ok=!enemies.some(function(e){return e.col===fc&&e.row===fr;})&&
                    !balls.some(function(b){return b.col===fc&&b.row===fr;});
             if(!ok)break;
             grid[fr][fc]=2;
+            iceAnims[fc+'_'+fr]={t:0};
             fc+=d2.dc; fr+=d2.dr;
           }
         }
@@ -5602,8 +5614,8 @@ var PlayaJuego = (function(){
     ctx.save(); ctx.globalAlpha=alpha;
     var spr=(ci===0?titanSpr:rodoSpr);
     var s=CS*0.9;
-    /* shadow */
-    ctx.fillStyle='rgba(0,0,0,0.24)';
+    /* shadow — más oscura sobre piso claro */
+    ctx.fillStyle='rgba(0,0,0,0.32)';
     ctx.beginPath();ctx.ellipse(cx,cy+s*.52,s*.38,s*.11,0,0,Math.PI*2);ctx.fill();
     /* kick/hop bounce offset */
     var bob=(tick===1||tick===3)?-s*.06:0;
@@ -5666,7 +5678,7 @@ var PlayaJuego = (function(){
   function drawEnemySprite(cx,cy,tick,type){
     var s=CS*.9; ctx.save();
     /* ground shadow */
-    ctx.fillStyle='rgba(0,0,0,0.2)';
+    ctx.fillStyle='rgba(0,0,0,0.3)';
     ctx.beginPath();ctx.ellipse(cx,cy+s*.5,s*.3,s*.09,0,0,Math.PI*2);ctx.fill();
 
     if(type==='bouncer'){
@@ -5803,10 +5815,59 @@ var PlayaJuego = (function(){
     ctx.beginPath(); ctx.arc(cx-r*.3,cy-r*.3,r*.16,0,Math.PI*2); ctx.fill();
   }
 
+  /* ── Particle helpers ── */
+  function spawnIceParticles(px,py){
+    for(var i=0;i<10;i++){
+      var angle=i*Math.PI*.2+Math.random()*.4;
+      var speed=1.8+Math.random()*3;
+      particles.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-1.5,
+        life:1,size:3+Math.random()*5,
+        color:(i%3===0)?'#c8ecff':(i%3===1)?'#88d8f8':'#eef8ff'});
+    }
+  }
+  function spawnBallCollect(px,py){
+    for(var i=0;i<14;i++){
+      var angle=i*Math.PI/7;
+      var speed=2+Math.random()*3.5;
+      particles.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-2.5,
+        life:1,size:4+Math.random()*4,
+        color:(i%3===0)?GOLD:(i%3===1)?'#fff':'#ffe066'});
+    }
+  }
+  function updateParticles(dt){
+    var alive=[];
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      p.x+=p.vx*dt/16; p.y+=p.vy*dt/16; p.vy+=0.25*dt/16;
+      p.life-=dt/450;
+      if(p.life>0)alive.push(p);
+    }
+    particles=alive;
+  }
+  function updateIceAnims(dt){
+    for(var k in iceAnims){ iceAnims[k].t+=dt; if(iceAnims[k].t>200)delete iceAnims[k]; }
+  }
+  function drawParticles(){
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      ctx.save(); ctx.globalAlpha=p.life*p.life;
+      ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.roundRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size,2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   function drawNet(col,row){
     var x=col*CS,y=row*CS+HUD_H;
     var p=1.5,r=8;
     ctx.save();
+    /* scale-in animation */
+    var anim=iceAnims[col+'_'+row];
+    if(anim){
+      var tt=Math.min(1,anim.t/190);
+      var sc=1-(1-tt)*(1-tt); /* ease-out quad */
+      ctx.translate(x+CS/2,y+CS/2); ctx.scale(sc,sc); ctx.translate(-(x+CS/2),-(y+CS/2));
+    }
     /* outer shadow fill */
     ctx.fillStyle='rgba(0,70,130,0.5)';
     ctx.fillRect(x,y,CS,CS);
@@ -5855,73 +5916,45 @@ var PlayaJuego = (function(){
   function drawWall(col,row){
     var x=col*CS,y=row*CS+HUD_H;
     ctx.save();
-    /* base stone gradient */
-    var g=ctx.createLinearGradient(x,y,x,y+CS);
-    g.addColorStop(0,'#424258');
-    g.addColorStop(0.45,'#2a2a3c');
-    g.addColorStop(1,'#161620');
-    ctx.fillStyle=g;ctx.fillRect(x,y,CS,CS);
-    /* stone face detail patches */
-    ctx.fillStyle='rgba(255,255,255,0.04)';
-    ctx.fillRect(x+7,y+5,CS*.38,CS*.32);
-    ctx.fillRect(x+CS*.55,y+CS*.52,CS*.28,CS*.28);
-    /* mortar lines — horizontal center */
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(x,y+Math.floor(CS/2)-1,CS,2);
-    /* mortar lines — vertical offset per row */
-    var voff=(row%2===0)?CS/2:0;
-    ctx.fillRect(x+((CS/2+voff)%CS),y,2,Math.floor(CS/2)-1);
-    ctx.fillRect(x+((CS/2+voff)%CS),y+Math.floor(CS/2)+1,2,Math.floor(CS/2)-1);
-    /* gold accent at top */
-    ctx.fillStyle='rgba(200,160,48,0.22)';
-    ctx.fillRect(x,y,CS,3);
-    /* top/left bevel highlight */
-    ctx.fillStyle='rgba(255,255,255,0.13)';
-    ctx.fillRect(x,y,CS,5);
-    ctx.fillStyle='rgba(255,255,255,0.09)';
-    ctx.fillRect(x,y,5,CS);
+    /* dark charcoal stone — like Bad Ice Cream */
+    ctx.fillStyle='#2a2a30';
+    ctx.fillRect(x,y,CS,CS);
+    /* brick face — two cells per row, offset alternates */
+    var voff=(row%2===0)?0:Math.floor(CS/2);
+    /* brick 1 face */
+    ctx.fillStyle='rgba(255,255,255,0.05)';
+    ctx.fillRect(x+2,y+2,((voff+CS/2)-4)%CS+2,Math.floor(CS/2)-4);
+    /* brick 2 face */
+    ctx.fillRect(x+((voff+CS/2+2)%CS),y+Math.floor(CS/2)+2,CS/2-4,Math.floor(CS/2)-4);
+    /* mortar lines */
+    ctx.fillStyle='rgba(0,0,0,0.55)';
+    ctx.fillRect(x,y+Math.floor(CS/2)-1,CS,2);       /* horizontal */
+    ctx.fillRect(x+((voff+Math.floor(CS/2))%CS),y,2,Math.floor(CS/2)-1);  /* vertical top half */
+    ctx.fillRect(x+((voff+Math.floor(CS/2))%CS),y+Math.floor(CS/2)+1,2,Math.floor(CS/2)-1); /* bottom half */
+    /* top bevel (lighter) */
+    ctx.fillStyle='rgba(255,255,255,0.14)';
+    ctx.fillRect(x,y,CS,4);
+    ctx.fillStyle='rgba(255,255,255,0.08)';
+    ctx.fillRect(x,y,4,CS);
     /* bottom/right shadow */
-    ctx.fillStyle='rgba(0,0,0,0.58)';
-    ctx.fillRect(x,y+CS-5,CS,5);
-    ctx.fillRect(x+CS-5,y,5,CS);
-    /* outer border */
-    ctx.strokeStyle='rgba(0,0,0,0.65)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,CS-1,CS-1);
+    ctx.fillStyle='rgba(0,0,0,0.65)';
+    ctx.fillRect(x,y+CS-4,CS,4);
+    ctx.fillRect(x+CS-4,y,4,CS);
     ctx.restore();
   }
 
   function drawField(){
-    /* checkerboard — bright saturated grass */
+    /* Warm cream tiles — exactly like Bad Ice Cream floor */
     for(var r=0;r<ROWS;r++){
       for(var c=0;c<COLS;c++){
-        ctx.fillStyle=((r+c)%2===0)?'#2eb82e':'#28a828';
+        ctx.fillStyle=((r+c)%2===0)?'#edeacf':'#e5e2c6';
         ctx.fillRect(c*CS,HUD_H+r*CS,CS,CS);
-        /* subtle per-tile vignette */
-        var tg=ctx.createRadialGradient(c*CS+CS/2,HUD_H+r*CS+CS/2,2,c*CS+CS/2,HUD_H+r*CS+CS/2,CS*.62);
-        tg.addColorStop(0,'rgba(255,255,255,0.04)');
-        tg.addColorStop(1,'rgba(0,0,0,0.06)');
-        ctx.fillStyle=tg;ctx.fillRect(c*CS,HUD_H+r*CS,CS,CS);
       }
     }
-    /* field markings */
-    ctx.save();
-    ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=2;
-    /* center circle */
-    ctx.beginPath();ctx.arc(GW/2,HUD_H+ROWS*CS/2,CS*2.2,0,Math.PI*2);ctx.stroke();
-    ctx.beginPath();ctx.arc(GW/2,HUD_H+ROWS*CS/2,CS*.38,0,Math.PI*2);ctx.stroke();
-    /* halfway line */
-    ctx.beginPath();ctx.moveTo(GW/2,HUD_H);ctx.lineTo(GW/2,HUD_H+ROWS*CS);ctx.stroke();
-    /* penalty boxes */
-    ctx.strokeRect(0,HUD_H+CS*3,CS*3.5,CS*7);
-    ctx.strokeRect(GW-CS*3.5,HUD_H+CS*3,CS*3.5,CS*7);
-    /* goal areas */
-    ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1.5;
-    ctx.strokeRect(0,HUD_H+CS*4.5,CS*1.5,CS*4);
-    ctx.strokeRect(GW-CS*1.5,HUD_H+CS*4.5,CS*1.5,CS*4);
-    /* very subtle tile grid */
-    ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.lineWidth=1;
+    /* very subtle grid lines */
+    ctx.strokeStyle='rgba(0,0,0,0.07)';ctx.lineWidth=1;
     for(var c2=0;c2<=COLS;c2++){ctx.beginPath();ctx.moveTo(c2*CS,HUD_H);ctx.lineTo(c2*CS,HUD_H+ROWS*CS);ctx.stroke();}
     for(var r2=0;r2<=ROWS;r2++){ctx.beginPath();ctx.moveTo(0,HUD_H+r2*CS);ctx.lineTo(GW,HUD_H+r2*CS);ctx.stroke();}
-    ctx.restore();
   }
 
   function drawHUD(){
@@ -6011,12 +6044,33 @@ var PlayaJuego = (function(){
       var bounce=Math.sin(animF/300+b.col*0.7+b.row*1.1)*4;
       drawBall(b.col*CS+CS/2,b.row*CS+CS/2+HUD_H,bounce);
     });
-    /* net placement ghost */
+    /* ice placement ghost — muestra toda la fila como en Bad Ice Cream */
     var d2=dirDelta(player.dir),tc=player.col+d2.dc,tr=player.row+d2.dr;
-    if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS&&grid[tr][tc]===0){
-      ctx.fillStyle='rgba(100,180,255,.13)'; ctx.fillRect(tc*CS,tr*CS+HUD_H,CS,CS);
-      ctx.strokeStyle='rgba(100,180,255,.35)'; ctx.lineWidth=2; ctx.strokeRect(tc*CS+1,tr*CS+HUD_H+1,CS-2,CS-2);
+    if(tc>=0&&tc<COLS&&tr>=0&&tr<ROWS){
+      if(grid[tr][tc]===0){
+        var gc=tc,gr=tr;
+        while(gc>=0&&gc<COLS&&gr>=0&&gr<ROWS&&grid[gr][gc]===0){
+          var gok=!enemies.some(function(e){return e.col===gc&&e.row===gr;})&&
+                  !balls.some(function(b){return b.col===gc&&b.row===gr;});
+          if(!gok)break;
+          ctx.fillStyle='rgba(140,210,255,0.18)';
+          ctx.fillRect(gc*CS+1,gr*CS+HUD_H+1,CS-2,CS-2);
+          ctx.strokeStyle='rgba(80,180,255,0.4)';ctx.lineWidth=1.5;
+          ctx.strokeRect(gc*CS+2,gr*CS+HUD_H+2,CS-4,CS-4);
+          gc+=d2.dc; gr+=d2.dr;
+        }
+      } else if(grid[tr][tc]===2){
+        /* breaking preview — show which ice will break */
+        var bc2=tc,br2=tr;
+        while(bc2>=0&&bc2<COLS&&br2>=0&&br2<ROWS&&grid[br2][bc2]===2){
+          ctx.fillStyle='rgba(255,100,100,0.18)';
+          ctx.fillRect(bc2*CS+1,br2*CS+HUD_H+1,CS-2,CS-2);
+          bc2+=d2.dc; br2+=d2.dr;
+        }
+      }
     }
+    /* particles (behind sprites) */
+    drawParticles();
     /* enemies */
     enemies.forEach(function(e){ drawEnemySprite(e.px,e.py+HUD_H,e.animTick,e.type); });
     /* player */
@@ -6271,7 +6325,7 @@ var PlayaJuego = (function(){
     if(!running)return;
     var dt=Math.min(ts-lastT,50); lastT=ts; animF+=dt;
     update(dt);
-    ctx.fillStyle='#030d1e'; ctx.fillRect(0,0,GW,GH);
+    ctx.fillStyle='#edeacf'; ctx.fillRect(0,0,GW,GH);
     if(gameScreen==='title')drawTitle();
     else if(gameScreen==='charsel')drawCharSel();
     else if(gameScreen==='play')drawGameplay();
