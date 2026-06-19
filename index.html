@@ -5516,12 +5516,22 @@ var PlayaJuego = (function(){
     if(keys['ArrowDown']||keys['KeyS'])wantDir='down';
     if(keys['ArrowLeft']||keys['KeyA'])wantDir='left';
     if(keys['ArrowRight']||keys['KeyD'])wantDir='right';
-    if(wantDir)p.dir=wantDir;
-    p.moveTimer+=dt;
-    if(wantDir&&p.moveTimer>=MOVE_DELAY){
+    if(wantDir){
+      if(wantDir!==p.dir){
+        /* cambio de dirección: girar en el lugar, resetear timer */
+        p.dir=wantDir; p.moveTimer=0;
+      } else {
+        /* misma dirección sostenida: acumular y mover */
+        p.moveTimer+=dt;
+        if(p.moveTimer>=MOVE_DELAY){
+          p.moveTimer=0;
+          var d=dirDelta(p.dir),nc=p.col+d.dc,nr=p.row+d.dr;
+          if(!isSolid(nc,nr)){p.col=nc;p.row=nr;p.animTick=(p.animTick+1)%4;}
+        }
+      }
+    } else {
+      /* sin tecla presionada: resetear para que el próximo press empiece desde 0 */
       p.moveTimer=0;
-      var d=dirDelta(p.dir),nc=p.col+d.dc,nr=p.row+d.dr;
-      if(!isSolid(nc,nr)){p.col=nc;p.row=nr;p.animTick=(p.animTick+1)%4;}
     }
     if(consume('Space')||consume('KeyZ')){
       var d2=dirDelta(p.dir),tc=p.col+d2.dc,tr=p.row+d2.dr;
