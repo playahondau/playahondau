@@ -29,6 +29,8 @@ body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-s
 /* ── Grid: crónica izquierda (secundaria) | resultados+fixture derecha (protagonista) ── */
 .dr-grid{display:grid;grid-template-columns:1fr 2fr;gap:1.8rem;align-items:start;}
 .dr-col-cron{border-right:1px solid #ccc;padding-right:1.8rem;}
+/* ── Sin crónica: resultados+fixture a ancho completo ── */
+.dr-grid-nocron{display:block;}
 .dr-sh{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-top:2px solid #1a1a1a;border-bottom:1px solid #ccc;padding:.22rem 0;margin-bottom:.7rem;}
 .dr-sh-sec{color:#555;}
 
@@ -180,10 +182,9 @@ function renderDiario(resultados, fixture) {
   var subtit  = '';
   var carr    = CRON[res] || CRON.derrota;
 
-  // Si escribiste la crónica en la columna L del sheet, se usa esa. Si no, texto automático.
-  var cronica = r.cronica
-    ? r.cronica
-    : carr[Math.floor(Math.random()*carr.length)];
+  // Si escribiste la crónica en la columna L del sheet, se usa esa. Si no, sin crónica.
+  var cronica    = r.cronica || '';
+  var hasCronica = !!cronica;
 
   // Parsea "Visita- Arrayanes" → { lado: "Visita", cancha: "Arrayanes" }
   function parseLoc(loc) {
@@ -240,28 +241,28 @@ function renderDiario(resultados, fixture) {
       '<h3 class="dr-titular">'+titular+'</h3>'+
       '<p class="dr-subtit">'+subtit+'</p>'+
     '</div>'+
-    /* ── Grid: crónica (1fr) | resultados+fixture (2fr) ── */
-    '<div class="dr-grid">'+
-      /* Columna izquierda: crónica secundaria */
-      '<div class="dr-col dr-col-cron">'+
-        '<h4 class="dr-sh dr-sh-sec">Cr&oacute;nica</h4>'+
-        '<p class="dr-body">'+cronica+'</p>'+
-        (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
-      '</div>'+
-      /* Columna derecha: resultados | fixture en sub-grid */
-      '<div class="dr-col dr-col-main">'+
-        '<div class="dr-results-grid">'+
-          '<div>'+
-            '<h4 class="dr-sh">Resultados del finde</h4>'+
-            resHtml+
+    /* ── Cuerpo: con o sin crónica ── */
+    (hasCronica
+      /* Con crónica: grid 1fr|2fr */
+      ? '<div class="dr-grid">'+
+          '<div class="dr-col dr-col-cron">'+
+            '<h4 class="dr-sh dr-sh-sec">Cr&oacute;nica</h4>'+
+            '<p class="dr-body">'+cronica+'</p>'+
+            (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
           '</div>'+
-          '<div>'+
-            '<h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+
-            fixHtml+
+          '<div class="dr-col dr-col-main">'+
+            '<div class="dr-results-grid">'+
+              '<div><h4 class="dr-sh">Resultados del finde</h4>'+resHtml+'</div>'+
+              '<div><h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+fixHtml+'</div>'+
+            '</div>'+
           '</div>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
+        '</div>'
+      /* Sin crónica: resultados+fixture a ancho completo */
+      : '<div class="dr-results-grid">'+
+          '<div><h4 class="dr-sh">Resultados del finde</h4>'+resHtml+'</div>'+
+          '<div><h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+fixHtml+'</div>'+
+        '</div>'
+    );
 }
 </script>
 
