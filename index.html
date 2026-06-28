@@ -2317,14 +2317,6 @@ async function init() {
     const recentResultados = latestTs
       ? resultados.filter(r => (latestTs - new Date(r._ts)) < 4 * 24 * 60 * 60 * 1000)
       : resultados;
-    // Máster — actualización manual vía HTML (Federación Fútbol Master, liga aparte)
-    recentResultados.push({
-      categoria: 'Máster', resultado: 'derrota',
-      local: 'Alas Rojas', visitante: 'Playa Honda U.',
-      goles_local: 6, goles_visitante: 3,
-      fecha: 'Sáb 20 jun.', _ts: '2000-01-01',
-      goleadores: 'Alejandro King; Alfredo Ramos; Andrés Risso'
-    });
     renderTicker(recentResultados);
     renderResultados(recentResultados, extra);
     // Overrides manuales hora/lugar cuando lud-stats no los tiene — actualizar acá cada fecha

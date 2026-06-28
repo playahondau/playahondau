@@ -212,7 +212,7 @@ function renderDiario(resultados, fixture) {
   }).join('');
 
   var fixHtml = (fixture.length
-    ? fixture.slice(0,6).map(function(f) {
+    ? fixture.filter(function(f){ return f.local && f.visitante; }).slice(0,6).map(function(f) {
         return '<div class="dr-next-card">'+
           '<div class="dr-cat">'+f.categoria+'</div>'+
           '<div class="dr-next-match">'+f.local+' vs '+f.visitante+'</div>'+
@@ -248,7 +248,6 @@ function renderDiario(resultados, fixture) {
           '<div class="dr-col dr-col-cron">'+
             '<h4 class="dr-sh dr-sh-sec">Cr&oacute;nica</h4>'+
             '<p class="dr-body">'+cronica+'</p>'+
-            (r.goleadores ? '<p class="dr-goles-main">&#9917; '+r.goleadores.split(';').map(function(g){return g.trim();}).join(' &nbsp;·&nbsp; ')+'</p>' : '')+
           '</div>'+
           '<div class="dr-col dr-col-main">'+
             '<div class="dr-results-grid">'+
