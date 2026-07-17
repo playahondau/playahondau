@@ -177,7 +177,7 @@ function renderDiario(resultados, fixture) {
   };
 
   var arr     = TIT[res] || TIT.derrota;
-  var titular = 'ASÍ FUE EL FINDE DEL CLUB';
+  var titular = 'SE APROXIMA EL REGRESO';
   var sarr    = SUB[res] || SUB.derrota;
   var subtit  = '';
   var carr    = CRON[res] || CRON.derrota;
@@ -195,7 +195,7 @@ function renderDiario(resultados, fixture) {
     };
   }
 
-  var resHtml = resultados.slice(0,6).map(function(rv) {
+  var resHtml = resultados.filter(function(rv){ return rv.score && rv.rival; }).slice(0,6).map(function(rv) {
     var cardCls = rv.estado==='victoria'?'dr-result-win':rv.estado==='empate'?'dr-result-draw':'dr-result-loss';
     var col     = rv.estado==='victoria'?'#1a6b1a':rv.estado==='empate'?'#9a6f00':'#a00000';
     var badge   = rv.estado==='victoria'?'▲ ':rv.estado==='empate'?'▬ ':'▼ ';
@@ -251,14 +251,14 @@ function renderDiario(resultados, fixture) {
           '</div>'+
           '<div class="dr-col dr-col-main">'+
             '<div class="dr-results-grid">'+
-              '<div><h4 class="dr-sh">Resultados del finde</h4>'+resHtml+'</div>'+
+              '<div><h4 class="dr-sh">Últimos partidos</h4>'+resHtml+'</div>'+
               '<div><h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+fixHtml+'</div>'+
             '</div>'+
           '</div>'+
         '</div>'
       /* Sin crónica: resultados+fixture a ancho completo */
       : '<div class="dr-results-grid">'+
-          '<div><h4 class="dr-sh">Resultados del finde</h4>'+resHtml+'</div>'+
+          '<div><h4 class="dr-sh">Últimos partidos</h4>'+resHtml+'</div>'+
           '<div><h4 class="dr-sh">Pr&oacute;ximos partidos</h4>'+fixHtml+'</div>'+
         '</div>'
     );
