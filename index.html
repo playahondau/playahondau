@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playa Honda Universitario | Club de Fútbol – Liga Universitaria Uruguay</title>
-  <meta name="description" content="Sitio oficial de Playa Honda Universitario, club de fútbol fundado en 1964. Resultados, fixture, tabla de posiciones, goleadores e historial de la Liga Universitaria del Uruguay." />
+  <title>Playa Honda Universitario – Fútbol Universitario Uruguay</title>
+  <meta name="description" content="Playa Honda Universitario, club de fútbol fundado en 1964. Resultados, fixture, posiciones, goleadores y más de la Liga Universitaria del Uruguay." />
   <meta name="keywords" content="Playa Honda Universitario, Playa Honda fútbol, club universitario Uruguay, Liga Universitaria Uruguay, fútbol universitario Uruguay, resultados fútbol, tabla de posiciones" />
   <meta name="author" content="Playa Honda Universitario" />
   <meta name="robots" content="index, follow" />
@@ -14,7 +14,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Playa Honda Universitario" />
   <meta property="og:url" content="https://playahondau.com/" />
-  <meta property="og:title" content="Playa Honda Universitario | Club de Fútbol – Liga Universitaria Uruguay" />
+  <meta property="og:title" content="Playa Honda Universitario – Fútbol Universitario Uruguay" />
   <meta property="og:description" content="Sitio oficial de Playa Honda Universitario, club de fútbol fundado en 1964. Resultados, fixture, posiciones y más de la Liga Universitaria del Uruguay." />
   <meta property="og:image" content="https://playahondau.com/escudo.png" />
   <meta property="og:image:width" content="512" />
@@ -24,14 +24,17 @@
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@playahondau" />
-  <meta name="twitter:title" content="Playa Honda Universitario | Club de Fútbol" />
+  <meta name="twitter:title" content="Playa Honda Universitario – Fútbol Universitario Uruguay" />
   <meta name="twitter:description" content="Resultados, fixture, posiciones y más de la Liga Universitaria del Uruguay. Fundado en 1964." />
   <meta name="twitter:image" content="https://playahondau.com/escudo.png" />
 
   <!-- Seguridad: headers vía meta -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:;" />
 
   <!-- Datos estructurados para Google -->
   <script type="application/ld+json">
@@ -84,15 +87,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
-  <!-- Preload crítico del loader -->
-  <link rel="preload" href="escudo.png" as="image" />
-  <link rel="preload" href="trapos-hero.jpg" as="image" />
-  <link rel="preload" href="loader1.jpg" as="image" />
-  <link rel="preload" href="loader2.jpg" as="image" />
-  <link rel="preload" href="loader3.jpg" as="image" />
-  <link rel="preload" href="loader4.jpg" as="image" />
-  <link rel="preload" href="loader6.jpg" as="image" />
-  <link rel="preload" href="loader7.jpg" as="image" />
+  <!-- Preload crítico -->
+  <link rel="preload" href="escudo.png" as="image" fetchpriority="high" />
+  <link rel="preload" href="trapos-hero.jpg" as="image" fetchpriority="high" />
   <style>
     :root{--azul:#002D62;--dorado:#ffffff;--dorado-light:#c8d8f8;--blanco:#F5F5F0;--gris:#9aa0ac;--negro:#040d22;--fondo:#071428;--card-bg:rgba(4,18,60,.7);--border:rgba(255,255,255,.12);--transition:.25s ease;}
     *{margin:0;padding:0;box-sizing:border-box;}
