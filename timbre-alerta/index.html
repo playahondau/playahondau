@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alerta de Timbre</title>
+<style>
+  :root {
+    --azul: #1a3a8f;
+    --dorado: #d4af37;
+    --fondo: #0b0f1a;
+    --panel: #131a2b;
+    --texto: #e8ecf5;
+    --verde: #2ecc71;
+    --rojo: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--fondo), #060810);
+    color: var(--texto);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; }
+  h1 {
+    font-size: 1.6rem;
+    text-align: center;
+    margin-bottom: 4px;
+    color: var(--dorado);
+  }
+  p.subtitle {
+    text-align: center;
+    color: #9aa5c0;
+    margin-top: 0;
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid #24304a;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+    color: var(--dorado);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: #b7c0d8;
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #2c3a5c;
+    background: #0d1322;
+    color: var(--texto);
+    font-size: 0.95rem;
+  }
+  input[type="range"] { width: 100%; }
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .row:last-child { margin-bottom: 0; }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    background: #24304a;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #666; }
+  .dot.on { background: var(--verde); box-shadow: 0 0 8px var(--verde); }
+  .dot.err { background: var(--rojo); }
+  .meter {
+    height: 10px;
+    border-radius: 6px;
+    background: #0d1322;
+    overflow: hidden;
+    border: 1px solid #24304a;
+  }
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--verde), var(--dorado), var(--rojo));
+    transition: width 0.08s linear;
+  }
+  button {
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-primary {
+    background: var(--azul);
+    color: #fff;
+  }
+  .btn-primary.listening {
+    background: var(--rojo);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--dorado);
+    border: 1px solid var(--dorado);
+    margin-top: 10px;
+  }
+  .log {
+    font-size: 0.8rem;
+    color: #8a94b3;
+    max-height: 140px;
+    overflow-y: auto;
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  .steps {
+    font-size: 0.85rem;
+    color: #b7c0d8;
+    line-height: 1.6;
+    padding-left: 18px;
+  }
+  .steps a { color: var(--dorado); }
+  code {
+    background: #0d1322;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔔 Alerta de Timbre</h1>
+  <p class="subtitle">Escucha el timbre y avisa al instante a todos los celulares de la casa, aunque estén en el fondo.</p>
+
+  <div class="card">
+    <h2>1. Configurar aviso</h2>
+    <div class="row" style="display:block">
+      <label for="topic">Nombre del aviso (compartilo solo con tu familia)</label>
+      <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
+    </div>
+    <button class="btn-secondary" id="genTopic">Generar nombre único</button>
+    <p class="steps" style="margin-top:14px">
+      Para recibir el aviso en el celular:<br>
+      1. Instalá la app gratuita <b>ntfy</b> (buscala como "ntfy" en App Store / Play Store).<br>
+      2. Abrí la app y suscribite al tema con el mismo nombre que pusiste arriba.<br>
+      3. Repetí esto en el celular de cada persona de la casa.<br>
+      Listo — no hace falta cuenta ni pagar nada.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>2. Escuchar el timbre</h2>
+    <div class="row">
+      <span class="status-badge"><span class="dot" id="micDot"></span><span id="micStatus">Micrófono apagado</span></span>
+    </div>
+    <div class="row" style="display:block">
+      <label>Nivel de sonido actual</label>
+      <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+    </div>
+    <div class="row" style="display:block">
+      <label for="sensitivity">Sensibilidad (más a la izquierda = necesita sonido más fuerte)</label>
+      <input type="range" id="sensitivity" min="10" max="90" value="55">
+    </div>
+    <div class="row" style="display:block">
+      <label for="cooldown">Minutos de espera entre avisos (para no repetir)</label>
+      <input type="range" id="cooldown" min="0.5" max="5" step="0.5" value="1.5">
+      <span id="cooldownLabel" style="font-size:0.8rem;color:#8a94b3"></span>
+    </div>
+    <button class="btn-primary" id="toggleListen">Empezar a escuchar</button>
+    <button class="btn-secondary" id="testAlert">Probar aviso ahora</button>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card">
+    <h2>Importante</h2>
+    <p class="steps">
+      Esta pestaña tiene que quedar abierta en el dispositivo que "escucha" (la Mac fija o el celular viejo), con la pantalla encendida o el navegador en primer plano. Si se apaga la pantalla o se cierra la pestaña, deja de escuchar. Probá primero con "Probar aviso ahora" para confirmar que llega la notificación a todos los celulares antes de confiar en la detección automática.
+    </p>
+  </div>
+</div>
+
+<script>
+const topicInput = document.getElementById('topic');
+const genTopicBtn = document.getElementById('genTopic');
+const micDot = document.getElementById('micDot');
+const micStatus = document.getElementById('micStatus');
+const meterFill = document.getElementById('meterFill');
+const sensitivitySlider = document.getElementById('sensitivity');
+const cooldownSlider = document.getElementById('cooldown');
+const cooldownLabel = document.getElementById('cooldownLabel');
+const toggleBtn = document.getElementById('toggleListen');
+const testBtn = document.getElementById('testAlert');
+const logEl = document.getElementById('log');
+
+const STORAGE_KEY = 'timbre-alerta-topic';
+topicInput.value = localStorage.getItem(STORAGE_KEY) || '';
+topicInput.addEventListener('input', () => localStorage.setItem(STORAGE_KEY, topicInput.value.trim()));
+
+genTopicBtn.addEventListener('click', () => {
+  const rand = Math.random().toString(36).slice(2, 8);
+  topicInput.value = `timbre-playahonda-${rand}`;
+  localStorage.setItem(STORAGE_KEY, topicInput.value);
+});
+
+function updateCooldownLabel() {
+  cooldownLabel.textContent = `${cooldownSlider.value} min`;
+}
+cooldownSlider.addEventListener('input', updateCooldownLabel);
+updateCooldownLabel();
+
+function log(msg) {
+  const time = new Date().toLocaleTimeString();
+  logEl.innerHTML = `<div>[${time}] ${msg}</div>` + logEl.innerHTML;
+}
+
+async function sendAlert(reason) {
+  const topic = topicInput.value.trim();
+  if (!topic) {
+    log('⚠️ Falta poner un nombre de aviso arriba.');
+    alert('Primero poné (o generá) un nombre de aviso en el paso 1.');
+    return;
+  }
+  try {
+    await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+      method: 'POST',
+      headers: {
+        'Title': 'Tocaron el timbre 🔔',
+        'Priority': 'urgent',
+        'Tags': 'bellhop_bell'
+      },
+      body: 'Hay alguien en la puerta.'
+    });
+    log(`✅ Aviso enviado (${reason}).`);
+  } catch (err) {
+    log(`❌ No se pudo enviar el aviso: ${err.message}`);
+  }
+}
+
+testBtn.addEventListener('click', () => sendAlert('prueba manual'));
+
+let audioCtx, analyser, source, stream, rafId;
+let listening = false;
+let lastAlertAt = 0;
+let sustainedStart = null;
+
+function volumeThreshold() {
+  return Number(sensitivitySlider.value);
+}
+
+function cooldownMs() {
+  return Number(cooldownSlider.value) * 60 * 1000;
+}
+
+async function startListening() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    micStatus.textContent = 'Permiso de micrófono denegado';
+    micDot.classList.add('err');
+    log(`❌ No se pudo acceder al micrófono: ${err.message}`);
+    return;
+  }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 1024;
+  source = audioCtx.createMediaStreamSource(stream);
+  source.connect(analyser);
+
+  const data = new Uint8Array(analyser.frequencyBinCount);
+
+  listening = true;
+  micDot.classList.remove('err');
+  micDot.classList.add('on');
+  micStatus.textContent = 'Escuchando…';
+  toggleBtn.textContent = 'Dejar de escuchar';
+  toggleBtn.classList.add('listening');
+  log('🎙️ Empezó a escuchar el timbre.');
+
+  function tick() {
+    if (!listening) return;
+    analyser.getByteFrequencyData(data);
+
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) sum += data[i];
+    const avg = sum / data.length;
+    meterFill.style.width = `${Math.min(100, (avg / 128) * 100)}%`;
+
+    const threshold = volumeThreshold();
+    const now = Date.now();
+
+    if (avg > threshold) {
+      if (sustainedStart === null) sustainedStart = now;
+      const heldFor = now - sustainedStart;
+      if (heldFor > 350 && heldFor < 4000 && (now - lastAlertAt) > cooldownMs()) {
+        lastAlertAt = now;
+        sustainedStart = null;
+        sendAlert('detección automática');
+      }
+    } else {
+      sustainedStart = null;
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+function stopListening() {
+  listening = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (audioCtx) audioCtx.close();
+  micDot.classList.remove('on');
+  micStatus.textContent = 'Micrófono apagado';
+  toggleBtn.textContent = 'Empezar a escuchar';
+  toggleBtn.classList.remove('listening');
+  meterFill.style.width = '0%';
+  log('🛑 Dejó de escuchar.');
+}
+
+toggleBtn.addEventListener('click', () => {
+  if (listening) stopListening();
+  else startListening();
+});
+</script>
+</body>
+</html>
