@@ -234,18 +234,25 @@ async function sendAlert(reason) {
     return;
   }
   try {
-    await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+    const res = await fetch('https://ntfy.sh/', {
       method: 'POST',
-      headers: {
-        'Title': 'Tocaron el timbre',
-        'Priority': 'urgent',
-        'Tags': 'bellhop_bell'
-      },
-      body: 'Hay alguien en la puerta.'
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic: topic,
+        title: 'Tocaron el timbre',
+        message: 'Hay alguien en la puerta.',
+        priority: 5,
+        tags: ['bellhop_bell']
+      })
     });
-    log(`✅ Aviso enviado (${reason}).`);
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && data.id) {
+      log(`📨 ntfy confirmó la entrega al servidor (id ${data.id}) (${reason}).`);
+    } else {
+      log(`❌ ntfy NO confirmó el envío (status ${res.status}) (${reason}).`);
+    }
   } catch (err) {
-    log(`❌ No se pudo enviar el aviso: ${err.message}`);
+    log(`❌ El pedido a ntfy nunca salió del navegador: ${err.message}`);
   }
 }
 

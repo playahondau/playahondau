@@ -167,18 +167,28 @@ async function crearAviso(motivo) {
   const topic = topicInput.value.trim();
   if (topic) {
     try {
-      const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+      const res = await fetch('https://ntfy.sh/', {
         method: 'POST',
-        headers: { 'Title': 'Tocaron el timbre', 'Priority': 'urgent', 'Tags': 'bellhop_bell' },
-        body: 'Hay alguien en la puerta. Abrí el panel de anfitriones para responder.'
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: topic,
+          title: 'Tocaron el timbre',
+          message: 'Hay alguien en la puerta. Abrí el panel de anfitriones para responder.',
+          priority: 5,
+          tags: ['bellhop_bell']
+        })
       });
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        log(`❌ ntfy respondió con error ${res.status}: ${body.slice(0, 200)}`);
+      const data = await res.json().catch(() => null);
+      if (res.ok && data && data.id) {
+        log(`📨 ntfy confirmó la entrega al servidor (id ${data.id}). Si no te suena, el problema es de notificaciones en el celular, no de la página.`);
+      } else {
+        log(`❌ ntfy NO confirmó el envío (status ${res.status}). Respuesta: ${JSON.stringify(data).slice(0, 200)}`);
       }
     } catch (err) {
-      log(`❌ No se pudo enviar el push: ${err.message}`);
+      log(`❌ El pedido a ntfy nunca salió del navegador: ${err.message}. Puede ser un bloqueador de rastreo/anuncios en el celular.`);
     }
+  } else {
+    log('⚠️ No hay nombre de aviso configurado, no se mandó push.');
   }
   log(`✅ Aviso creado (${motivo}).`);
 }
