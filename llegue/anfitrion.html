@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Llegué — Panel de anfitriones</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<style>
+  :root {
+    --azul: #1a3a8f; --dorado: #d4af37; --fondo: #0b0f1a;
+    --panel: #131a2b; --texto: #e8ecf5; --verde: #2ecc71; --rojo: #e74c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--fondo), #060810);
+    color: var(--texto); min-height: 100vh; padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; text-align: center; margin-bottom: 4px; color: var(--dorado); }
+  p.subtitle { text-align: center; color: #9aa5c0; margin-top: 0; margin-bottom: 24px; font-size: 0.95rem; }
+  a.nav { display: block; text-align: center; color: var(--dorado); margin-bottom: 20px; font-size: 0.9rem; }
+  .card { background: var(--panel); border: 1px solid #24304a; border-radius: 14px; padding: 20px; margin-bottom: 18px; }
+  .card h2 { font-size: 1rem; margin: 0 0 12px; color: var(--dorado); text-transform: uppercase; letter-spacing: 0.05em; }
+  label { display: block; font-size: 0.85rem; color: #b7c0d8; margin-bottom: 6px; }
+  input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2c3a5c; background: #0d1322; color: var(--texto); font-size: 0.95rem; }
+  button { font-family: inherit; font-weight: 600; border: none; border-radius: 10px; padding: 12px 16px; font-size: 0.95rem; cursor: pointer; }
+  .btn-primary { background: var(--azul); color: #fff; width: 100%; }
+  .btn-secondary { background: transparent; color: var(--dorado); border: 1px solid var(--dorado); width: 100%; margin-top: 10px; }
+  .arrival {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; border-radius: 10px; background: #0d1322; margin-bottom: 10px; border: 1px solid #22304f;
+  }
+  .arrival .info { font-size: 0.9rem; }
+  .arrival .info .t { color: #8a94b3; font-size: 0.78rem; }
+  .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; }
+  .badge.waiting { background: #4a3a12; color: #f5c542; }
+  .badge.assigned { background: #123a2a; color: var(--verde); }
+  .badge.attended { background: #24304a; color: #9aa5c0; }
+  .btn-mini { padding: 8px 12px; font-size: 0.82rem; border-radius: 8px; border: none; cursor: pointer; }
+  .btn-mini.go { background: var(--verde); color: #06210f; }
+  .btn-mini.done { background: #24304a; color: var(--texto); margin-left: 6px; }
+  .empty { text-align: center; color: #6b7590; padding: 24px 0; font-size: 0.9rem; }
+
+  /* Alerta de pantalla completa */
+  #overlay {
+    position: fixed; inset: 0; background: rgba(11,15,26,0.97);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 999; padding: 24px; text-align: center;
+    animation: pulse-bg 1.2s infinite;
+  }
+  @keyframes pulse-bg { 0%,100% { background: rgba(11,15,26,0.97);} 50% { background: rgba(40,10,10,0.97);} }
+  #overlay .bell { font-size: 4rem; margin-bottom: 12px; animation: shake 0.6s infinite; }
+  @keyframes shake { 0%,100% { transform: rotate(0);} 25% { transform: rotate(-15deg);} 75% { transform: rotate(15deg);} }
+  #overlay h2 { font-size: 1.8rem; color: #fff; margin: 0 0 8px; }
+  #overlay p { color: #cbd2e5; margin: 0 0 28px; }
+  #overlay button { width: 100%; max-width: 320px; padding: 18px; font-size: 1.1rem; border-radius: 12px; margin-bottom: 12px; }
+  #overlay .btn-go { background: var(--verde); color: #06210f; }
+  #overlay .btn-ignore { background: transparent; color: #8a94b3; border: 1px solid #3a4463; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="nav" href="index.html">← Ir a la página de escucha</a>
+  <h1>🏠 Panel de anfitriones</h1>
+  <p class="subtitle">Cuando alguien toca el timbre, aparece acá al instante para que coordinen quién abre.</p>
+
+  <div class="card">
+    <h2>Tu nombre</h2>
+    <input type="text" id="hostName" placeholder="ej: Francisco">
+  </div>
+
+  <div class="card">
+    <h2>Avisos</h2>
+    <div id="arrivals"><div class="empty">Todavía no hay avisos.</div></div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="bell">🔔</div>
+  <h2>¡Tocaron el timbre!</h2>
+  <p id="overlayTime"></p>
+  <button class="btn-go" id="overlayGo">VOY YO</button>
+  <button class="btn-ignore" id="overlayIgnore">Ignorar</button>
+</div>
+
+<script>
+const hostNameInput = document.getElementById('hostName');
+const arrivalsEl = document.getElementById('arrivals');
+const overlay = document.getElementById('overlay');
+const overlayTime = document.getElementById('overlayTime');
+const overlayGo = document.getElementById('overlayGo');
+const overlayIgnore = document.getElementById('overlayIgnore');
+
+const HOST_KEY = 'llegue-host-name';
+hostNameInput.value = localStorage.getItem(HOST_KEY) || '';
+hostNameInput.addEventListener('input', () => localStorage.setItem(HOST_KEY, hostNameInput.value.trim()));
+
+if (LLEGUE_CONFIG.firebase.apiKey === 'PEGAR_ACA') {
+  arrivalsEl.innerHTML = '<div class="empty">Falta configurar Firebase en config.js para que funcione el tiempo real.</div>';
+} else {
+  firebase.initializeApp(LLEGUE_CONFIG.firebase);
+  const db = firebase.database();
+  const ref = db.ref('arrivals').limitToLast(20);
+
+  let ignoredIds = new Set();
+  let overlayCurrentId = null;
+  let alertInterval = null;
+
+  function fmtTime(ts) {
+    return new Date(ts).toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function elapsed(ts) {
+    const mins = Math.floor((Date.now() - ts) / 60000);
+    if (mins < 1) return 'recién';
+    return `hace ${mins} min`;
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      setTimeout(() => { osc.stop(); ctx.close(); }, 350);
+    } catch (e) {}
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+  }
+
+  function assign(id) {
+    const hostName = hostNameInput.value.trim() || 'Alguien';
+    db.ref(`arrivals/${id}`).transaction(current => {
+      if (current && current.status === 'waiting') {
+        current.status = 'assigned';
+        current.assignedHost = hostName;
+        current.assignedAt = Date.now();
+        return current;
+      }
+      return; // aborta si ya fue asignado por otro anfitrión
+    });
+  }
+
+  function markAttended(id) {
+    db.ref(`arrivals/${id}`).update({ status: 'attended', attendedAt: Date.now() });
+  }
+
+  overlayGo.addEventListener('click', () => {
+    if (overlayCurrentId) assign(overlayCurrentId);
+    hideOverlay();
+  });
+  overlayIgnore.addEventListener('click', () => {
+    if (overlayCurrentId) ignoredIds.add(overlayCurrentId);
+    hideOverlay();
+  });
+
+  function hideOverlay() {
+    overlay.style.display = 'none';
+    overlayCurrentId = null;
+    if (alertInterval) { clearInterval(alertInterval); alertInterval = null; }
+  }
+
+  function showOverlay(id, createdAt) {
+    if (overlayCurrentId === id) return;
+    overlayCurrentId = id;
+    overlayTime.textContent = `Sonó a las ${fmtTime(createdAt)}`;
+    overlay.style.display = 'flex';
+    beep();
+    alertInterval = setInterval(beep, 4000);
+  }
+
+  ref.on('value', snapshot => {
+    const val = snapshot.val() || {};
+    const list = Object.entries(val)
+      .map(([id, a]) => ({ id, ...a }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    if (list.length === 0) {
+      arrivalsEl.innerHTML = '<div class="empty">Todavía no hay avisos.</div>';
+      hideOverlay();
+      return;
+    }
+
+    arrivalsEl.innerHTML = list.map(a => {
+      const badge = a.status === 'waiting'
+        ? '<span class="badge waiting">esperando</span>'
+        : a.status === 'assigned'
+          ? `<span class="badge assigned">${a.assignedHost} va</span>`
+          : '<span class="badge attended">atendido</span>';
+      const actions = a.status === 'waiting'
+        ? `<button class="btn-mini go" onclick="window.__assign('${a.id}')">VOY YO</button>`
+        : a.status === 'assigned'
+          ? `<button class="btn-mini done" onclick="window.__attend('${a.id}')">Ya fue atendido</button>`
+          : '';
+      return `<div class="arrival">
+        <div class="info">${a.name}<br><span class="t">${fmtTime(a.createdAt)} · ${elapsed(a.createdAt)}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">${badge}${actions}</div>
+      </div>`;
+    }).join('');
+
+    const activeWaiting = list.find(a => a.status === 'waiting' && !ignoredIds.has(a.id) && (Date.now() - a.createdAt) < 10 * 60 * 1000);
+    if (activeWaiting) {
+      showOverlay(activeWaiting.id, activeWaiting.createdAt);
+    } else {
+      hideOverlay();
+    }
+  });
+
+  window.__assign = assign;
+  window.__attend = markAttended;
+}
+</script>
+</body>
+</html>
