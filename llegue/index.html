@@ -47,20 +47,18 @@
 <div class="wrap">
   <a class="nav" href="anfitrion.html">Ir al panel de anfitriones →</a>
   <h1>🔔 Llegué — Escucha</h1>
-  <p class="subtitle">Detecta el timbre y avisa al instante a todos los anfitriones de la casa.</p>
+  <p class="subtitle">Este dispositivo (el celular viejo, apoyado cerca de la puerta) escucha el timbre real y avisa solo, sin que nadie toque nada acá.</p>
 
   <div class="card">
-    <h2>1. Aviso fuera de la app (opcional)</h2>
-    <label for="topic">Nombre del aviso en ntfy (para que suene el celular aunque no tengan esta página abierta)</label>
-    <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
-    <button class="btn-secondary" id="genTopic">Generar nombre único</button>
-    <p class="steps" style="margin-top:14px">
-      Instalá la app gratuita <b>ntfy</b> en cada celular y suscribite a este nombre. Usá el mismo nombre en el panel de anfitriones.
+    <h2>Cómo usarlo</h2>
+    <p class="steps" style="margin:0">
+      1. Dejá este celular enchufado y con la pantalla encendida cerca de donde se escucha el timbre.<br>
+      2. Tocá "Empezar a escuchar" una sola vez.<br>
+      3. Listo — cuando suene el timbre de verdad, la app manda el aviso sola a todos los celulares que tengan abierto el <a href="anfitrion.html" style="color:var(--dorado)">panel de anfitriones</a>.
     </p>
   </div>
 
   <div class="card">
-    <h2>2. Escuchar el timbre</h2>
     <div class="row">
       <span class="status-badge"><span class="dot" id="micDot"></span><span id="micStatus">Micrófono apagado</span></span>
     </div>
@@ -68,26 +66,31 @@
       <label>Nivel de sonido actual</label>
       <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
     </div>
-    <div class="row" style="display:block">
-      <label for="sensitivity">Sensibilidad (más a la izquierda = necesita sonido más fuerte)</label>
-      <input type="range" id="sensitivity" min="10" max="90" value="55">
-    </div>
-    <div class="row" style="display:block">
-      <label for="cooldown">Minutos de espera entre avisos</label>
-      <input type="range" id="cooldown" min="0.5" max="5" step="0.5" value="1.5">
-      <span id="cooldownLabel" style="font-size:0.8rem;color:#8a94b3"></span>
-    </div>
     <button class="btn-primary" id="toggleListen">Empezar a escuchar</button>
-    <button class="btn-secondary" id="testAlert">Probar aviso ahora</button>
+    <button class="btn-secondary" id="testAlert">Probar aviso ahora (sin esperar el timbre)</button>
     <div class="log" id="log"></div>
   </div>
 
-  <div class="card">
-    <h2>Importante</h2>
-    <p class="steps">
-      Esta pestaña tiene que quedar abierta y con la pantalla encendida en el dispositivo que escucha (Mac o celular viejo). El panel de anfitriones (link arriba) es donde cada uno ve el aviso, coordina quién abre y ve la confirmación en tiempo real.
-    </p>
-  </div>
+  <details class="card">
+    <summary style="cursor:pointer;color:var(--dorado);font-size:0.9rem;font-weight:600">Ajustes avanzados (opcional)</summary>
+    <div style="margin-top:16px">
+      <div class="row" style="display:block">
+        <label for="sensitivity">Sensibilidad (más a la izquierda = necesita sonido más fuerte)</label>
+        <input type="range" id="sensitivity" min="10" max="90" value="55">
+      </div>
+      <div class="row" style="display:block">
+        <label for="cooldown">Minutos de espera entre avisos</label>
+        <input type="range" id="cooldown" min="0.5" max="5" step="0.5" value="1.5">
+        <span id="cooldownLabel" style="font-size:0.8rem;color:#8a94b3"></span>
+      </div>
+      <label for="topic">Nombre del aviso en ntfy (opcional — para que suene el celular aunque no tengan el panel abierto)</label>
+      <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
+      <button class="btn-secondary" id="genTopic">Generar nombre único</button>
+      <p class="steps" style="margin-top:14px">
+        Si lo completás, instalá la app gratuita <b>ntfy</b> en cada celular y suscribite a este mismo nombre. No es obligatorio: el panel de anfitriones ya avisa en tiempo real sin esto.
+      </p>
+    </div>
+  </details>
 </div>
 
 <script>
