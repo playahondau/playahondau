@@ -169,7 +169,7 @@ async function crearAviso(motivo) {
     try {
       const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
         method: 'POST',
-        headers: { 'Title': 'Tocaron el timbre 🔔', 'Priority': 'urgent', 'Tags': 'bellhop_bell' },
+        headers: { 'Title': 'Tocaron el timbre', 'Priority': 'urgent', 'Tags': 'bellhop_bell' },
         body: 'Hay alguien en la puerta. Abrí el panel de anfitriones para responder.'
       });
       if (!res.ok) {

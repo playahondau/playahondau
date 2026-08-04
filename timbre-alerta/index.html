@@ -237,7 +237,7 @@ async function sendAlert(reason) {
     await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
       method: 'POST',
       headers: {
-        'Title': 'Tocaron el timbre 🔔',
+        'Title': 'Tocaron el timbre',
         'Priority': 'urgent',
         'Tags': 'bellhop_bell'
       },
