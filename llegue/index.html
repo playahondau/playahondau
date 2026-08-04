@@ -50,15 +50,26 @@
   <p class="subtitle">Este dispositivo (el celular viejo, apoyado cerca de la puerta) escucha el timbre real y avisa solo, sin que nadie toque nada acá.</p>
 
   <div class="card">
-    <h2>Cómo usarlo</h2>
-    <p class="steps" style="margin:0">
-      1. Dejá este celular enchufado y con la pantalla encendida cerca de donde se escucha el timbre.<br>
-      2. Tocá "Empezar a escuchar" una sola vez.<br>
-      3. Listo — cuando suene el timbre de verdad, la app manda el aviso sola a todos los celulares que tengan abierto el <a href="anfitrion.html" style="color:var(--dorado)">panel de anfitriones</a>.
+    <h2>1. Aviso sin tener que abrir nada (obligatorio)</h2>
+    <p class="steps" style="margin:0 0 14px">
+      Esto es lo que hace que suene una notificación real en el celular de cada uno, con el teléfono bloqueado y sin ninguna pestaña abierta — como un WhatsApp, pero automático.
+    </p>
+    <label for="topic">Nombre del aviso</label>
+    <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
+    <button class="btn-secondary" id="genTopic">Generar nombre único</button>
+    <p class="steps" style="margin-top:14px">
+      1. Instalá la app gratuita <b>ntfy</b> (buscala en App Store / Play Store) en el celular de cada persona de la casa.<br>
+      2. Abrí la app ntfy y suscribite al mismo nombre que pusiste acá arriba (botón "+" → pegar el nombre).<br>
+      3. Activá las notificaciones de ntfy en los Ajustes del celular (que no estén silenciadas).<br>
+      Con esto ya no hace falta tener el panel de anfitriones abierto para enterarte.
     </p>
   </div>
 
   <div class="card">
+    <h2>2. Escuchar el timbre</h2>
+    <p class="steps" style="margin:0 0 14px">
+      Dejá este celular (el viejo) enchufado y con la pantalla encendida cerca de donde se escucha el timbre, y tocá "Empezar a escuchar".
+    </p>
     <div class="row">
       <span class="status-badge"><span class="dot" id="micDot"></span><span id="micStatus">Micrófono apagado</span></span>
     </div>
@@ -87,12 +98,6 @@
         <input type="range" id="cooldown" min="0.5" max="5" step="0.5" value="1.5">
         <span id="cooldownLabel" style="font-size:0.8rem;color:#8a94b3"></span>
       </div>
-      <label for="topic">Nombre del aviso en ntfy (opcional — para que suene el celular aunque no tengan el panel abierto)</label>
-      <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
-      <button class="btn-secondary" id="genTopic">Generar nombre único</button>
-      <p class="steps" style="margin-top:14px">
-        Si lo completás, instalá la app gratuita <b>ntfy</b> en cada celular y suscribite a este mismo nombre. No es obligatorio: el panel de anfitriones ya avisa en tiempo real sin esto.
-      </p>
     </div>
   </details>
 </div>
