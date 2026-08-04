@@ -167,11 +167,15 @@ async function crearAviso(motivo) {
   const topic = topicInput.value.trim();
   if (topic) {
     try {
-      await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
+      const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
         method: 'POST',
         headers: { 'Title': 'Tocaron el timbre 🔔', 'Priority': 'urgent', 'Tags': 'bellhop_bell' },
         body: 'Hay alguien en la puerta. Abrí el panel de anfitriones para responder.'
       });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        log(`❌ ntfy respondió con error ${res.status}: ${body.slice(0, 200)}`);
+      }
     } catch (err) {
       log(`❌ No se pudo enviar el push: ${err.message}`);
     }
