@@ -149,7 +149,7 @@
     <h2>1. Configurar aviso</h2>
     <div class="row" style="display:block">
       <label for="topic">Nombre del aviso (compartilo solo con tu familia)</label>
-      <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
+      <input type="text" id="topic" placeholder="ej: timbre-casa-7k2p">
     </div>
     <button class="btn-secondary" id="genTopic">Generar nombre único</button>
     <p class="steps" style="margin-top:14px">
@@ -211,7 +211,7 @@ topicInput.addEventListener('input', () => localStorage.setItem(STORAGE_KEY, top
 
 genTopicBtn.addEventListener('click', () => {
   const rand = Math.random().toString(36).slice(2, 8);
-  topicInput.value = `timbre-playahonda-${rand}`;
+  topicInput.value = `timbre-casa-${rand}`;
   localStorage.setItem(STORAGE_KEY, topicInput.value);
 });
 

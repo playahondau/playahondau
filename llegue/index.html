@@ -55,7 +55,7 @@
       Esto es lo que hace que suene una notificación real en el celular de cada uno, con el teléfono bloqueado y sin ninguna pestaña abierta — como un WhatsApp, pero automático.
     </p>
     <label for="topic">Nombre del aviso</label>
-    <input type="text" id="topic" placeholder="ej: timbre-playahonda-casa-7k2p">
+    <input type="text" id="topic" placeholder="ej: timbre-casa-7k2p">
     <button class="btn-secondary" id="genTopic">Generar nombre único</button>
     <p class="steps" style="margin-top:14px">
       1. Instalá la app gratuita <b>ntfy</b> (buscala en App Store / Play Store) en el celular de cada persona de la casa.<br>
@@ -121,7 +121,7 @@ topicInput.addEventListener('input', () => localStorage.setItem(TOPIC_KEY, topic
 
 genTopicBtn.addEventListener('click', () => {
   const rand = Math.random().toString(36).slice(2, 8);
-  topicInput.value = `timbre-playahonda-${rand}`;
+  topicInput.value = `timbre-casa-${rand}`;
   localStorage.setItem(TOPIC_KEY, topicInput.value);
 });
 
