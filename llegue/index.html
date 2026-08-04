@@ -79,6 +79,10 @@
         <input type="range" id="sensitivity" min="10" max="90" value="55">
       </div>
       <div class="row" style="display:block">
+        <button class="btn-secondary" id="calibrateBtn" type="button">🎯 Calibrar con el timbre real</button>
+        <p id="calibrateStatus" class="steps" style="margin-top:8px">Apretá el botón y tocá el timbre real un par de veces mientras graba (6 segundos) — la app ajusta sola la sensibilidad.</p>
+      </div>
+      <div class="row" style="display:block">
         <label for="cooldown">Minutos de espera entre avisos</label>
         <input type="range" id="cooldown" min="0.5" max="5" step="0.5" value="1.5">
         <span id="cooldownLabel" style="font-size:0.8rem;color:#8a94b3"></span>
@@ -176,6 +180,38 @@ let audioCtx, analyser, source, stream, rafId;
 let listening = false;
 let lastAlertAt = 0;
 let sustainedStart = null;
+let calibrating = false;
+let calibrationPeak = 0;
+
+const calibrateBtn = document.getElementById('calibrateBtn');
+const calibrateStatus = document.getElementById('calibrateStatus');
+
+calibrateBtn.addEventListener('click', async () => {
+  if (!listening) await startListening();
+  if (!listening) return; // no se pudo acceder al micrófono
+  calibrating = true;
+  calibrationPeak = 0;
+  let secondsLeft = 6;
+  calibrateStatus.textContent = `🔴 Grabando… tocá el timbre ahora (${secondsLeft}s)`;
+  const interval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(interval);
+      calibrating = false;
+      if (calibrationPeak < 15) {
+        calibrateStatus.textContent = '⚠️ No se detectó un sonido fuerte. Probá de nuevo y tocá el timbre bien cerca del micrófono.';
+        log('⚠️ Calibración sin datos suficientes.');
+        return;
+      }
+      const newThreshold = Math.max(15, Math.min(90, Math.round(calibrationPeak * 0.7)));
+      sensitivitySlider.value = newThreshold;
+      calibrateStatus.textContent = `✅ Calibrado con el timbre real. Sensibilidad ajustada a ${newThreshold}. Probá tocando el timbre de nuevo para confirmar.`;
+      log(`🎯 Calibración completa: pico ${Math.round(calibrationPeak)}, sensibilidad ${newThreshold}.`);
+    } else {
+      calibrateStatus.textContent = `🔴 Grabando… tocá el timbre ahora (${secondsLeft}s)`;
+    }
+  }, 1000);
+});
 
 function volumeThreshold() { return Number(sensitivitySlider.value); }
 function cooldownMs() { return Number(cooldownSlider.value) * 60 * 1000; }
@@ -212,10 +248,11 @@ async function startListening() {
     for (let i = 0; i < data.length; i++) sum += data[i];
     const avg = sum / data.length;
     meterFill.style.width = `${Math.min(100, (avg / 128) * 100)}%`;
+    if (calibrating && avg > calibrationPeak) calibrationPeak = avg;
 
     const threshold = volumeThreshold();
     const now = Date.now();
-    if (avg > threshold) {
+    if (!calibrating && avg > threshold) {
       if (sustainedStart === null) sustainedStart = now;
       const heldFor = now - sustainedStart;
       if (heldFor > 350 && heldFor < 4000 && (now - lastAlertAt) > cooldownMs()) {
