@@ -54,9 +54,10 @@
     <p class="steps" style="margin:0 0 14px">
       Esto es lo que hace que suene una notificación real en el celular de cada uno, con el teléfono bloqueado y sin ninguna pestaña abierta — como un WhatsApp, pero automático.
     </p>
-    <label for="topic">Nombre del aviso</label>
+    <label for="topic">Nombre del aviso (podés escribir el que quieras, se guarda solo)</label>
     <input type="text" id="topic" placeholder="ej: timbre-casa-7k2p">
-    <button class="btn-secondary" id="genTopic">Generar nombre único</button>
+    <div class="saved-msg" id="topicSavedMsg" style="display:none;color:var(--verde);font-size:0.85rem;margin-top:6px">✅ Guardado automáticamente.</div>
+    <button class="btn-secondary" id="genTopic" style="margin-top:10px">🎲 O generar uno aleatorio en vez del mío</button>
     <p class="steps" style="margin-top:14px">
       1. Instalá la app gratuita <b>ntfy</b> (buscala en App Store / Play Store) en el celular de cada persona de la casa.<br>
       2. Abrí la app ntfy y suscribite al mismo nombre que pusiste acá arriba (botón "+" → pegar el nombre).<br>
@@ -115,14 +116,21 @@ const toggleBtn = document.getElementById('toggleListen');
 const testBtn = document.getElementById('testAlert');
 const logEl = document.getElementById('log');
 
+const topicSavedMsg = document.getElementById('topicSavedMsg');
 const TOPIC_KEY = 'llegue-ntfy-topic';
 topicInput.value = localStorage.getItem(TOPIC_KEY) || LLEGUE_CONFIG.defaultNtfyTopic || '';
-topicInput.addEventListener('input', () => localStorage.setItem(TOPIC_KEY, topicInput.value.trim()));
+if (topicInput.value) topicSavedMsg.style.display = 'block';
+
+topicInput.addEventListener('input', () => {
+  localStorage.setItem(TOPIC_KEY, topicInput.value.trim());
+  topicSavedMsg.style.display = topicInput.value.trim() ? 'block' : 'none';
+});
 
 genTopicBtn.addEventListener('click', () => {
   const rand = Math.random().toString(36).slice(2, 8);
   topicInput.value = `timbre-casa-${rand}`;
   localStorage.setItem(TOPIC_KEY, topicInput.value);
+  topicSavedMsg.style.display = 'block';
 });
 
 function updateCooldownLabel() { cooldownLabel.textContent = `${cooldownSlider.value} min`; }
