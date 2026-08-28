@@ -1191,7 +1191,7 @@ function showTab(name) {
   function fetchFase(tabId, phaseId, retry) {
     var key = 'phu_pos_' + phaseId, tsKey = key + '_ts';
     var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
-    if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+    if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
       try { renderTabla(tabId, JSON.parse(cached)); return; } catch(e) {}
     }
     var url = API + phaseId + '/standings/';
@@ -1228,7 +1228,7 @@ function showTab(name) {
   (function() {
     var key = 'phu_pos_master', tsKey = key + '_ts';
     var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
-    if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+    if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
       try { renderTabla('master', JSON.parse(cached)); return; } catch(e) {}
     }
     fetch('https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec?view=master')
@@ -4386,7 +4386,7 @@ window.abrirBuscador = function(e) {
   var raw = [];
   var cached = sessionStorage.getItem('phu2_raw');
   var ts     = sessionStorage.getItem('phu2_ts');
-  if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
+  if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
     try { raw = JSON.parse(cached); } catch(e) {}
   }
 
