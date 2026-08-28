@@ -1188,7 +1188,7 @@ function showTab(name) {
     }).join('');
   }
 
-  function fetchFase(tabId, phaseId) {
+  function fetchFase(tabId, phaseId, retry) {
     var key = 'phu_pos_' + phaseId, tsKey = key + '_ts';
     var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
     if (cached && ts && Date.now() - parseInt(ts) < 3600000) {
@@ -1197,9 +1197,13 @@ function showTab(name) {
     var url = API + phaseId + '/standings/';
     var proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
     function tryFetch(urls, i) {
-      if (i >= urls.length) return;
+      if (i >= urls.length) {
+        // Reintento tras 25s si fue el primer intento (cold start de Render)
+        if (!retry) setTimeout(function(){ fetchFase(tabId, phaseId, true); }, 25000);
+        return;
+      }
       var ctrl = new AbortController();
-      var t = setTimeout(function(){ ctrl.abort(); }, 9000);
+      var t = setTimeout(function(){ ctrl.abort(); }, 25000);
       fetch(urls[i], { signal: ctrl.signal })
         .then(function(r){ clearTimeout(t); return r.json(); })
         .then(function(data) {
@@ -1212,6 +1216,9 @@ function showTab(name) {
     }
     tryFetch([url, proxy], 0);
   }
+
+  // Wake ping al API (cold start de Render)
+  fetch('https://lud-backend-ld7d.onrender.com/api/phases/1/', { method: 'HEAD' }).catch(function(){});
 
   Object.keys(FASES).forEach(function(tabId) {
     fetchFase(tabId, FASES[tabId]);
@@ -4387,7 +4394,7 @@ window.abrirBuscador = function(e) {
     for (var apiUrl of [API_DIRECTO, API_PROXY]) {
       try {
         var ctrl = new AbortController();
-        var timer = setTimeout(function(){ ctrl.abort(); }, 9000);
+        var timer = setTimeout(function(){ ctrl.abort(); }, 25000);
         var res = await fetch(apiUrl, { signal: ctrl.signal });
         clearTimeout(timer);
         var data = await res.json();
