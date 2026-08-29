@@ -4374,7 +4374,6 @@ window.abrirBuscador = function(e) {
 
 (async function() {
   var API_DIRECTO = 'https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/';
-  var API_PROXY   = 'https://corsproxy.io/?' + encodeURIComponent(API_DIRECTO);
 
   function norm(n) {
     return (n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
@@ -4391,20 +4390,30 @@ window.abrirBuscador = function(e) {
   }
 
   if (!raw.length) {
-    for (var apiUrl of [API_DIRECTO, API_PROXY]) {
+    // Render (free tier) tarda en despertar: reintentar la API directa varias veces
+    for (var intento = 0; intento < 3 && !raw.length; intento++) {
       try {
         var ctrl = new AbortController();
-        var timer = setTimeout(function(){ ctrl.abort(); }, 25000);
-        var res = await fetch(apiUrl, { signal: ctrl.signal });
+        var timer = setTimeout(function(){ ctrl.abort(); }, 45000);
+        var res = await fetch(API_DIRECTO, { signal: ctrl.signal });
         clearTimeout(timer);
         var data = await res.json();
         if (Array.isArray(data) && data.length) {
           raw = data;
           sessionStorage.setItem('phu2_raw', JSON.stringify(raw));
           sessionStorage.setItem('phu2_ts', Date.now().toString());
-          break;
+          localStorage.setItem('phu2_last', JSON.stringify(raw));
         }
-      } catch(err) { /* probar siguiente */ }
+      } catch(err) {
+        await new Promise(function(r){ setTimeout(r, 2000); });
+      }
+    }
+    // Si la API no respondió, usar el último dato bueno guardado
+    if (!raw.length) {
+      try {
+        var last = localStorage.getItem('phu2_last');
+        if (last) raw = JSON.parse(last);
+      } catch(e) {}
     }
   }
 
