@@ -79,6 +79,8 @@
 <script>
 (function(){
   var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  // Mismo orden y nombres que las pestañas de Goleadores/Rendimiento en index.html
+  var CATEGORIAS = ['Mayores', 'Reserva', 'Pre Senior', 'Sub 20', 'Sub 18', 'Master'];
 
   function formatearFecha(iso) {
     var p = (iso || '').split('-');
@@ -93,21 +95,13 @@
   var listaEl = document.getElementById('lista');
   var filtrosEl = document.getElementById('filtros');
 
-  if (!datos.length) {
-    listaEl.innerHTML = '<p class="vacio">Todavía no hay informes cargados.<br>' +
-      '<strong>Volvé a mirar antes del próximo partido.</strong></p>';
-    return;
-  }
-
-  var categorias = [];
-  datos.forEach(function(inf) {
-    if (inf.categoria && categorias.indexOf(inf.categoria) === -1) categorias.push(inf.categoria);
-  });
-
   function renderLista(filtro) {
     var items = filtro ? datos.filter(function(i) { return i.categoria === filtro; }) : datos;
     if (!items.length) {
-      listaEl.innerHTML = '<p class="vacio">No hay informes para esta categoría.</p>';
+      listaEl.innerHTML = '<p class="vacio">' +
+        (filtro ? 'No hay informes para <strong>' + filtro + '</strong> todavía.'
+                : 'Todavía no hay informes cargados.<br><strong>Volvé a mirar antes del próximo partido.</strong>') +
+        '</p>';
       return;
     }
     listaEl.innerHTML = items.map(function(inf) {
@@ -123,27 +117,25 @@
     }).join('');
   }
 
-  if (categorias.length > 1) {
-    filtrosEl.style.display = 'flex';
-    var btnTodas = document.createElement('button');
-    btnTodas.className = 'filtro on';
-    btnTodas.textContent = 'Todas';
-    btnTodas.onclick = function() { setActivo(btnTodas); renderLista(null); };
-    filtrosEl.appendChild(btnTodas);
-
-    categorias.forEach(function(cat) {
-      var btn = document.createElement('button');
-      btn.className = 'filtro';
-      btn.textContent = cat;
-      btn.onclick = function() { setActivo(btn); renderLista(cat); };
-      filtrosEl.appendChild(btn);
-    });
-  }
-
   function setActivo(btn) {
     filtrosEl.querySelectorAll('.filtro').forEach(function(b) { b.classList.remove('on'); });
     btn.classList.add('on');
   }
+
+  filtrosEl.style.display = 'flex';
+  var btnTodas = document.createElement('button');
+  btnTodas.className = 'filtro on';
+  btnTodas.textContent = 'Todas';
+  btnTodas.onclick = function() { setActivo(btnTodas); renderLista(null); };
+  filtrosEl.appendChild(btnTodas);
+
+  CATEGORIAS.forEach(function(cat) {
+    var btn = document.createElement('button');
+    btn.className = 'filtro';
+    btn.textContent = cat;
+    btn.onclick = function() { setActivo(btn); renderLista(cat); };
+    filtrosEl.appendChild(btn);
+  });
 
   renderLista(null);
 })();

@@ -6,7 +6,8 @@
     2. Agregá un objeto nuevo al array INFORMES de abajo, con:
          fecha      -> "AAAA-MM-DD" (fecha del informe, para ordenar)
          rival      -> nombre del rival
-         categoria  -> ej. "Mayores", "Sub 20", "Sub 18"...
+         categoria  -> una de: "Mayores", "Reserva", "Pre Senior", "Sub 20", "Sub 18", "Master"
+                       (usar el nombre EXACTO para que el filtro de la página funcione)
          archivo    -> nombre EXACTO del archivo PDF subido a esta carpeta
     3. Guardá y hacé commit + push. Listo, no hay que tocar nada más.
 
