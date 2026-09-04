@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Análisis y Scouting – Playa Honda Universitario</title>
+  <meta name="description" content="Informes de scouting del próximo rival de Playa Honda Universitario: franjas de gol, goleadores y plan de partido." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://playahondau.com/analisis.html" />
+  <link rel="icon" type="image/png" href="escudo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{--azul:#002D62;--dorado:#ffffff;--dorado-light:#c8d8f8;--blanco:#F5F5F0;--gris:#9aa0ac;--negro:#040d22;--fondo:#071428;--card-bg:rgba(4,18,60,.7);--border:rgba(255,255,255,.12);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Barlow',sans-serif;background:var(--fondo);color:var(--blanco);min-height:100vh;}
+
+    .nav{background:rgba(4,13,34,.97);border-bottom:2px solid var(--azul);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .nav-logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--blanco);}
+    .nav-logo img{width:32px;height:32px;object-fit:contain;}
+    .nav-logo span{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;}
+    .nav-back{color:var(--dorado-light);text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.05em;transition:opacity .2s;}
+    .nav-back:hover{opacity:.7;}
+
+    .hero{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(180deg,rgba(0,45,98,.25) 0%,transparent 100%);}
+    .hero-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.2em;color:var(--dorado-light);text-transform:uppercase;margin-bottom:.4rem;}
+    .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,7vw,3.6rem);letter-spacing:.05em;line-height:1;margin-bottom:.8rem;}
+    .hero-sub{color:var(--gris);font-size:.9rem;max-width:460px;margin:0 auto;line-height:1.5;}
+
+    .wrap{max-width:960px;margin:0 auto;padding:0 1.25rem 4rem;}
+
+    .filtros{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin:2rem 0 1.8rem;}
+    .filtro{padding:.32rem .85rem;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--gris);font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all .2s;}
+    .filtro.on,.filtro:hover{background:var(--azul);border-color:var(--azul);color:var(--blanco);}
+
+    .lista{display:flex;flex-direction:column;gap:.9rem;}
+    .informe-card{background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--azul);border-radius:6px;padding:1.1rem 1.3rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;transition:border-color .2s,transform .2s;}
+    .informe-card:hover{border-left-color:var(--dorado-light);transform:translateX(2px);}
+    .informe-info{display:flex;flex-direction:column;gap:.3rem;min-width:0;}
+    .informe-fecha{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dorado-light);}
+    .informe-rival{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.03em;line-height:1.1;}
+    .informe-cat{display:inline-block;width:fit-content;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--azul);background:var(--blanco);padding:.15rem .55rem;border-radius:20px;margin-top:.15rem;}
+    .informe-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.15rem;background:var(--azul);color:var(--blanco);text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;transition:background .2s;}
+    .informe-btn:hover{background:#003d87;}
+
+    .vacio{text-align:center;color:var(--gris);padding:3rem 1rem;font-size:.95rem;line-height:1.6;}
+    .vacio strong{color:var(--blanco);}
+
+    @media(max-width:520px){
+      .informe-card{flex-direction:column;align-items:flex-start;}
+      .informe-btn{width:100%;justify-content:center;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="escudo.png" alt="Escudo">
+    <span>Playa Honda</span>
+  </a>
+  <a class="nav-back" href="index.html">← Volver</a>
+</nav>
+
+<div class="hero">
+  <p class="hero-eyebrow">Playa Honda Universitario</p>
+  <h1 class="hero-title">Análisis &amp; Scouting</h1>
+  <p class="hero-sub">Informes del próximo rival: franjas de gol, goleadores y plan de partido. Para DTs y jugadores del club.</p>
+</div>
+
+<div class="wrap">
+  <div class="filtros" id="filtros" style="display:none;"></div>
+  <div class="lista" id="lista"></div>
+</div>
+
+<script src="analisis/informes.js"></script>
+<script>
+(function(){
+  var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  function formatearFecha(iso) {
+    var p = (iso || '').split('-');
+    if (p.length !== 3) return iso || '';
+    var d = parseInt(p[2], 10), m = parseInt(p[1], 10) - 1, y = p[0];
+    return d + ' ' + (MESES[m] || '') + ' ' + y;
+  }
+
+  var datos = (typeof INFORMES !== 'undefined' ? INFORMES.slice() : []);
+  datos.sort(function(a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); });
+
+  var listaEl = document.getElementById('lista');
+  var filtrosEl = document.getElementById('filtros');
+
+  if (!datos.length) {
+    listaEl.innerHTML = '<p class="vacio">Todavía no hay informes cargados.<br>' +
+      '<strong>Volvé a mirar antes del próximo partido.</strong></p>';
+    return;
+  }
+
+  var categorias = [];
+  datos.forEach(function(inf) {
+    if (inf.categoria && categorias.indexOf(inf.categoria) === -1) categorias.push(inf.categoria);
+  });
+
+  function renderLista(filtro) {
+    var items = filtro ? datos.filter(function(i) { return i.categoria === filtro; }) : datos;
+    if (!items.length) {
+      listaEl.innerHTML = '<p class="vacio">No hay informes para esta categoría.</p>';
+      return;
+    }
+    listaEl.innerHTML = items.map(function(inf) {
+      var href = 'analisis/' + inf.archivo;
+      return '<div class="informe-card">'
+        + '<div class="informe-info">'
+        + '<span class="informe-fecha">' + formatearFecha(inf.fecha) + '</span>'
+        + '<span class="informe-rival">vs ' + inf.rival + '</span>'
+        + (inf.categoria ? '<span class="informe-cat">' + inf.categoria + '</span>' : '')
+        + '</div>'
+        + '<a class="informe-btn" href="' + href + '" target="_blank" rel="noopener">Ver informe ↗</a>'
+        + '</div>';
+    }).join('');
+  }
+
+  if (categorias.length > 1) {
+    filtrosEl.style.display = 'flex';
+    var btnTodas = document.createElement('button');
+    btnTodas.className = 'filtro on';
+    btnTodas.textContent = 'Todas';
+    btnTodas.onclick = function() { setActivo(btnTodas); renderLista(null); };
+    filtrosEl.appendChild(btnTodas);
+
+    categorias.forEach(function(cat) {
+      var btn = document.createElement('button');
+      btn.className = 'filtro';
+      btn.textContent = cat;
+      btn.onclick = function() { setActivo(btn); renderLista(cat); };
+      filtrosEl.appendChild(btn);
+    });
+  }
+
+  function setActivo(btn) {
+    filtrosEl.querySelectorAll('.filtro').forEach(function(b) { b.classList.remove('on'); });
+    btn.classList.add('on');
+  }
+
+  renderLista(null);
+})();
+</script>
+
+</body>
+</html>
