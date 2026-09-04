@@ -15,6 +15,5 @@
 */
 
 const INFORMES = [
-  // Ejemplo (borrá esta línea de comentario y completá con tus datos reales):
-  // { fecha: "2026-09-03", rival: "Old Christians Club", categoria: "Mayores", archivo: "2026-09-03-mayores-vs-old-christians.pdf" },
+  { fecha: "2026-09-04", rival: "Tenis El Pinar", categoria: "Sub 20", archivo: "2026-09-04-sub20-vs-tenis-el-pinar.pdf" },
 ];
