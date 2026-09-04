@@ -15,5 +15,5 @@
 */
 
 const INFORMES = [
-  { fecha: "2026-09-04", rival: "Tenis El Pinar", categoria: "Sub 20", archivo: "2026-09-04-sub20-vs-tenis-el-pinar.pdf" },
+  { fecha: "2026-09-04", rival: "Tenis El Pinar", categoria: "Sub 20", archivo: "analisis-tenis-el-pinar-sub20-2026-09-04.pdf" },
 ];
