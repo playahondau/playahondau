@@ -59,6 +59,7 @@ function testPush() {
 function doGet(e) {
   var view = e && e.parameter && e.parameter.view;
   if (view === 'master') return getMasterStandings();
+  if (view === 'players') return getPlayerStats();
 
   var LUD_BASE  = 'https://lud-backend-ld7d.onrender.com/api';
   var TEAM_NAME = 'PLAYA HONDA UNIVERSITARIO';
@@ -141,6 +142,27 @@ function doGet(e) {
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
   }
+}
+
+function getPlayerStats() {
+  // Server-to-server: evita el CORS que bloquea a lud-backend desde playahondau.com
+  var url = 'https://lud-backend-ld7d.onrender.com/api/teams/120/season-players/';
+  for (var intento = 0; intento < 2; intento++) {
+    try {
+      var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      var text = resp.getContentText();
+      var data = JSON.parse(text);
+      if (Array.isArray(data) && data.length) {
+        var out = ContentService.createTextOutput(text);
+        out.setMimeType(ContentService.MimeType.JSON);
+        return out;
+      }
+    } catch (err) {}
+    Utilities.sleep(3000); // Render (free tier) puede tardar en despertar
+  }
+  var out = ContentService.createTextOutput('[]');
+  out.setMimeType(ContentService.MimeType.JSON);
+  return out;
 }
 
 function getMasterStandings() {
