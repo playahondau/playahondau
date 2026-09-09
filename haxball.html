@@ -71,9 +71,13 @@
     background:rgba(245,245,240,.15);border:2px solid rgba(255,255,255,.3);color:#fff;
     font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;touch-action:none;}
   #kick:active{background:rgba(245,245,240,.35);}
-  .mini{position:fixed;top:60px;right:12px;z-index:17;background:rgba(4,13,34,.8);border:1px solid rgba(255,255,255,.16);
-    color:var(--gris);border-radius:9px;padding:.35rem .6rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-    font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;}
+  .mini{position:fixed;top:60px;z-index:17;background:rgba(4,13,34,.8);border:1px solid rgba(255,255,255,.16);
+    color:var(--gris);border-radius:9px;padding:.35rem .55rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;line-height:1;}
+  #menuBtn{right:12px;} #pauseBtn{right:70px;} #muteBtn{right:118px;min-width:34px;text-align:center;}
+
+  #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:13;transition:opacity .08s;}
+  #flash.on{opacity:.5;transition:none;}
 </style>
 </head>
 <body>
@@ -85,8 +89,10 @@
 
 <div id="stage"><canvas id="cv" width="1280" height="720"></canvas></div>
 
+<div id="flash"></div>
+
 <div id="hud" hidden><div class="box">
-  <span class="teamn">PLAYA</span>
+  <span class="teamn" id="youN">PLAYA</span>
   <span class="score"><span class="r" id="scR">0</span> – <span class="b" id="scB">0</span></span>
   <span class="teamn" id="rivalN">RIVAL</span>
   <span class="time" id="clock">3:00</span>
@@ -94,7 +100,18 @@
 <div id="toast"><span id="toastT"></span></div>
 
 <div id="touch"><div id="stick"><div class="nub" id="nub"></div></div><button id="kick">PATEAR</button></div>
+<button class="mini" id="muteBtn" hidden>♪</button>
+<button class="mini" id="pauseBtn" hidden>Pausa</button>
 <button class="mini" id="menuBtn" hidden>Menú</button>
+
+<!-- ===== PAUSA ===== -->
+<div class="panel" id="pause" hidden>
+  <div class="card">
+    <h1>PAUSA</h1>
+    <button class="play" id="resumeBtn">SEGUIR</button>
+    <button class="play" id="pMenuBtn" style="margin-top:.6rem;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);">MENÚ</button>
+  </div>
+</div>
 
 <!-- ===== MENÚ ===== -->
 <div class="panel" id="menu">
@@ -199,7 +216,7 @@ const escudoImg = new Image(); escudoImg.src='escudo.png';
 
 // ---------- estado ----------
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-let RUN=false, acc=0, last=0;
+let RUN=false, PAUSED=false, acc=0, last=0;
 let cfg = { char:'feli', fmt:1, diff:1, dur:180 };
 let world=null;
 
@@ -207,6 +224,51 @@ const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const len=(x,y)=>Math.hypot(x,y);
 const rand=(a,b)=>a+Math.random()*(b-a);
+
+// config guardada
+try{ Object.assign(cfg, JSON.parse(localStorage.getItem('hb_cfg')||'{}')); }catch(e){}
+if(!CHARS.some(c=>c.key===cfg.char)) cfg.char='feli';
+function saveCfg(){ try{ localStorage.setItem('hb_cfg', JSON.stringify(cfg)); }catch(e){} }
+
+// ---------- audio (sintetizado, sin archivos) ----------
+const SFX=[];                       // cola de eventos de sonido que llena step()
+const Audio2 = (()=>{
+  let ac=null, master=null, muted = localStorage.getItem('hb_mute')==='1';
+  function ensure(){ if(ac) return; try{
+    ac=new (window.AudioContext||window.webkitAudioContext)();
+    master=ac.createGain(); master.gain.value=0.32; master.connect(ac.destination);
+  }catch(e){} }
+  function blip(f,dur,type,vol,slideTo){
+    if(muted||!ac) return;
+    const o=ac.createOscillator(), g=ac.createGain(), t=ac.currentTime;
+    o.type=type||'sine'; o.frequency.setValueAtTime(f,t);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+    g.gain.setValueAtTime(vol||0.4,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.03);
+  }
+  return {
+    unlock(){ ensure(); if(ac&&ac.state==='suspended') ac.resume(); },
+    play(n){
+      ensure();
+      if(n==='kick') blip(240,0.08,'square',0.45,130);
+      else if(n==='wall') blip(110,0.05,'sine',0.25);
+      else if(n==='post') blip(760,0.04,'triangle',0.3);
+      else if(n==='count') blip(430,0.09,'sine',0.4);
+      else if(n==='whistle'){ blip(1350,0.14,'sine',0.35,1650); }
+      else if(n==='goal'){ blip(523,0.11,'square',0.45); setTimeout(()=>blip(659,0.11,'square',0.45),90); setTimeout(()=>blip(880,0.2,'square',0.45),185); }
+      else if(n==='win'){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>blip(f,0.18,'square',0.4),i*120)); }
+      else if(n==='lose'){ [440,392,330].forEach((f,i)=>setTimeout(()=>blip(f,0.22,'sawtooth',0.3),i*150)); }
+    },
+    toggleMute(){ muted=!muted; try{localStorage.setItem('hb_mute',muted?'1':'0');}catch(e){} return muted; },
+    get muted(){ return muted; }
+  };
+})();
+addEventListener('pointerdown',()=>Audio2.unlock(),{once:true});
+addEventListener('keydown',()=>Audio2.unlock(),{once:true});
+
+let shakeT=0;                        // frames de temblor de cámara
+function flashScreen(){ const f=$('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),70); }
 
 // =====================================================================
 //  MUNDO / SIMULACIÓN
@@ -221,9 +283,10 @@ function newWorld(){
     scoreR:0, scoreB:0,
     tRemain: cfg.dur*60,           // en ticks
     state:'kickoff',              // kickoff | play | goal | end
-    stateT: 90,                   // ticks de espera
+    stateT: 170,                  // ticks de espera (cuenta regresiva 3·2·1)
+    count: 99,
     kickTeam: 0,                  // 0 red, 1 blue  (equipo que saca)
-    lastTouch:-1,
+    lastTouch:-1, trail:[],
     toast:'',
   };
   const n = cfg.fmt;
@@ -391,11 +454,12 @@ function collideDiscDisc(a,bd){
   }
 }
 function bounds(d){
-  const e = d.wallCoef || d.bCoef;
-  if(d.x<-F.hw+d.r && Math.abs(d.y)>F.hm && d.vx<0){ d.x=-F.hw+d.r; d.vx*=-e; }
-  if(d.x> F.hw-d.r && Math.abs(d.y)>F.hm && d.vx>0){ d.x= F.hw-d.r; d.vx*=-e; }
-  if(d.y<-F.hh+d.r && d.vy<0){ d.y=-F.hh+d.r; d.vy*=-e; }
-  if(d.y> F.hh-d.r && d.vy>0){ d.y= F.hh-d.r; d.vy*=-e; }
+  const e = d.wallCoef || d.bCoef; let hit=0;
+  if(d.x<-F.hw+d.r && Math.abs(d.y)>F.hm && d.vx<0){ hit=Math.abs(d.vx); d.x=-F.hw+d.r; d.vx*=-e; }
+  if(d.x> F.hw-d.r && Math.abs(d.y)>F.hm && d.vx>0){ hit=Math.abs(d.vx); d.x= F.hw-d.r; d.vx*=-e; }
+  if(d.y<-F.hh+d.r && d.vy<0){ hit=Math.abs(d.vy); d.y=-F.hh+d.r; d.vy*=-e; }
+  if(d.y> F.hh-d.r && d.vy>0){ hit=Math.abs(d.vy); d.y= F.hh-d.r; d.vy*=-e; }
+  if(hit>2.5 && d===world.ball) SFX.push('wall');
 }
 
 function step(w){
@@ -403,7 +467,14 @@ function step(w){
   if(w.state==='goal' || w.state==='kickoff' || w.state==='end'){
     w.stateT--;
     if(w.state==='goal' && w.stateT<=0){ resetKickoff(w); }
-    else if(w.state==='kickoff' && w.stateT<=0){ w.state='play'; w.toast=''; }
+    else if(w.state==='kickoff'){
+      const c = Math.max(0, Math.ceil(w.stateT/60));
+      if(c!==w.count){
+        w.count=c;
+        if(c>=1){ w.toast=String(c); SFX.push('count'); }
+      }
+      if(w.stateT<=0){ w.state='play'; w.toast=''; w.count=99; SFX.push('whistle'); }
+    }
   }
   const playing = w.state==='play' || w.state==='kickoff';
 
@@ -417,14 +488,15 @@ function step(w){
     pl.vx*=dmp; pl.vy*=dmp;
     pl.x+=pl.vx; pl.y+=pl.vy;
     pl.cd = Math.max(0, pl.cd-1);
-    // patear balón
-    if(kicking && pl.cd===0 && w.state!=='goal'){
+    // patear balón (no durante la cuenta regresiva ni el festejo de gol)
+    if(kicking && pl.cd===0 && w.state==='play'){
       let dx=w.ball.x-pl.x, dy=w.ball.y-pl.y, dd=len(dx,dy);
       if(dd < pl.r+w.ball.r+P.kickReach){
         dx/=dd||1; dy/=dd||1;
         const kp = P.kickStrength*pl.ch.kick;
         w.ball.vx += dx*kp; w.ball.vy += dy*kp;
         pl.cd = P.kickCooldown; w.lastTouch = pl.team;
+        SFX.push('kick');
       }
     }
     pl._kick = kicking;
@@ -432,6 +504,7 @@ function step(w){
   // --- balón ---
   const b=w.ball;
   if(playing){ b.vx*=b.damping; b.vy*=b.damping; b.x+=b.vx; b.y+=b.vy; }
+  if(w.state==='play'){ w.trail.push([b.x,b.y]); if(w.trail.length>7) w.trail.shift(); }
   // anti-atasco: si el balón queda muerto pegado a una pared, empujón suave al centro
   // ponytail: parche de gameplay; con un humano jugando casi nunca se dispara.
   if(w.state==='play'){
@@ -497,10 +570,10 @@ function step(w){
 function goal(w,team){
   if(team===0) w.scoreR++; else w.scoreB++;
   $('scR').textContent=w.scoreR; $('scB').textContent=w.scoreB;
-  w.state='goal'; w.stateT=110;
+  w.state='goal'; w.stateT=120;
   w.kickTeam = team===0 ? 1 : 0;
-  w.toast = team===0 ? '¡GOL DEL PLAYA!' : 'GOL RIVAL';
-  showToast(w.toast, team===0);
+  showToast(team===0 ? '¡GOOOL DEL PLAYA!' : 'GOL DEL RIVAL', team===0, 1800);
+  SFX.push('goal'); flashScreen(); shakeT=16;
 }
 function resetKickoff(w){
   const n=cfg.fmt;
@@ -512,7 +585,7 @@ function resetKickoff(w){
     pl.px=pl.x; pl.py=pl.y; pl.vx=pl.vy=0; pl.cd=0;
   }
   w.ball.x=w.ball.y=0; w.ball.px=w.ball.py=0; w.ball.vx=w.ball.vy=0;
-  w.state='kickoff'; w.stateT=90; w.toast='¡A JUGAR!'; showToast('LISTOS', true, 700);
+  w.trail=[]; w.state='kickoff'; w.stateT=170; w.count=99; w.toast='';
 }
 function endMatch(w){
   w.state='end';
@@ -521,6 +594,8 @@ function endMatch(w){
   $('overT').textContent = r>b ? '¡GANÓ EL PLAYA!' : r<b ? 'PERDIÓ EL PLAYA' : 'EMPATE';
   $('overS').textContent = `Playa ${r} — ${b} Rival`;
   $('over').hidden=false;
+  $('pauseBtn').hidden=true;
+  Audio2.play(r>b?'win':r<b?'lose':'whistle');
 }
 
 // =====================================================================
@@ -601,14 +676,22 @@ function drawDisc(d,alpha,color,sprKey){
   // cabezudo
   if(sprKey && sprites[sprKey] && sprites[sprKey]._ok){
     const im=sprites[sprKey], ar=im.width/im.height;
-    const h=d.r*s*3.1, w=h*ar;
-    ctx.drawImage(im, c[0]-w/2, c[1]-h*0.82, w, h);
+    const h=d.r*s*3.6, w=h*ar;
+    ctx.drawImage(im, c[0]-w/2, c[1]-h*0.80, w, h);
   }
 }
 function drawBall(alpha){
   const b=world.ball;
   const x=b.px+(b.x-b.px)*alpha, y=b.py+(b.y-b.py)*alpha;
   const s=VIEW.s,c=W2S(x,y);
+  // estela
+  const tr=world.trail;
+  for(let i=0;i<tr.length;i++){
+    const p=W2S(tr[i][0],tr[i][1]);
+    ctx.globalAlpha=(i+1)/tr.length*0.25;
+    ctx.beginPath(); ctx.arc(p[0],p[1], b.r*s*0.8,0,7); ctx.fillStyle='#fff'; ctx.fill();
+  }
+  ctx.globalAlpha=1;
   ctx.fillStyle='rgba(0,0,0,.25)';
   ctx.beginPath(); ctx.ellipse(c[0],c[1]+b.r*s*0.5,b.r*s*1.1,b.r*s*0.5,0,0,7); ctx.fill();
   ctx.beginPath(); ctx.arc(c[0],c[1], b.r*s,0,7);
@@ -618,29 +701,32 @@ function drawBall(alpha){
 }
 function render(alpha){
   fitView();
+  ctx.save();
+  if(shakeT>0){ ctx.translate(rand(-1,1)*shakeT*0.7, rand(-1,1)*shakeT*0.7); }
   drawField();
-  // ordenar por y para superposición
   const ps=[...world.players].sort((a,b)=>a.y-b.y);
   for(const pl of ps){
-    const col = pl.team===0 ? 'rgba(214,69,69,.9)' : 'rgba(74,134,200,.9)';
+    const col = pl.team===0 ? 'rgba(214,69,69,.92)' : 'rgba(74,134,200,.92)';
     drawDisc(pl, alpha, col, pl.ch.key);
     if(pl.human){
       const c=W2S(pl.px+(pl.x-pl.px)*alpha, pl.py+(pl.y-pl.py)*alpha);
       ctx.fillStyle='#ffe27a'; ctx.beginPath();
-      ctx.moveTo(c[0], c[1]-pl.r*VIEW.s*3.4);
-      ctx.lineTo(c[0]-6*VIEW.s, c[1]-pl.r*VIEW.s*3.0);
-      ctx.lineTo(c[0]+6*VIEW.s, c[1]-pl.r*VIEW.s*3.0);
+      ctx.moveTo(c[0], c[1]-pl.r*VIEW.s*3.9);
+      ctx.lineTo(c[0]-6*VIEW.s, c[1]-pl.r*VIEW.s*3.5);
+      ctx.lineTo(c[0]+6*VIEW.s, c[1]-pl.r*VIEW.s*3.5);
       ctx.fill();
     }
   }
   drawBall(alpha);
+  ctx.restore();
 }
 
 // =====================================================================
 //  LOOP
 // =====================================================================
+let lastToast='';
 function loop(ts){
-  if(!RUN){ return; }
+  if(!RUN || PAUSED){ return; }
   if(!last) last=ts;
   let dt = ts-last; last=ts;
   if(dt>250) dt=250;
@@ -651,6 +737,11 @@ function loop(ts){
     step(world);
     acc-=TICK_MS; steps++;
   }
+  // sonidos encolados por la simulación
+  if(SFX.length){ for(const n of SFX) Audio2.play(n); SFX.length=0; }
+  // toast desde el estado (cuenta regresiva)
+  if(world.toast!==lastToast){ lastToast=world.toast; if(world.toast) showToast(world.toast, world.state!=='goal', world.state==='kickoff'?700:1500); }
+  if(shakeT>0) shakeT--;
   const alpha = clamp(acc/TICK_MS,0,1);
   render(alpha);
   updateClock();
@@ -684,11 +775,10 @@ function buildCharSel(){
   });
 }
 function optGroup(id,key,cast){
-  $(id).querySelectorAll('.opt').forEach(b=>{
-    b.onclick=()=>{
-      $(id).querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on'); cfg[key]=cast(b.dataset.v);
-    };
+  const opts=$(id).querySelectorAll('.opt');
+  opts.forEach(b=>{
+    b.classList.toggle('on', cast(b.dataset.v)===cfg[key]);
+    b.onclick=()=>{ opts.forEach(x=>x.classList.remove('on')); b.classList.add('on'); cfg[key]=cast(b.dataset.v); saveCfg(); };
   });
 }
 buildCharSel();
@@ -696,23 +786,43 @@ optGroup('fmtSel','fmt',Number);
 optGroup('diffSel','diff',Number);
 optGroup('durSel','dur',Number);
 
-const isTouch = matchMedia('(pointer:coarse)').matches;
+const isTouch = matchMedia('(hover:none) and (pointer:coarse)').matches;
+function goMenu(){
+  RUN=false; PAUSED=false;
+  $('menu').hidden=false; $('pause').hidden=true; $('over').hidden=true;
+  $('hud').hidden=true; $('menuBtn').hidden=true; $('pauseBtn').hidden=true; $('muteBtn').hidden=true;
+  $('touch').classList.remove('on');
+}
 function startGame(){
-  $('menu').hidden=true; $('over').hidden=true;
-  $('hud').hidden=false; $('menuBtn').hidden=false;
-  $('rivalN').textContent='RIVAL';
+  saveCfg();
+  $('menu').hidden=true; $('over').hidden=true; $('pause').hidden=true;
+  $('hud').hidden=false; $('menuBtn').hidden=false; $('pauseBtn').hidden=false; $('muteBtn').hidden=false;
+  $('youN').textContent='PLAYA'; $('rivalN').textContent='RIVAL';
+  $('muteBtn').textContent = Audio2.muted ? '✕' : '♪';
   if(isTouch) $('touch').classList.add('on');
   world=newWorld();
   $('scR').textContent=0; $('scB').textContent=0;
   resize();
-  RUN=true; last=0; acc=0;
-  showToast('LISTOS', true, 800);
+  RUN=true; PAUSED=false; last=0; acc=0; shakeT=0; lastToast='';
+  Audio2.unlock(); Audio2.play('whistle');
   requestAnimationFrame(loop);
+}
+function togglePause(force){
+  if(!RUN || world.state==='end') return;
+  PAUSED = (force!==undefined) ? force : !PAUSED;
+  $('pause').hidden = !PAUSED;
+  if(!PAUSED){ last=0; requestAnimationFrame(loop); }
 }
 $('playBtn').onclick=startGame;
 $('rematchBtn').onclick=startGame;
-$('toMenuBtn').onclick=()=>{ $('over').hidden=true; $('menu').hidden=false; $('hud').hidden=true; $('menuBtn').hidden=true; $('touch').classList.remove('on'); };
-$('menuBtn').onclick=()=>{ RUN=false; $('menu').hidden=false; $('hud').hidden=true; $('menuBtn').hidden=true; $('touch').classList.remove('on'); };
+$('toMenuBtn').onclick=goMenu;
+$('pMenuBtn').onclick=goMenu;
+$('menuBtn').onclick=goMenu;
+$('pauseBtn').onclick=()=>togglePause();
+$('resumeBtn').onclick=()=>togglePause(false);
+$('muteBtn').onclick=()=>{ const m=Audio2.toggleMute(); $('muteBtn').textContent=m?'✕':'♪'; if(!m) Audio2.unlock(); };
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); if(k==='p'&&RUN) togglePause(); if(k==='escape'&&PAUSED) togglePause(false); });
+addEventListener('visibilitychange',()=>{ if(document.hidden && RUN && !PAUSED) togglePause(true); });
 
 // ---------- joystick táctil ----------
 (function(){
