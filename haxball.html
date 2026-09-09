@@ -161,6 +161,7 @@
         text-transform:uppercase;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
         border-radius:10px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;">
       <p class="tip" id="netMsg" style="margin-top:.5rem;min-height:1.2em;"></p>
+      <button class="opt" id="shareBtn" style="display:none;width:100%;margin-top:.4rem;background:#25D366;color:#053;border-color:#25D366;">Compartir invitación</button>
     </div>
 
     <p class="tip">Teclado: flechas / WASD para mover · Espacio o X para patear.<br>Celular: joystick abajo a la izquierda, botón PATEAR a la derecha.</p>
@@ -1060,6 +1061,7 @@ function goMenu(){
   RUN=false; PAUSED=false;
   Net.leave(); MODE='cpu'; netMeta={};
   $('netInfo').hidden=true; $('netMsg').textContent=''; $('codeInp').style.display='none';
+  $('shareBtn').style.display='none'; $('joinBtn').textContent='Unirse';
   $('menu').hidden=false; $('pause').hidden=true; $('over').hidden=true;
   $('hud').hidden=true; $('menuBtn').hidden=true; $('pauseBtn').hidden=true; $('muteBtn').hidden=true;
   $('touch').classList.remove('on');
@@ -1090,10 +1092,21 @@ $('toMenuBtn').onclick=goMenu;
 
 // ---- online ----
 function netStatus(m){ $('netMsg').textContent=m; }
+function inviteLink(code){ return location.origin+location.pathname+'?sala='+code; }
 $('createBtn').onclick=()=>{
   Audio2.unlock();
   MODE='host'; netMeta={};
   Net.createRoom(()=>{ netStatus('¡Rival conectado!'); startGame(); });
+  if(Net.code){ netStatus('Sala '+Net.code+' — mandá la invitación y esperá'); $('shareBtn').style.display='block'; }
+};
+$('shareBtn').onclick=async()=>{
+  const code=Net.code; if(!code) return;
+  const url=inviteLink(code);
+  const text='¡Jugá al Haxball del Playa conmigo! 🔵 Sala '+code+'\n'+url;
+  try{
+    if(navigator.share){ await navigator.share({title:'Haxball del Playa', text, url}); }
+    else { await navigator.clipboard.writeText(url); netStatus('Link copiado ✓  '+code); }
+  }catch(e){ netStatus(url); }
 };
 $('joinBtn').onclick=()=>{
   Audio2.unlock();
@@ -1106,6 +1119,15 @@ $('joinBtn').onclick=()=>{
   Net.joinRoom(c, ()=>{ netStatus('¡Conectado!'); startGame(); });
 };
 $('codeInp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('joinBtn').click(); } });
+// invitación por link:  haxball.html?sala=XXXX
+(function(){
+  const sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+  if(sala.length<4) return;
+  const inp=$('codeInp');
+  inp.style.display='block'; inp.value=sala;
+  $('joinBtn').textContent='Entrar a '+sala;
+  netStatus('Te invitaron a la sala '+sala+'. Tocá «Entrar».');
+})();
 $('pMenuBtn').onclick=goMenu;
 $('menuBtn').onclick=goMenu;
 $('pauseBtn').onclick=()=>togglePause();
