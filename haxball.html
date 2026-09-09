@@ -78,6 +78,20 @@
 
   #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:13;transition:opacity .08s;}
   #flash.on{opacity:.5;transition:none;}
+
+  /* ---- chat en vivo (online) ---- */
+  #chatLog{position:fixed;left:10px;top:98px;z-index:16;width:min(52%,340px);pointer-events:none;
+    display:flex;flex-direction:column;align-items:flex-start;gap:.22rem;transition:opacity .4s;}
+  #chatLog.idle{opacity:.25;}
+  #chatLog div{background:rgba(4,13,34,.62);border:1px solid rgba(255,255,255,.1);border-radius:9px;
+    padding:.16rem .55rem;font-family:'Barlow',sans-serif;font-size:.82rem;line-height:1.4;
+    max-width:100%;word-break:break-word;color:#eef2f8;}
+  #chatLog div b{color:#8fd0ff;font-weight:700;}
+  #chatLog div.mine b{color:#ffd98a;}
+  #chatInp{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(440px,86vw);z-index:22;
+    padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.3);
+    background:rgba(4,13,34,.96);color:#fff;font-family:'Barlow',sans-serif;font-size:1rem;}
+  #chatBtn{right:166px;}
 </style>
 </head>
 <body>
@@ -104,6 +118,10 @@
 <button class="mini" id="muteBtn" hidden>♪</button>
 <button class="mini" id="pauseBtn" hidden>Pausa</button>
 <button class="mini" id="menuBtn" hidden>Menú</button>
+<button class="mini" id="chatBtn" hidden>💬</button>
+<div id="chatLog"></div>
+<input id="chatInp" hidden maxlength="120" autocomplete="off" placeholder="mensaje…  (Enter envía · Esc cierra)">
+
 
 <!-- ===== PAUSA ===== -->
 <div class="panel" id="pause" hidden>
@@ -119,6 +137,12 @@
   <div class="card">
     <h1>HAXBALL DEL PLAYA</h1>
     <p class="sub">Vista cenital · vos + CPU · hasta 3v3</p>
+
+    <div class="grp"><div class="lbl">Tu nombre</div>
+      <input id="nameInp" maxlength="14" placeholder="Tu nombre" autocomplete="off"
+        style="width:100%;padding:.55rem .7rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
+        border-radius:10px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.05em;">
+    </div>
 
     <div class="grp"><div class="lbl">Tu cabezudo</div>
       <div class="chars" id="charSel"></div>
@@ -164,7 +188,40 @@
       <button class="opt" id="shareBtn" style="display:none;width:100%;margin-top:.4rem;background:#25D366;color:#053;border-color:#25D366;">Compartir invitación</button>
     </div>
 
+    <div class="grp" id="histGrp" hidden style="margin-top:1rem;border-top:1px solid rgba(255,255,255,.1);padding-top:.8rem;">
+      <div class="lbl">Online — últimos partidos</div>
+      <div id="rankLine" class="tip" style="text-align:left;margin:0 0 .4rem;color:#cfe0ff;"></div>
+      <div id="histList" class="tip" style="text-align:left;line-height:1.7;margin:0;"></div>
+    </div>
+
     <p class="tip">Teclado: flechas / WASD para mover · Espacio o X para patear.<br>Celular: joystick abajo a la izquierda, botón PATEAR a la derecha.</p>
+  </div>
+</div>
+
+<!-- ===== LOBBY (online) ===== -->
+<div class="panel" id="lobby" hidden>
+  <div class="card">
+    <h1>SALA <span id="lobCode"></span></h1>
+    <p class="sub" id="lobRole">Conectando…</p>
+
+    <div class="grp"><div class="lbl">Formato</div>
+      <div class="opts" id="lobFmtSel">
+        <button class="opt on" data-v="1">1 v 1</button>
+        <button class="opt" data-v="2">2 v 2</button>
+        <button class="opt" data-v="3">3 v 3</button>
+      </div>
+      <p class="tip" id="lobFmtNote" style="margin-top:.3rem;">Con 2v2 / 3v3 se completa con CPU.</p>
+    </div>
+
+    <div class="grp"><div class="lbl">Tu cabezudo</div>
+      <div class="chars" id="lobChars"></div>
+    </div>
+
+    <div id="lobPlayers" style="text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+      letter-spacing:.04em;font-size:.95rem;margin:.7rem 0;line-height:1.8;"></div>
+
+    <button class="play" id="readyBtn">LISTO</button>
+    <button class="play" id="lobLeaveBtn" style="margin-top:.6rem;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);">SALIR</button>
   </div>
 </div>
 
@@ -235,10 +292,17 @@ const escudoImg = new Image(); escudoImg.src='escudo.png';
 // ---------- estado ----------
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let RUN=false, PAUSED=false, acc=0, last=0;
+let NETHOLD=false;              // true mientras se reconecta: congela sim/envío
 let MODE='cpu';                 // 'cpu' | 'host' | 'guest'
-let cfg = { char:'feli', fmt:1, diff:1, dur:180 };
+let cfg = { char:'feli', fmt:1, diff:1, dur:180, name:'' };
 let world=null;
-let netMeta={};                 // {hostChar, guestChar} intercambiado al conectar
+let netMeta={};                 // {hostChar,guestChar,hostName,guestName,fmt} — intercambiado en el lobby
+
+// cliente Supabase compartido (señalización online + historial). Reusa la config del chat.
+const SB = (typeof CHAT_CONFIG!=='undefined' && window.supabase)
+  ? window.supabase.createClient(CHAT_CONFIG.SUPABASE_URL, CHAT_CONFIG.SUPABASE_ANON_KEY) : null;
+function buzz(pat){ try{ navigator.vibrate && navigator.vibrate(pat); }catch(e){} }
+function myName(){ return (cfg.name||'').trim() || 'Jugador'; }
 
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -276,6 +340,7 @@ const Audio2 = (()=>{
       else if(n==='post') blip(760,0.04,'triangle',0.3);
       else if(n==='count') blip(430,0.09,'sine',0.4);
       else if(n==='whistle'){ blip(1350,0.14,'sine',0.35,1650); }
+      else if(n==='join'){ blip(600,0.1,'sine',0.4,880); setTimeout(()=>blip(950,0.13,'sine',0.4),95); }
       else if(n==='goal'){ blip(523,0.11,'square',0.45); setTimeout(()=>blip(659,0.11,'square',0.45),90); setTimeout(()=>blip(880,0.2,'square',0.45),185); }
       else if(n==='win'){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>blip(f,0.18,'square',0.4),i*120)); }
       else if(n==='lose'){ [440,392,330].forEach((f,i)=>setTimeout(()=>blip(f,0.22,'sawtooth',0.3),i*150)); }
@@ -309,7 +374,7 @@ function newWorld(){
     lastTouch:-1, trail:[],
     toast:'',
   };
-  const n = (MODE==='cpu') ? cfg.fmt : 1;   // online: siempre 1v1
+  const n = (MODE==='cpu') ? cfg.fmt : (netMeta.fmt||1);   // online: formato pactado en el lobby
   // posiciones de formación por equipo (x negativo = red)
   const form = f=>{
     if(f===1) return [[-0.55,0]];
@@ -353,8 +418,9 @@ function newWorld(){
 
 // input humano
 const keys={};
-addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true; if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault(); });
-addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+const typing = e => e.target && (e.target.id==='chatInp' || e.target.id==='nameInp' || e.target.id==='codeInp');
+addEventListener('keydown',e=>{ if(typing(e))return; keys[e.key.toLowerCase()]=true; if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault(); });
+addEventListener('keyup',e=>{ if(typing(e))return; keys[e.key.toLowerCase()]=false; });
 addEventListener('blur',()=>{ for(const k in keys)keys[k]=false; });
 let touchMove={x:0,y:0}, touchKick=false;
 
@@ -542,19 +608,16 @@ function step(w){
   const b=w.ball;
   if(playing){ b.vx*=b.damping; b.vy*=b.damping; b.x+=b.vx; b.y+=b.vy; }
   if(w.state==='play'){ w.trail.push([b.x,b.y]); if(w.trail.length>7) w.trail.shift(); }
-  // anti-atasco: si el balón queda muerto pegado a una pared, empujón suave al centro
-  // ponytail: parche de gameplay; con un humano jugando casi nunca se dispara.
+  // anti-atasco: SOLO si el balón queda realmente muerto encajado en una esquina.
+  // ponytail: empujón suave de velocidad, sin teletransporte. No se dispara si el
+  // balón sigue una pared con algo de velocidad (juego normal por la banda).
   if(w.state==='play'){
-    // corner/pared: contar ticks que el balón lleva encajado en la esquina
-    const cornerZone = Math.abs(b.x) > F.hw-45 && Math.abs(b.y) > F.hh-70;
-    const slowWall = len(b.vx,b.vy) < 1.0 && (Math.abs(b.x) > F.hw-70 || Math.abs(b.y) > F.hh-55);
-    w.stuck = (cornerZone || slowWall) ? (w.stuck||0)+1 : Math.max(0,(w.stuck||0)-4);
-    if(w.stuck > 75){
-      // ponytail: reubicación dura hacia el centro para romper trabas contra la pared;
-      // con un humano jugando prácticamente nunca se dispara.
-      b.x*=0.5; b.y*=0.4;
-      const dl=len(b.x,b.y)||1; b.vx=-b.x/dl*3.2; b.vy=-b.y/dl*3.2;
-      w.stuck=0;
+    const deadCorner = Math.abs(b.x) > F.hw-28 && Math.abs(b.y) > F.hh-42 && len(b.vx,b.vy) < 0.35;
+    w.stuck = deadCorner ? (w.stuck||0)+1 : 0;
+    if(w.stuck > 150){                 // ~2.5 s realmente clavado en la esquina
+      const tx = (b.x>0?-1:1), ty = (b.y>0?-1:1);
+      b.vx += tx*1.4; b.vy += ty*1.4;
+      w.stuck = 0;
     }
   }
 
@@ -609,11 +672,13 @@ function goal(w,team){
   $('scR').textContent=w.scoreR; $('scB').textContent=w.scoreB;
   w.state='goal'; w.stateT=120;
   w.kickTeam = team===0 ? 1 : 0;
-  showToast(team===0 ? '¡GOOOL DEL PLAYA!' : 'GOL DEL RIVAL', team===0, 1800);
-  SFX.push('goal'); flashScreen(); shakeT=16;
+  const mine = (MODE==='guest') ? team===1 : team===0;
+  const who = (MODE!=='cpu') ? (team===0 ? (netMeta.hostName||'Local') : (netMeta.guestName||'Rival')) : null;
+  showToast(who ? ('GOL DE '+who.toUpperCase()) : (team===0?'¡GOOOL DEL PLAYA!':'GOL DEL RIVAL'), mine, 1800);
+  SFX.push('goal'); flashScreen(); shakeT=16; buzz(mine?[45,35,80]:40);
 }
 function resetKickoff(w){
-  const n=(MODE==='cpu')?cfg.fmt:1;
+  const n=(MODE==='cpu')?cfg.fmt:(netMeta.fmt||1);
   const form = f => f===1?[[-0.55,0]] : f===2?[[-0.68,-0.22],[-0.40,0.22]] : [[-0.78,0],[-0.5,-0.26],[-0.5,0.26]];
   const slots=form(n); let idx=0;
   for(let t=0;t<2;t++) for(let i=0;i<n;i++){
@@ -628,11 +693,23 @@ function endMatch(w){
   w.state='end';
   RUN=false;
   const r=w.scoreR,b=w.scoreB;
-  $('overT').textContent = r>b ? '¡GANÓ EL PLAYA!' : r<b ? 'PERDIÓ EL PLAYA' : 'EMPATE';
-  $('overS').textContent = `Playa ${r} — ${b} Rival`;
+  if(MODE==='cpu'){
+    $('overT').textContent = r>b ? '¡GANÓ EL PLAYA!' : r<b ? 'PERDIÓ EL PLAYA' : 'EMPATE';
+    $('overS').textContent = `Playa ${r} — ${b} Rival`;
+  } else {
+    const hn=netMeta.hostName||'Local', gn=netMeta.guestName||'Rival';
+    const iWon = r>b;                        // host es red(0)
+    $('overT').textContent = r===b ? 'EMPATE' : (iWon ? '¡GANASTE!' : 'PERDISTE');
+    $('overS').textContent = `${hn} ${r} — ${b} ${gn}`;
+    Net.saveResult({ code:Net.code, fmt:(netMeta.fmt||1),
+      host_name:hn, guest_name:gn, score_r:r, score_b:b,
+      winner: r===b?'draw':(r>b?'host':'guest') });
+  }
+  setupOverButtons();
   $('over').hidden=false;
   $('pauseBtn').hidden=true;
   Audio2.play(r>b?'win':r<b?'lose':'whistle');
+  buzz(r>b?[80,50,80,50,140]:60);
 }
 
 // =====================================================================
@@ -764,26 +841,34 @@ function render(alpha){
 //  el invitado manda su input cada frame y renderiza interpolando.
 // =====================================================================
 const Net = (()=>{
-  let sb=null, ch=null, pc=null, dc=null;
+  let ch=null, pc=null, dc=null;
   let code='', role='';            // 'host' | 'guest'
-  let onReady=null;                // callback cuando el datachannel abre + handshake ok
+  let onEvt=null;                  // callback de eventos: 'lobby' | 'start' | 'rematch'
   let lastGuestInput={ix:0,iy:0,kick:false};
-  let snapBuf=[];                  // invitado: cola de snapshots
-  let lastRecv=0, rtt=0, pingT=0;
-  let inSeq=0;
-  let iceQ=[];                     // candidatos ICE llegados antes del remoteDescription
+  let snapBuf=[];
+  let lastRecv=0, rtt=0, pingT=0, inSeq=0;
+  let iceQ=[];
+  let phase='idle';               // idle | signaling | lobby | match
+  let reconnecting=false, reconnTimer=0;
+  // estado de lobby local del rival (para la UI)
+  const peer = { char:'titan', name:'Rival', ready:false };
 
-  const ICE = { iceServers:[ {urls:'stun:stun.l.google.com:19302'}, {urls:'stun:stun1.l.google.com:19302'} ] };
+  // STUN + TURN abierto (best-effort, sin costo). ponytail: para NAT muy cerrado
+  // haría falta un TURN con credencial propia (metered/expressturn, signup gratis).
+  const ICE = { iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'],
+     username:'openrelayproject', credential:'openrelayproject'}
+  ] };
 
   function genCode(){ const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<4;i++) s+=A[Math.floor(Math.random()*A.length)]; return s; }
-
   function sig(type,payload){ if(ch) ch.send({ type:'broadcast', event:'sig', payload:{ t:type, from:role, d:payload } }); }
+  function send(o){ try{ if(dc && dc.readyState==='open') dc.send(JSON.stringify(o)); }catch(e){} }
 
   function openChannel(cb){
-    const CFG = (typeof CHAT_CONFIG!=='undefined') ? CHAT_CONFIG : null;
-    if(!window.supabase || !CFG){ cb('sin conexión (config)'); return; }
-    sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
-    ch = sb.channel('haxball-'+code, { config:{ broadcast:{ self:false } } });
+    if(!SB){ cb('sin conexión (config)'); return; }
+    ch = SB.channel('haxball-'+code, { config:{ broadcast:{ self:false } } });
     ch.on('broadcast', { event:'sig' }, ({payload})=>handleSig(payload));
     ch.subscribe(st=>{ if(st==='SUBSCRIBED') cb(null); else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT') cb('no se pudo abrir la sala'); });
   }
@@ -791,40 +876,76 @@ const Net = (()=>{
   function setupPC(){
     pc = new RTCPeerConnection(ICE);
     pc.onicecandidate = e=>{ if(e.candidate) sig('ice', e.candidate); };
-    pc.onconnectionstatechange = ()=>{ if(['failed','disconnected','closed'].includes(pc.connectionState)) drop('conexión perdida'); };
+    pc.onconnectionstatechange = ()=>{
+      if(!pc) return;
+      const s=pc.connectionState;
+      if(s==='connected' && reconnecting) finishReconnect();
+      else if((s==='failed'||s==='disconnected'||s==='closed')){
+        if(phase==='match' && !reconnecting) beginReconnect();
+        else if(phase==='signaling' || phase==='lobby') drop('conexión perdida');
+      }
+    };
   }
   function bindDC(){
     dc.binaryType='arraybuffer';
     dc.onopen = ()=>{
       lastRecv = Date.now();
-      if(role==='guest') send({t:'hello', c:cfg.char});
+      if(reconnecting){ finishReconnect(); return; }
+      if(role==='guest' && phase!=='match') send({t:'hello', c:cfg.char, n:myName()});
     };
-    dc.onclose = ()=>drop('conexión cerrada');
+    dc.onclose = ()=>{ if(phase==='match' && !reconnecting) beginReconnect(); };
     dc.onmessage = ev=>{
       lastRecv = Date.now();
       let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
-      if(m.t==='hello'){                       // host recibe char del invitado
-        netMeta.guestChar = CHARS.some(c=>c.key===m.c)? m.c : 'titan';
-        send({t:'meta', c:cfg.char, d:cfg.dur});
-        if(onReady){ onReady(); onReady=null; }
+      switch(m.t){
+        case 'hello':                                  // host <- guest
+          peer.char = CHARS.some(c=>c.key===m.c)?m.c:'titan'; peer.name=(m.n||'Rival').slice(0,14);
+          netMeta.guestChar=peer.char; netMeta.guestName=peer.name;
+          send({t:'welcome', c:cfg.char, n:myName(), d:cfg.dur, f:(netMeta.fmt||1)});
+          phase='lobby'; onEvt&&onEvt('lobby'); break;
+        case 'welcome':                                // guest <- host
+          peer.char = CHARS.some(c=>c.key===m.c)?m.c:'titan'; peer.name=(m.n||'Rival').slice(0,14);
+          netMeta.hostChar=peer.char; netMeta.hostName=peer.name;
+          netMeta.fmt=m.f||1; cfg.dur=m.d||cfg.dur;
+          phase='lobby'; onEvt&&onEvt('lobby'); break;
+        case 'lob':                                    // sync de lobby (char/nombre/listo)
+          if(m.c) peer.char = CHARS.some(c=>c.key===m.c)?m.c:peer.char;
+          if(m.n) peer.name = m.n.slice(0,14);
+          peer.ready = !!m.r;
+          if(role==='host'){ netMeta.guestChar=peer.char; netMeta.guestName=peer.name; }
+          else { netMeta.hostChar=peer.char; netMeta.hostName=peer.name; if(typeof m.f==='number') netMeta.fmt=m.f; }
+          onEvt&&onEvt('lobsync'); break;
+        case 'start':                                  // guest <- host: arranca partido
+          netMeta.fmt=m.f||1; netMeta.hostChar=m.hc; netMeta.guestChar=m.gc;
+          netMeta.hostName=m.hn; netMeta.guestName=m.gn; cfg.dur=m.d||cfg.dur;
+          phase='match'; onEvt&&onEvt('start'); break;
+        case 'rematch':                                // host <- guest: pidió revancha
+          onEvt&&onEvt('rematch'); break;
+        case 'chat':
+          onEvt&&onEvt('chat', { n:(m.n||'Rival').slice(0,14), m:(m.m||'').slice(0,120) }); break;
+        case 'in': if(m.seq>=inSeq){ inSeq=m.seq; lastGuestInput={ix:m.ix,iy:m.iy,kick:m.k}; } break;
+        case 'snap': snapBuf.push(m); if(snapBuf.length>30) snapBuf.shift(); break;
+        case 'pg': send({t:'pp', ts:m.ts}); break;
+        case 'pp': rtt = Date.now()-m.ts; break;
       }
-      else if(m.t==='meta'){                   // invitado recibe char/duración del host
-        netMeta.hostChar = CHARS.some(c=>c.key===m.c)? m.c : 'titan';
-        cfg.dur = m.d||cfg.dur;
-        if(onReady){ onReady(); onReady=null; }
-      }
-      else if(m.t==='in'){ if(m.seq>=inSeq){ inSeq=m.seq; lastGuestInput={ix:m.ix,iy:m.iy,kick:m.k}; } }
-      else if(m.t==='snap'){ snapBuf.push(m); if(snapBuf.length>30) snapBuf.shift(); }
-      else if(m.t==='pg'){ send({t:'pp', ts:m.ts}); }
-      else if(m.t==='pp'){ rtt = Date.now()-m.ts; }
     };
   }
-  function send(o){ try{ if(dc && dc.readyState==='open') dc.send(JSON.stringify(o)); }catch(e){} }
 
   async function handleSig(p){
     if(!p || p.from===role) return;
+    // el host pide al invitado reiniciar el WebRTC (reconexión dirigida por el host)
+    if(p.t==='rejoin' && role==='guest'){
+      if(phase!=='match') return;
+      if(!reconnecting){ reconnecting=true; NETHOLD=true; showToast('reconectando…',false,2500);
+        clearTimeout(reconnTimer); reconnTimer=setTimeout(()=>{ if(reconnecting){ reconnecting=false; drop('no se pudo reconectar'); } },14000); }
+      teardownRTC(); setupPC();
+      pc.ondatachannel = e=>{ dc=e.channel; bindDC(); };
+      sig('join');
+      return;
+    }
+    if(!pc) return;
     try{
-      if(p.t==='join' && role==='host'){                 // llega el invitado: mandar oferta
+      if(p.t==='join' && role==='host'){
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         sig('offer', offer);
@@ -844,30 +965,67 @@ const Net = (()=>{
         if(pc.remoteDescription && pc.remoteDescription.type){ try{ await pc.addIceCandidate(p.d); }catch(e){} }
         else iceQ.push(p.d);
       }
-    }catch(e){ drop('fallo de señalización'); }
+    }catch(e){ if(phase!=='match') drop('fallo de señalización'); }
+  }
+
+  // ---- reconexión (mantiene el canal Supabase abierto y rehace el WebRTC) ----
+  function beginReconnect(){
+    if(reconnecting || phase!=='match') return;
+    reconnecting=true; NETHOLD=true;
+    showToast('reconectando…', false, 2500);
+    teardownRTC();
+    setupPC();
+    if(role==='host'){
+      dc = pc.createDataChannel('g', { ordered:false, maxRetransmits:0 });
+      bindDC();
+      sig('rejoin');                       // el invitado reinicia y manda 'join'
+    } else {
+      pc.ondatachannel = e=>{ dc=e.channel; bindDC(); };
+      sig('join');
+    }
+    clearTimeout(reconnTimer);
+    reconnTimer = setTimeout(()=>{ if(reconnecting){ reconnecting=false; drop('no se pudo reconectar'); } }, 14000);
+  }
+  function finishReconnect(){
+    if(!reconnecting) return;
+    reconnecting=false; clearTimeout(reconnTimer); NETHOLD=false;
+    lastRecv=Date.now();
+    showToast('¡reconectado!', true, 1400);
   }
 
   function drop(msg){
     if(role===''){ return; }
-    const wasRun = RUN;
+    const inGame = RUN || phase==='match' || phase==='lobby';
     teardown();
-    if(wasRun){ RUN=false; showToast(msg, false, 2200); setTimeout(()=>goMenu(), 1400); }
+    if(inGame){ RUN=false; NETHOLD=false; showToast(msg, false, 2200); setTimeout(()=>goMenu(), 1200); }
     else { $('netMsg').textContent = msg; }
   }
+  function teardownRTC(){
+    try{ dc && (dc.onclose=null, dc.close()); }catch(e){}
+    try{ pc && (pc.onconnectionstatechange=null, pc.close()); }catch(e){}
+    dc=pc=null; snapBuf=[]; iceQ=[];
+  }
   function teardown(){
-    try{ dc && dc.close(); }catch(e){}
-    try{ pc && pc.close(); }catch(e){}
-    try{ ch && sb.removeChannel(ch); }catch(e){}
-    dc=pc=ch=sb=null; role=''; onReady=null;
-    snapBuf=[]; lastGuestInput={ix:0,iy:0,kick:false}; inSeq=0; iceQ=[]; lastRecv=0; rtt=0;
+    clearTimeout(reconnTimer); reconnecting=false;
+    teardownRTC();
+    try{ ch && SB && SB.removeChannel(ch); }catch(e){}
+    ch=null; role=''; onEvt=null; phase='idle';
+    lastGuestInput={ix:0,iy:0,kick:false}; inSeq=0; lastRecv=0; rtt=0;
+    peer.char='titan'; peer.name='Rival'; peer.ready=false;
   }
 
   return {
     get code(){ return code; }, get role(){ return role; }, get rtt(){ return rtt; },
+    get phase(){ return phase; }, get peer(){ return peer; },
     guestInput(){ return lastGuestInput; },
+    latestSnap(){ return snapBuf.length? snapBuf[snapBuf.length-1] : null; },
+    alive(){ return lastRecv && (Date.now()-lastRecv) < 3500; },
+    reconnecting(){ return reconnecting; },
+    checkAlive(){ if(phase==='match' && !reconnecting && lastRecv && Date.now()-lastRecv>3000) beginReconnect(); },
 
-    createRoom(ready){
-      role='host'; code=genCode(); onReady=ready;
+    createRoom(evt){
+      role='host'; code=genCode(); onEvt=evt; phase='signaling';
+      netMeta={ fmt:1, hostChar:cfg.char, hostName:myName() };
       $('netMsg').textContent = 'Sala '+code+' — esperando rival…';
       openChannel(err=>{
         if(err){ drop(err); return; }
@@ -876,9 +1034,10 @@ const Net = (()=>{
         bindDC();
       });
     },
-    joinRoom(c, ready){
-      role='guest'; code=(c||'').toUpperCase(); onReady=ready;
-      if(code.length<4){ $('netMsg').textContent='código inválido'; role=''; return; }
+    joinRoom(c, evt){
+      role='guest'; code=(c||'').toUpperCase(); onEvt=evt; phase='signaling';
+      netMeta={ fmt:1, guestChar:cfg.char, guestName:myName() };
+      if(code.length<4){ $('netMsg').textContent='código inválido'; role=''; phase='idle'; return; }
       $('netMsg').textContent = 'Conectando a '+code+'…';
       openChannel(err=>{
         if(err){ drop(err); return; }
@@ -888,33 +1047,78 @@ const Net = (()=>{
       });
     },
 
-    // host: arma y manda snapshot compacto
+    // lobby: avisar mi char/nombre/listo (el host también manda formato)
+    sendLob(ready){
+      const o={t:'lob', c:cfg.char, n:myName(), r:!!ready};
+      if(role==='host') o.f=netMeta.fmt||1;
+      send(o);
+    },
+    // host: fija config final y ordena arrancar
+    sendStart(){
+      const o={ t:'start', f:netMeta.fmt||1,
+        hc:netMeta.hostChar, gc:netMeta.guestChar,
+        hn:netMeta.hostName, gn:netMeta.guestName, d:cfg.dur };
+      send(o); phase='match';
+    },
+    sendRematch(){ send({t:'rematch'}); },
+    sendChat(txt){ const m=(txt||'').trim().slice(0,120); if(m) send({t:'chat', n:myName(), m}); return m; },
+    setMatchPhase(){ phase='match'; },
+
     sendSnap(w){
-      if(!dc || dc.readyState!=='open') return;
+      if(!dc || dc.readyState!=='open' || NETHOLD) return;
       const R=Math.round;
-      send({
-        t:'snap', k:w.tick,
+      send({ t:'snap', k:w.tick,
         b:[R(w.ball.x),R(w.ball.y),R(w.ball.vx*100)/100,R(w.ball.vy*100)/100],
         p:w.players.map(pl=>[R(pl.x),R(pl.y),R(pl.vx*100)/100,R(pl.vy*100)/100,pl._kick?1:0]),
-        sR:w.scoreR, sB:w.scoreB, st:w.state, tR:w.tRemain, ct:w.count
-      });
+        sR:w.scoreR, sB:w.scoreB, st:w.state, tR:w.tRemain, ct:w.count });
       const now=Date.now();
       if(now-pingT>1000){ pingT=now; send({t:'pg', ts:now}); }
     },
-    // invitado: manda su input
     sendInput(){
-      if(!dc || dc.readyState!=='open') return;
+      if(!dc || dc.readyState!=='open' || NETHOLD) return;
       const i=humanInput();
       send({t:'in', seq:++inSeq, ix:i.ix, iy:i.iy, k:i.kick});
       const now=Date.now();
       if(now-pingT>1000){ pingT=now; send({t:'pg', ts:now}); }
     },
-    // invitado: último snapshot; null si aún nada
-    latestSnap(){ return snapBuf.length? snapBuf[snapBuf.length-1] : null; },
-    alive(){ return lastRecv && (Date.now()-lastRecv) < 3500; },
+
+    // historial: el host guarda el resultado (best-effort, silencioso si no hay tabla)
+    async saveResult(row){
+      if(!SB || role!=='host') return;
+      try{ await SB.from('hb_matches').insert(row); }catch(e){}
+    },
+
     leave(){ teardown(); }
   };
 })();
+
+// ---- historial + ranking (menú) ----
+async function loadHistory(){
+  if(!SB){ return; }
+  try{
+    const { data, error } = await SB.from('hb_matches')
+      .select('created_at,host_name,guest_name,score_r,score_b,winner,fmt')
+      .order('created_at',{ascending:false}).limit(40);
+    if(error || !data || !data.length){ $('histGrp').hidden=true; return; }
+    // ranking por victorias
+    const wins={};
+    data.forEach(m=>{
+      const w = m.winner==='host'? m.host_name : m.winner==='guest'? m.guest_name : null;
+      if(w) wins[w]=(wins[w]||0)+1;
+    });
+    const top = Object.entries(wins).sort((a,b)=>b[1]-a[1]).slice(0,5)
+      .map(([n,c])=>`${n} (${c})`).join(' · ');
+    $('rankLine').textContent = top ? '🏆 '+top : '';
+    $('histList').innerHTML = data.slice(0,8).map(m=>{
+      const d=new Date(m.created_at), hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+      const bold = (m.winner==='host') ? [1,0] : (m.winner==='guest') ? [0,1] : [0,0];
+      const a = bold[0]? `<b>${m.host_name}</b>`:m.host_name;
+      const b = bold[1]? `<b>${m.guest_name}</b>`:m.guest_name;
+      return `<span style="color:#8b93a3">${hh}:${mm}</span> ${a} ${m.score_r}–${m.score_b} ${b}`;
+    }).join('<br>');
+    $('histGrp').hidden=false;
+  }catch(e){ $('histGrp').hidden=true; }
+}
 
 // =====================================================================
 //  LOOP
@@ -929,20 +1133,19 @@ function loop(ts){
   acc += dt;
   let steps=0;
   while(acc>=TICK_MS && steps<6){
+    if(NETHOLD) break;                       // congelado mientras reconecta
     for(const d of [world.ball,...world.players]){ d.px=d.x; d.py=d.y; }
     step(world);
     if(MODE==='host' && world.tick%3===0) Net.sendSnap(world);
     acc-=TICK_MS; steps++;
   }
+  if(NETHOLD) acc=0;
   if(SFX.length){ for(const n of SFX) Audio2.play(n); SFX.length=0; }
   if(world.toast!==lastToast){ lastToast=world.toast; if(world.toast) showToast(world.toast, world.state!=='goal', world.state==='kickoff'?700:1500); }
   if(shakeT>0) shakeT--;
   render(clamp(acc/TICK_MS,0,1));
   updateClock();
-  if(MODE==='host'){
-    if(!Net.alive() && world.tick>120){ RUN=false; showToast('conexión perdida', false, 2200); setTimeout(goMenu,1400); return; }
-    netHud();
-  }
+  if(MODE==='host'){ Net.checkAlive(); netHud(); }
   requestAnimationFrame(loop);
 }
 
@@ -950,21 +1153,20 @@ function loop(ts){
 function guestLoop(ts){
   if(!last) last=ts;
   const dt = Math.min(50, ts-last); last=ts;
-  Net.sendInput();
-  applyGuestSnap(dt);
+  if(!NETHOLD){ Net.sendInput(); applyGuestSnap(dt); }
   if(SFX.length){ for(const n of SFX) Audio2.play(n); SFX.length=0; }
   if(world.toast!==lastToast){ lastToast=world.toast; if(world.toast) showToast(world.toast, world.state!=='goal', world.state==='kickoff'?700:1500); }
   if(shakeT>0) shakeT--;
   render(1);
   updateClock();
-  netHud();
-  if(!Net.alive() && Net.latestSnap()){ RUN=false; showToast('conexión perdida', false, 2200); setTimeout(goMenu,1400); return; }
+  Net.checkAlive(); netHud();
   requestAnimationFrame(loop);
 }
 function netHud(){
   const el=$('netInfo'); if(!el) return;
   el.hidden=false;
-  el.textContent = (MODE==='host'?'HOST · '+Net.code : 'INVITADO') + (Net.rtt? ' · '+Net.rtt+'ms' : '');
+  const r = MODE==='host' ? 'HOST · '+Net.code : 'INVITADO';
+  el.textContent = Net.reconnecting() ? r+' · reconectando…' : r + (Net.rtt? ' · '+Net.rtt+'ms' : '');
 }
 function applyGuestSnap(dt){
   const s = Net.latestSnap();
@@ -975,8 +1177,10 @@ function applyGuestSnap(dt){
   if(s.sR!==world.scoreR || s.sB!==world.scoreB){
     const scored = (s.sR>world.scoreR) ? 0 : 1;
     if((s.sR-world.scoreR)+(s.sB-world.scoreB) > 0){
-      SFX.push('goal'); flashScreen(); shakeT=16;
-      showToast(scored===1 ? '¡TU GOL!' : 'GOL RIVAL', scored===1, 1800);
+      const mine = scored===1;               // invitado es blue(1)
+      const who = mine ? (netMeta.guestName||'Vos') : (netMeta.hostName||'Rival');
+      SFX.push('goal'); flashScreen(); shakeT=16; buzz(mine?[45,35,80]:40);
+      showToast('GOL DE '+who.toUpperCase(), mine, 1800);
     }
     world.scoreR=s.sR; world.scoreB=s.sB;
     $('scR').textContent=s.sR; $('scB').textContent=s.sB;
@@ -1009,13 +1213,22 @@ function applyGuestSnap(dt){
   if(s.st==='end' && prevState!=='end'){ endMatchGuest(s.sR,s.sB); }
 }
 function endMatchGuest(r,b){
-  RUN=false;
-  const youRed=false; // invitado siempre azul
-  const win = b>r;
+  RUN=false; world.state='end';
+  const hn=netMeta.hostName||'Rival', gn=netMeta.guestName||'Vos';
+  const win = b>r;                          // invitado es blue(1)
   $('overT').textContent = win ? '¡GANASTE!' : r===b ? 'EMPATE' : 'PERDISTE';
-  $('overS').textContent = `Playa ${r} — ${b} Rival`;
+  $('overS').textContent = `${hn} ${r} — ${b} ${gn}`;
+  setupOverButtons();
   $('over').hidden=false; $('pauseBtn').hidden=true;
   Audio2.play(win?'win':r===b?'whistle':'lose');
+  buzz(win?[80,50,80,50,140]:60);
+}
+// botones del panel de fin según modo
+function setupOverButtons(){
+  const rb=$('rematchBtn');
+  if(MODE==='cpu'){ rb.textContent='REVANCHA'; rb.hidden=false; }
+  else if(MODE==='host'){ rb.textContent='REVANCHA'; rb.hidden=false; }
+  else { rb.textContent='PEDIR REVANCHA'; rb.hidden=false; }   // guest
 }
 function updateClock(){
   const secs=Math.max(0,Math.ceil(world.tRemain/60));
@@ -1040,7 +1253,7 @@ function buildCharSel(){
     const d=document.createElement('div');
     d.className='char'+(c.key===cfg.char?' on':'');
     d.innerHTML=`<img src="${c.key}-sprite.png" alt="${c.name}"><span>${c.name}</span>`;
-    d.onclick=()=>{ cfg.char=c.key; buildCharSel(); };
+    d.onclick=()=>{ cfg.char=c.key; saveCfg(); buildCharSel(); };
     wrap.appendChild(d);
   });
 }
@@ -1058,25 +1271,33 @@ optGroup('durSel','dur',Number);
 
 const isTouch = matchMedia('(hover:none) and (pointer:coarse)').matches;
 function goMenu(){
-  RUN=false; PAUSED=false;
+  RUN=false; PAUSED=false; NETHOLD=false;
   Net.leave(); MODE='cpu'; netMeta={};
   $('netInfo').hidden=true; $('netMsg').textContent=''; $('codeInp').style.display='none';
   $('shareBtn').style.display='none'; $('joinBtn').textContent='Unirse';
+  $('lobby').hidden=true;
   $('menu').hidden=false; $('pause').hidden=true; $('over').hidden=true;
   $('hud').hidden=true; $('menuBtn').hidden=true; $('pauseBtn').hidden=true; $('muteBtn').hidden=true;
   $('touch').classList.remove('on');
+  $('chatBtn').hidden=true; $('chatInp').hidden=true; $('chatLog').innerHTML='';
+  loadHistory();
 }
 function startGame(){
   saveCfg();
-  $('menu').hidden=true; $('over').hidden=true; $('pause').hidden=true;
+  $('menu').hidden=true; $('over').hidden=true; $('pause').hidden=true; $('lobby').hidden=true;
   $('hud').hidden=false; $('menuBtn').hidden=false; $('pauseBtn').hidden=false; $('muteBtn').hidden=false;
-  $('youN').textContent='PLAYA'; $('rivalN').textContent='RIVAL';
+  if(MODE==='cpu'){ $('youN').textContent='PLAYA'; $('rivalN').textContent='RIVAL'; }
+  else {
+    $('youN').textContent = (netMeta.hostName||'LOCAL').toUpperCase();
+    $('rivalN').textContent = (netMeta.guestName||'RIVAL').toUpperCase();
+  }
   $('muteBtn').textContent = Audio2.muted ? '✕' : '♪';
+  $('chatBtn').hidden = (MODE==='cpu'); $('chatLog').innerHTML=''; $('chatInp').hidden=true;
   if(isTouch) $('touch').classList.add('on');
   world=newWorld();
   $('scR').textContent=0; $('scB').textContent=0;
   resize();
-  RUN=true; PAUSED=false; last=0; acc=0; shakeT=0; lastToast='';
+  RUN=true; PAUSED=false; NETHOLD=false; last=0; acc=0; shakeT=0; lastToast='';
   Audio2.unlock(); Audio2.play('whistle');
   requestAnimationFrame(loop);
 }
@@ -1087,16 +1308,68 @@ function togglePause(force){
   if(!PAUSED){ last=0; requestAnimationFrame(loop); }
 }
 $('playBtn').onclick=()=>{ MODE='cpu'; startGame(); };
-$('rematchBtn').onclick=()=>{ if(MODE==='cpu') startGame(); else goMenu(); };
 $('toMenuBtn').onclick=goMenu;
+
+// nombre
+$('nameInp').value = cfg.name||'';
+$('nameInp').addEventListener('input',e=>{ cfg.name=e.target.value.replace(/\s+/g,' ').slice(0,14); saveCfg(); });
+
+// REVANCHA — según modo
+$('rematchBtn').onclick=()=>{
+  if(MODE==='cpu'){ startGame(); return; }
+  if(MODE==='host'){ netMeta.hostChar=cfg.char; Net.sendStart(); startGame(); }
+  else { Net.sendRematch(); $('overT').textContent='PEDIDO ENVIADO…'; $('rematchBtn').hidden=true; }
+};
 
 // ---- online ----
 function netStatus(m){ $('netMsg').textContent=m; }
 function inviteLink(code){ return location.origin+location.pathname+'?sala='+code; }
+
+// callback de eventos de Net
+function onNetEvt(kind, data){
+  if(kind==='lobby'){ Audio2.play('join'); buzz(60); enterLobby(); }
+  else if(kind==='lobsync'){ if(!$('lobby').hidden) paintLobby(); }
+  else if(kind==='start'){ startGame(); }               // guest: el host ordenó arrancar
+  else if(kind==='rematch'){                             // host: el guest pidió revancha
+    if(world && world.state==='end'){ netMeta.hostChar=cfg.char; Net.sendStart(); startGame(); }
+  }
+  else if(kind==='chat'){ pushChat(data.n, data.m, false); }
+}
+
+// ---- chat en vivo (online) ----
+let chatIdleTimer=0;
+function pushChat(name, text, mine){
+  const log=$('chatLog');
+  const d=document.createElement('div');
+  if(mine) d.className='mine';
+  d.innerHTML = '<b>'+escapeHtml(name)+':</b> '+escapeHtml(text);
+  log.appendChild(d);
+  while(log.children.length>5) log.removeChild(log.firstChild);
+  log.classList.remove('idle');
+  clearTimeout(chatIdleTimer);
+  chatIdleTimer=setTimeout(()=>log.classList.add('idle'), 7000);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function openChat(){
+  if(MODE==='cpu' || !RUN) return;
+  const inp=$('chatInp'); inp.hidden=false; inp.value=''; inp.focus();
+}
+function closeChat(){ const inp=$('chatInp'); inp.hidden=true; inp.blur(); }
+$('chatBtn').onclick=openChat;
+$('chatInp').addEventListener('keydown',e=>{
+  e.stopPropagation();
+  if(e.key==='Enter'){
+    const m=Net.sendChat(e.target.value);
+    if(m) pushChat(myName(), m, true);
+    closeChat();
+  } else if(e.key==='Escape'){ closeChat(); }
+});
+$('chatInp').addEventListener('blur',()=>{ setTimeout(closeChat,80); });
+
 $('createBtn').onclick=()=>{
   Audio2.unlock();
-  MODE='host'; netMeta={};
-  Net.createRoom(()=>{ netStatus('¡Rival conectado!'); startGame(); });
+  MODE='host';
+  Net.createRoom(onNetEvt);
   if(Net.code){ netStatus('Sala '+Net.code+' — mandá la invitación y esperá'); $('shareBtn').style.display='block'; }
 };
 $('shareBtn').onclick=async()=>{
@@ -1114,11 +1387,12 @@ $('joinBtn').onclick=()=>{
   if(inp.style.display==='none'){ inp.style.display='block'; inp.focus(); return; }
   const c=inp.value.trim().toUpperCase();
   if(c.length<4){ netStatus('código inválido'); return; }
-  MODE='guest'; netMeta={};
+  MODE='guest';
   netStatus('conectando…');
-  Net.joinRoom(c, ()=>{ netStatus('¡Conectado!'); startGame(); });
+  Net.joinRoom(c, onNetEvt);
 };
 $('codeInp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('joinBtn').click(); } });
+
 // invitación por link:  haxball.html?sala=XXXX
 (function(){
   const sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
@@ -1128,12 +1402,65 @@ $('codeInp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefau
   $('joinBtn').textContent='Entrar a '+sala;
   netStatus('Te invitaron a la sala '+sala+'. Tocá «Entrar».');
 })();
+
+// ---- LOBBY ----
+let myReady=false;
+function buildLobChars(){
+  const wrap=$('lobChars'); wrap.innerHTML='';
+  CHARS.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='char'+(c.key===cfg.char?' on':'');
+    d.innerHTML=`<img src="${c.key}-sprite.png" alt="${c.name}"><span>${c.name}</span>`;
+    d.onclick=()=>{ if(myReady) return; cfg.char=c.key; saveCfg(); buildLobChars(); Net.sendLob(myReady); paintLobby(); };
+    wrap.appendChild(d);
+  });
+}
+function paintLobby(){
+  const host = Net.role==='host';
+  $('lobCode').textContent = Net.code;
+  $('lobRole').textContent = host ? 'Sos el HOST — elegí formato y dale LISTO' : 'Te uniste — elegí tu cabezudo y dale LISTO';
+  // formato: solo el host
+  $('lobFmtSel').querySelectorAll('.opt').forEach(b=>{
+    b.classList.toggle('on', Number(b.dataset.v)===(netMeta.fmt||1));
+    b.disabled = !host; b.style.opacity = host? '1':'.5';
+  });
+  $('lobFmtNote').textContent = host ? 'Con 2v2 / 3v3 se completa con CPU.' : 'El formato lo elige el host.';
+  const p = Net.peer;
+  const meName = myName()+' (vos)', meCh = (CHARS.find(c=>c.key===cfg.char)||CHARS[0]).name;
+  const peName = p.name, peCh = (CHARS.find(c=>c.key===p.char)||CHARS[0]).name;
+  $('lobPlayers').innerHTML =
+    `🔴 ${host?meName:peName} — ${host?meCh:peCh} ${ (host?myReady:p.ready)?'✅':'⏳' }<br>`+
+    `🔵 ${host?peName:meName} — ${host?peCh:meCh} ${ (host?p.ready:myReady)?'✅':'⏳' }`;
+  $('readyBtn').textContent = myReady ? 'CANCELAR LISTO' : 'LISTO';
+  // host arranca cuando ambos están listos
+  if(host && myReady && p.ready){ netMeta.hostChar=cfg.char; netMeta.guestChar=p.char; Net.sendStart(); startGame(); }
+}
+function enterLobby(){
+  myReady=false;
+  $('menu').hidden=true; $('over').hidden=true; $('lobby').hidden=false;
+  netMeta.fmt = netMeta.fmt||1;
+  if(Net.role==='host'){ netMeta.hostChar=cfg.char; netMeta.hostName=myName(); }
+  else { netMeta.guestChar=cfg.char; netMeta.guestName=myName(); }
+  buildLobChars(); paintLobby();
+  Net.sendLob(false);
+}
+$('lobFmtSel').querySelectorAll('.opt').forEach(b=>{
+  b.onclick=()=>{ if(Net.role!=='host'||myReady) return; netMeta.fmt=Number(b.dataset.v); Net.sendLob(myReady); paintLobby(); };
+});
+$('readyBtn').onclick=()=>{ myReady=!myReady; Net.sendLob(myReady); paintLobby(); };
+$('lobLeaveBtn').onclick=goMenu;
 $('pMenuBtn').onclick=goMenu;
 $('menuBtn').onclick=goMenu;
 $('pauseBtn').onclick=()=>togglePause();
 $('resumeBtn').onclick=()=>togglePause(false);
 $('muteBtn').onclick=()=>{ const m=Audio2.toggleMute(); $('muteBtn').textContent=m?'✕':'♪'; if(!m) Audio2.unlock(); };
-addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); if(k==='p'&&RUN) togglePause(); if(k==='escape'&&PAUSED) togglePause(false); });
+addEventListener('keydown',e=>{
+  if(e.target && e.target.id==='chatInp') return;
+  const k=e.key.toLowerCase();
+  if(e.key==='Enter' && RUN && MODE!=='cpu' && $('chatInp').hidden && $('menu').hidden && $('over').hidden && $('pause').hidden){ e.preventDefault(); openChat(); return; }
+  if(k==='p'&&RUN) togglePause();
+  if(k==='escape'&&PAUSED) togglePause(false);
+});
 addEventListener('visibilitychange',()=>{ if(document.hidden && RUN && !PAUSED) togglePause(true); });
 
 // ---------- joystick táctil ----------
@@ -1151,9 +1478,10 @@ addEventListener('visibilitychange',()=>{ if(document.hidden && RUN && !PAUSED) 
 })();
 
 resize();
+loadHistory();
 
 // debug (no afecta el juego)
-window.__hb = { get world(){return world}, step:()=>step(world), render, start:startGame, cfg, F };
+window.__hb = { get world(){return world}, step:()=>step(world), render, start:startGame, cfg, F, Net };
 </script>
 </body>
 </html>
