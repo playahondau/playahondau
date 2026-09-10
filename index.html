@@ -1145,10 +1145,10 @@ function showTab(name) {
   event.target.classList.add('active');
 }
 
-/* ── Tablas de Posiciones — Live desde LUD API ── */
+/* ── Tablas de Posiciones — vía proxy GAS (lud-backend bloquea CORS y corsproxy.io ya no es gratis) ── */
 (function() {
-  var API = 'https://lud-backend-ld7d.onrender.com/api/phases/';
-  var FASES = { mayores: 1, reserva: 8, presenior: 13, sub20: 23, sub18: 30 };
+  var GAS = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZIgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec';
+  var FASES = ['mayores', 'reserva', 'presenior', 'sub20', 'sub18'];
 
   function titleCase(s) {
     return s.toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); });
@@ -1180,41 +1180,31 @@ function showTab(name) {
     }).join('');
   }
 
-  function fetchFase(tabId, phaseId, retry) {
-    var key = 'phu_pos_' + phaseId, tsKey = key + '_ts';
-    var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
-    if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
-      try { renderTabla(tabId, JSON.parse(cached)); return; } catch(e) {}
-    }
-    var url = API + phaseId + '/standings/';
-    var proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
-    function tryFetch(urls, i) {
-      if (i >= urls.length) {
-        // Reintento tras 25s si fue el primer intento (cold start de Render)
-        if (!retry) setTimeout(function(){ fetchFase(tabId, phaseId, true); }, 25000);
-        return;
-      }
-      var ctrl = new AbortController();
-      var t = setTimeout(function(){ ctrl.abort(); }, 25000);
-      fetch(urls[i], { signal: ctrl.signal })
-        .then(function(r){ clearTimeout(t); return r.json(); })
-        .then(function(data) {
-          if (!Array.isArray(data) || !data.length) throw new Error();
-          sessionStorage.setItem(key, JSON.stringify(data));
-          sessionStorage.setItem(tsKey, Date.now().toString());
-          renderTabla(tabId, data);
-        })
-        .catch(function(){ clearTimeout(t); tryFetch(urls, i+1); });
-    }
-    tryFetch([url, proxy], 0);
+  function pintarTodas(obj) {
+    FASES.forEach(function(k) {
+      if (Array.isArray(obj[k]) && obj[k].length) renderTabla(k, obj[k]);
+    });
   }
 
-  // Wake ping al API (cold start de Render)
-  fetch('https://lud-backend-ld7d.onrender.com/api/phases/1/', { method: 'HEAD' }).catch(function(){});
-
-  Object.keys(FASES).forEach(function(tabId) {
-    fetchFase(tabId, FASES[tabId]);
-  });
+  (function fetchStandings(retry) {
+    var key = 'phu_pos_all', tsKey = key + '_ts';
+    var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
+    if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
+      try { pintarTodas(JSON.parse(cached)); return; } catch(e) {}
+    }
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, 30000);
+    fetch(GAS + '?view=standings', { signal: ctrl.signal })
+      .then(function(r){ clearTimeout(t); return r.json(); })
+      .then(function(data) {
+        var ok = data && FASES.some(function(k){ return Array.isArray(data[k]) && data[k].length; });
+        if (!ok) throw new Error();
+        sessionStorage.setItem(key, JSON.stringify(data));
+        sessionStorage.setItem(tsKey, Date.now().toString());
+        pintarTodas(data);
+      })
+      .catch(function(){ clearTimeout(t); if (!retry) setTimeout(function(){ fetchStandings(true); }, 25000); });
+  })();
 
   // Master: Apps Script parsea FFM (SSL incompatible con proxies de browser)
   (function() {
@@ -1223,7 +1213,7 @@ function showTab(name) {
     if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
       try { renderTabla('master', JSON.parse(cached)); return; } catch(e) {}
     }
-    fetch('https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZlgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec?view=master')
+    fetch(GAS + '?view=master')
       .then(function(r){ return r.json(); })
       .then(function(data) {
         if (!Array.isArray(data) || !data.length) return;
