@@ -2321,9 +2321,19 @@ async function init() {
   try {
     const [resp, extra] = await Promise.all([fetch(GAS_API), fetchSheetExtra()]);
     const data       = await resp.json();
-    const resultados = Array.isArray(data.resultados) ? data.resultados : [];
+    let resultados   = Array.isArray(data.resultados) ? data.resultados : [];
     let fixture      = Array.isArray(data.fixture)    ? data.fixture    : [];
     window._fixtureRows = fixture;
+    // Resultados manuales (categorías que lud-stats ya no publica, ej. Mayores).
+    // Borrar/actualizar cada fecha.
+    const MANUAL_RESULTADOS = [{
+      _ts:'2026-09-05T16:00:00', categoria:'Master', fecha:'Sáb 5 Sep',
+      resultado:'empate', local:'Playa Honda U.', visitante:'Pxxl',
+      goles_local:2, goles_visitante:2, lugar:'Cancha de Santa Rita',
+      goleadores:'Andrés Risso; Ramiro Fernández'
+    }];
+    resultados = MANUAL_RESULTADOS.concat(resultados)
+      .sort((a,b) => new Date(b._ts) - new Date(a._ts));
     const latestTs = resultados.length ? new Date(resultados[0]._ts) : null;
     const recentResultados = latestTs
       ? resultados.filter(r => (latestTs - new Date(r._ts)) < 4 * 24 * 60 * 60 * 1000)
