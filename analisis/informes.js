@@ -15,7 +15,7 @@
 */
 
 const INFORMES = [
-  { fecha: "2026-09-13", rival: "Elbio Fernández",    categoria: "Mayores",    archivo: "analisis-elbio-fernandez-mayores-2026-09-13.pdf" },
+  { fecha: "2026-09-13", rival: "ELF",               categoria: "Mayores",    archivo: "analisis-elf-mayores-2026-09-13.pdf" },
   { fecha: "2026-09-13", rival: "Ceibos Club",        categoria: "Sub 18",     archivo: "analisis-ceibos-sub18-2026-09-13.pdf" },
   { fecha: "2026-09-12", rival: "Old Woodlands Club", categoria: "Reserva",    archivo: "analisis-old-woodlands-reserva-2026-09-12.pdf" },
   { fecha: "2026-09-12", rival: "Old Woodlands Club", categoria: "Sub 20",     archivo: "analisis-old-woodlands-sub20-2026-09-12.pdf" },
