@@ -24,10 +24,19 @@ body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-s
 .dr-tagline{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.2rem;color:#fff;background:#1a3a8f;padding:.35rem .6rem;border-radius:3px;}
 
 /* ── Titular destacado ancho completo ── */
-.dr-featured{border-bottom:2px solid #1a3a8f;padding-bottom:.9rem;margin-bottom:1.2rem;}
+.dr-featured{border-bottom:2px solid #1a3a8f;padding-bottom:.9rem;margin-bottom:1.2rem;display:grid;grid-template-columns:1.5fr 1fr;gap:1.6rem;align-items:center;}
 .dr-kicker{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#8b0000;margin-bottom:.3rem;}
 .dr-titular{font-family:'Georgia','Times New Roman',serif;font-size:clamp(1.4rem,3vw,2.1rem);font-weight:700;line-height:1.15;margin-bottom:.4rem;}
 .dr-subtit{font-family:'Barlow',sans-serif;font-size:.85rem;color:#444;margin:0;}
+
+/* ── Anuncio "Datos de rivales" ── */
+.dr-promo{border:2px solid #1a3a8f;border-radius:8px;padding:.75rem .9rem;background:#f4f6fb;}
+.dr-promo-k{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8b0000;margin-bottom:.15rem;}
+.dr-promo-t{font-family:'Georgia',serif;font-weight:700;font-size:1rem;line-height:1.2;margin:0 0 .3rem;}
+.dr-promo-p{font-size:.76rem;color:#444;line-height:1.5;margin:0 0 .55rem;}
+.dr-promo-btn{display:inline-block;background:#1a3a8f;color:#fff;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem;padding:.45rem .85rem;border-radius:4px;}
+.dr-promo-btn:hover{background:#12296b;}
+.dr-promo-note{margin:.55rem 0 0;font-family:'Barlow Condensed',sans-serif;font-size:.69rem;color:#1a6b1a;font-weight:700;letter-spacing:.03em;}
 
 /* ── Grid: crónica izquierda (secundaria) | resultados+fixture derecha (protagonista) ── */
 .dr-grid{display:grid;grid-template-columns:1fr 2fr;gap:1.8rem;align-items:start;}
@@ -62,6 +71,7 @@ body{margin:0;padding:0;background:#f0f2f5;font-family:'Barlow',Helvetica,sans-s
 
 @media(max-width:620px){
   .dr-grid{grid-template-columns:1fr;}
+  .dr-featured{grid-template-columns:1fr;}
   .dr-results-grid{grid-template-columns:1fr;}
   .dr-col-cron{border-right:none;padding-right:0;border-bottom:1px solid #ccc;padding-bottom:1.2rem;margin-bottom:.2rem;}
   .dr-top{flex-wrap:wrap;gap:.3rem;justify-content:center;}
@@ -240,9 +250,18 @@ function renderDiario(resultados, fixture) {
     '<p class="dr-tagline">Playa Honda Universitario &middot; Liga Universitaria del Uruguay &middot; Desde 1964</p>'+
     /* ── Titular ancho completo ── */
     '<div class="dr-featured">'+
-      '<p class="dr-kicker">'+allCats+'</p>'+
-      '<h3 class="dr-titular">'+titular+'</h3>'+
-      '<p class="dr-subtit">'+subtit+'</p>'+
+      '<div class="dr-feat-main">'+
+        '<p class="dr-kicker">'+allCats+'</p>'+
+        '<h3 class="dr-titular">'+titular+'</h3>'+
+        '<p class="dr-subtit">'+subtit+'</p>'+
+      '</div>'+
+      '<div class="dr-promo">'+
+        '<p class="dr-promo-k">Novedad</p>'+
+        '<p class="dr-promo-t">Ya está la sección Datos de rivales</p>'+
+        '<p class="dr-promo-p">Análisis del próximo rival: números, formación y jugadores a seguir. Para jugadores y cuerpo técnico.</p>'+
+        '<a class="dr-promo-btn" href="analisis.html">Ver Datos de rivales &rarr;</a>'+
+        '<p class="dr-promo-note">&#9989; Los rivales de este finde ya están subidos.</p>'+
+      '</div>'+
     '</div>'+
     /* ── Cuerpo: con o sin crónica ── */
     (hasCronica
