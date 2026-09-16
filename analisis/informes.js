@@ -15,6 +15,10 @@
 */
 
 const INFORMES = [
+  { fecha: "2026-09-20", rival: "Carrasco Polo Club", categoria: "Mayores",    archivo: "analisis-carrasco-polo-mayores-2026-09-20.pdf" },
+  { fecha: "2026-09-19", rival: "Old Christians Club",categoria: "Reserva",    archivo: "analisis-old-christians-reserva-2026-09-19.pdf" },
+  { fecha: "2026-09-19", rival: "Nacional Universitario", categoria: "Pre Senior", archivo: "analisis-nacional-universitario-presenior-2026-09-19.pdf" },
+  { fecha: "2026-09-19", rival: "ELF",               categoria: "Sub 20",     archivo: "analisis-elf-sub20-2026-09-19.pdf" },
   { fecha: "2026-09-13", rival: "ELF",               categoria: "Mayores",    archivo: "analisis-elf-mayores-2026-09-13.pdf" },
   { fecha: "2026-09-13", rival: "Ceibos Club",        categoria: "Sub 18",     archivo: "analisis-ceibos-sub18-2026-09-13.pdf" },
   { fecha: "2026-09-12", rival: "Old Woodlands Club", categoria: "Reserva",    archivo: "analisis-old-woodlands-reserva-2026-09-12.pdf" },
