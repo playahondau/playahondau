@@ -1121,6 +1121,10 @@ function showPartidos(name) {
 .tab-content.active{display:block;}
 .tabla-titulo{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin-bottom:1rem;}
 .tabla-nota{font-size:.72rem;color:rgba(154,160,172,.88);margin-top:.6rem;font-style:italic;}
+.vista-bar{display:flex;gap:6px;flex-wrap:wrap;margin:-.4rem 0 1rem;}
+.vista-btn{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--gris);border:1px solid rgba(255,255,255,.14);padding:.35rem .8rem;cursor:pointer;border-radius:2px;transition:all .2s;}
+.vista-btn:hover,.vista-btn.active{border-color:var(--dorado);color:var(--dorado);}
+.vista-btn.active{background:rgba(255,255,255,.06);}
 .tabla-wrap{overflow-x:auto;}
 .tabla{width:100%;border-collapse:collapse;font-size:.88rem;}
 .tabla thead tr{background:var(--dorado);color:#071428;}
@@ -1150,6 +1154,13 @@ function showTab(name) {
   var GAS = 'https://script.google.com/macros/s/AKfycbx2jJEMPX61o-6xApVvZIgVD8LISORPDXSbLvsnAretYmdsk7dHxpYvNEco_Oa8_X2P/exec';
   var FASES = ['mayores', 'reserva', 'presenior', 'sub20', 'sub18'];
 
+  /* Segunda Rueda (Título / Permanencia): snapshot de arranque con los puntos arrastrados.
+     Se pisa con datos en vivo cuando el proxy los trae (claves mayores_t, mayores_p, ...). */
+  var SEG = {"mayores_t":[{"team":{"name":"OLD WOODLANDS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":32},{"team":{"name":"URUNDAY UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"CARRASCO POLO CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":28},{"team":{"name":"E.L.F."},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":25},{"team":{"name":"TENIS EL PINAR"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":24},{"team":{"name":"NACIONAL UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":23},{"team":{"name":"TAPE"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":22},{"team":{"name":"OLD BOYS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":21}],"mayores_p":[{"team":{"name":"SANTA ELENA LAGOMAR"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":19},{"team":{"name":"CLUB SEMINARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":19},{"team":{"name":"PLAYA HONDA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":18},{"team":{"name":"HEBRAICA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17},{"team":{"name":"OLD CHRISTIANS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17},{"team":{"name":"CARRASCO LAWN TENNIS"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":15},{"team":{"name":"OLD IVY"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":9},{"team":{"name":"JUAN XXIII"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":7}],"reserva_t":[{"team":{"name":"CARRASCO LAWN TENNIS"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":34},{"team":{"name":"OLD CHRISTIANS AZUL"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":32},{"team":{"name":"OLD BOYS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"OLD WOODLANDS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"OLD CHRISTIANS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":27},{"team":{"name":"CARRASCO POLO CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":20},{"team":{"name":"NAUTICO CARRASCO Y PUNTA GORDA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":20},{"team":{"name":"PLAYA HONDA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":19}],"reserva_p":[{"team":{"name":"SAGRADA FAMILIA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":19},{"team":{"name":"TENIS EL PINAR"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":18},{"team":{"name":"NACIONAL UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17},{"team":{"name":"CLUB SEMINARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17},{"team":{"name":"TAPE"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":13},{"team":{"name":"ALEMAN UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":11},{"team":{"name":"CEIBOS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":9}],"presenior_t":[{"team":{"name":"URUNDAY UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":30},{"team":{"name":"OLD BOYS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"INDEPENDIENTE"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"JUAN XXIII"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":26},{"team":{"name":"LA BLANQUEADA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":26},{"team":{"name":"NAUTICO CARRASCO Y PUNTA GORDA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":26},{"team":{"name":"NACIONAL UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":24},{"team":{"name":"OLD CHRISTIANS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":24}],"presenior_p":[{"team":{"name":"TENIS EL PINAR"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":18},{"team":{"name":"CLUB JESUS MARIA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":18},{"team":{"name":"UNIVERSITARIO VERONES"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":18},{"team":{"name":"PLAYA HONDA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17},{"team":{"name":"ELBIO FERNANDEZ"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":15},{"team":{"name":"HEBRAICA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":12},{"team":{"name":"OLD IVY"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":10},{"team":{"name":"MADRUGADA F.C"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":7}],"sub20_t":[{"team":{"name":"OLD WOODLANDS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":40},{"team":{"name":"OLD CHRISTIANS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":37},{"team":{"name":"E.L.F."},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":31},{"team":{"name":"J.M.L.M"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":29},{"team":{"name":"OLD BRENDANS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":27},{"team":{"name":"CEIBOS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":25},{"team":{"name":"CLUB SEMINARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":19},{"team":{"name":"NACIONAL UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":17}],"sub20_p":[{"team":{"name":"SAN JUAN BAUTISTA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":16},{"team":{"name":"MATURANA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":16},{"team":{"name":"OLD BOYS CLUB"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":15},{"team":{"name":"CARRASCO LAWN TENNIS"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":15},{"team":{"name":"SAN PABLO UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":15},{"team":{"name":"PLAYA HONDA UNIVERSITARIO"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":12},{"team":{"name":"NAUTICO CARRASCO Y PUNTA GORDA"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":11},{"team":{"name":"TENIS EL PINAR"},"played":0,"won":0,"drawn":0,"lost":0,"goals_for":0,"goals_against":0,"goal_difference":0,"total_points":9}]};
+  var GRUPO_PH = { mayores: 'p', reserva: 't', presenior: 'p', sub20: 'p' };  // grupo donde juega Playa Honda
+  var GRUPO_NOM = { t: 'T\u00edtulo', p: 'Permanencia' };
+  var DATA = {}, VISTA = {}, PRIM_HTML = {}, BASE = {};
+
   function titleCase(s) {
     return s.toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); });
   }
@@ -1178,16 +1189,93 @@ function showTab(name) {
         + '<td class="pts">' + r.total_points + '</td>'
         + '</tr>';
     }).join('');
-  }
-
-  function pintarTodas(obj) {
-    FASES.forEach(function(k) {
-      if (Array.isArray(obj[k]) && obj[k].length) renderTabla(k, obj[k]);
+    Array.prototype.forEach.call(tbody.rows, function(row) {
+      var td = row.cells[1];
+      if (!td) return;
+      var raw = td.textContent.replace(/\u2b50/g, '').trim();
+      td.classList.add('tabla-link');
+      td.title = 'Ver historial vs ' + raw;
+      td.addEventListener('click', function() { if (typeof scrollToHistorial === 'function') scrollToHistorial(raw); });
     });
   }
 
+  function grupoKey(cat, vista) {
+    if (!GRUPO_PH[cat] || vista === '1') return '1';
+    var g = GRUPO_PH[cat];
+    return vista === 'g' ? g : (g === 't' ? 'p' : 't');
+  }
+
+  function pintarVista(cat) {
+    var tab = document.getElementById('tab-' + cat);
+    var tbody = document.getElementById('tbody-' + cat);
+    if (!tab || !tbody) return;
+    var vista = VISTA[cat] || 'g';
+    var k = grupoKey(cat, vista);
+    var rows = (DATA[cat] || {})[k];
+    if (rows && rows.length) renderTabla(cat, rows);
+    else if (k === '1' && PRIM_HTML[cat]) tbody.innerHTML = PRIM_HTML[cat];
+    var titulo = tab.querySelector('.tabla-titulo');
+    if (titulo && GRUPO_PH[cat]) {
+      titulo.innerHTML = BASE[cat] + ' &mdash; ' + (k === '1' ? 'Primera Rueda' : 'Segunda Rueda ' + GRUPO_NOM[k]);
+    }
+    var nota = tab.querySelector('.tabla-nota');
+    if (nota) nota.style.display = (k === '1') ? 'none' : '';
+    Array.prototype.forEach.call(tab.querySelectorAll('.vista-btn'), function(b) {
+      b.classList.toggle('active', b.getAttribute('data-vista') === vista);
+    });
+  }
+
+  function iniciarVistas() {
+    FASES.forEach(function(cat) {
+      var tab = document.getElementById('tab-' + cat);
+      var tbody = document.getElementById('tbody-' + cat);
+      if (!tab || !tbody) return;
+      DATA[cat] = { '1': null };
+      if (!GRUPO_PH[cat]) return;
+      DATA[cat].t = SEG[cat + '_t'];
+      DATA[cat].p = SEG[cat + '_p'];
+      PRIM_HTML[cat] = tbody.innerHTML;
+      var titulo = tab.querySelector('.tabla-titulo');
+      BASE[cat] = titulo ? titulo.textContent.split(/\s[\u2014\u2013-]\s/)[0].trim() : '';
+      VISTA[cat] = 'g';
+      var g = GRUPO_PH[cat], o = (g === 't' ? 'p' : 't');
+      var bar = document.createElement('div');
+      bar.className = 'vista-bar';
+      [['g', 'Segunda Rueda \u00b7 ' + GRUPO_NOM[g]], ['o', 'Segunda Rueda \u00b7 ' + GRUPO_NOM[o]], ['1', 'Primera Rueda']].forEach(function(d) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'vista-btn';
+        b.setAttribute('data-vista', d[0]);
+        b.textContent = d[1];
+        b.addEventListener('click', function() { VISTA[cat] = d[0]; pintarVista(cat); });
+        bar.appendChild(b);
+      });
+      var wrap = tab.querySelector('.tabla-wrap');
+      tab.insertBefore(bar, wrap);
+      var nota = document.createElement('p');
+      nota.className = 'tabla-nota';
+      nota.textContent = 'Los puntos incluyen los arrastrados de la Primera Rueda.';
+      wrap.after(nota);
+      pintarVista(cat);
+    });
+  }
+
+  function pintarTodas(obj) {
+    FASES.forEach(function(cat) {
+      if (!DATA[cat]) return;
+      if (Array.isArray(obj[cat]) && obj[cat].length) DATA[cat]['1'] = obj[cat];
+      ['t', 'p'].forEach(function(x) {
+        var v = obj[cat + '_' + x];
+        if (Array.isArray(v) && v.length) DATA[cat][x] = v;
+      });
+      pintarVista(cat);
+    });
+  }
+
+  iniciarVistas();
+
   (function fetchStandings(retry) {
-    var key = 'phu_pos_all', tsKey = key + '_ts';
+    var key = 'phu_pos_all2', tsKey = key + '_ts';
     var cached = sessionStorage.getItem(key), ts = sessionStorage.getItem(tsKey);
     if (cached && ts && Date.now() - parseInt(ts) < 21600000) {
       try { pintarTodas(JSON.parse(cached)); return; } catch(e) {}

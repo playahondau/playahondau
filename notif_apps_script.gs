@@ -149,7 +149,9 @@ function getStandings() {
   // Proxy server-to-server de las tablas de posiciones (lud-backend bloquea CORS
   // desde playahondau.com y corsproxy.io ahora exige API key).
   var BASE = 'https://lud-backend-ld7d.onrender.com/api/phases/';
-  var MAP  = { mayores:1, reserva:8, presenior:13, sub20:23, sub18:30 };
+  var MAP  = { mayores:1, reserva:8, presenior:13, sub20:23, sub18:30,
+               mayores_t:40, mayores_p:41, reserva_t:54, reserva_p:55,
+               presenior_t:60, presenior_p:61, sub20_t:78, sub20_p:79 };
   var out  = {};
   Object.keys(MAP).forEach(function(k) {
     out[k] = [];
