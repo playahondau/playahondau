@@ -2461,16 +2461,8 @@ async function init() {
     const latestTs = resultados.length ? new Date(resultados[0]._ts) : null;
     // Fixture manual (categorías que lud-stats no publica, ej. Master). Actualizar cada fecha.
     const MANUAL_FIXTURE = [
-      { _ts:'2026-09-26T09:00:00', categoria:'Reserva', local:'Old Christians Azul', visitante:'Playa Honda',
-        dia_hora:'Sáb 26 sep. · 9:00h', lugar:'Visita · Old Christians' },
-      { _ts:'2026-09-26T09:00:00', categoria:'Pre Senior', local:'Playa Honda', visitante:'Jesús María',
-        dia_hora:'Sáb 26 sep. · 9:00h', lugar:'Local · Naval' },
-      { _ts:'2026-09-26T13:30:00', categoria:'Sub 20', local:'Playa Honda', visitante:'San Juan Bautista',
-        dia_hora:'Sáb 26 sep. · 13:30h', lugar:'Local · Cupra' },
       { _ts:'2026-09-26T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Adios Juventud',
-        dia_hora:'Sáb 26 sep. · 15:30h', lugar:'Local · Santa Rita' },
-      { _ts:'2026-09-27T11:15:00', categoria:'Mayor', local:'Seminario', visitante:'Playa Honda',
-        dia_hora:'Dom 27 sep. · 11:15h', lugar:'Visita · Cupra' }
+        dia_hora:'Sáb 26 sep. · 15:30h', lugar:'Local · Santa Rita' }
     ];
     fixture = MANUAL_FIXTURE.concat(fixture.filter(f => !MANUAL_FIXTURE.some(m => m.categoria === f.categoria)));
     window._fixtureRows = fixture;

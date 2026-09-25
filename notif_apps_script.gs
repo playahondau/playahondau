@@ -66,7 +66,9 @@ function doGet(e) {
   var TEAM_NAME = 'PLAYA HONDA UNIVERSITARIO';
   var PHASES    = [
     {id:1,cat:'Mayor'},{id:8,cat:'Reserva'},{id:13,cat:'Pre Senior'},
-    {id:23,cat:'Sub 20'},{id:30,cat:'Sub 18'}
+    {id:23,cat:'Sub 20'},{id:30,cat:'Sub 18'},
+    // Segunda Rueda (Título/Permanencia) — grupo donde juega Playa Honda
+    {id:41,cat:'Mayor'},{id:54,cat:'Reserva'},{id:61,cat:'Pre Senior'},{id:79,cat:'Sub 20'}
   ];
   var DIAS  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -82,7 +84,8 @@ function doGet(e) {
       var raw = UrlFetchApp.fetch(LUD_BASE+'/phases/'+p.id+'/matches/?limit=500',{muteHttpExceptions:true});
       var arr = JSON.parse(raw.getContentText());
       var ms  = Array.isArray(arr) ? arr : (arr.results||[]);
-      var jugados = [], proximos = [];
+      var jugados = (partidos[p.cat] && partidos[p.cat].jugados) || [];
+      var proximos = (partidos[p.cat] && partidos[p.cat].proximos) || [];
       for (var j = 0; j < ms.length; j++) {
         var m = ms[j];
         if (m.home_team.name!==TEAM_NAME && m.away_team.name!==TEAM_NAME) continue;
@@ -124,9 +127,11 @@ function doGet(e) {
     }
     resultados.sort(function(a,b){return b._ts>a._ts?1:-1;});
     // Fixture: solo el próximo partido de cada categoría (proximos ya está ordenado asc)
-    var fixture = [];
+    var fixture = [], seenCat = {};
     for (var fi = 0; fi < PHASES.length; fi++) {
       var fcat = PHASES[fi].cat;
+      if (seenCat[fcat]) continue;
+      seenCat[fcat] = true;
       var prxs = partidos[fcat] ? partidos[fcat].proximos : [];
       if (prxs.length > 0) {
         var pr = prxs[0];
