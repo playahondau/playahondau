@@ -15,6 +15,10 @@
 */
 
 const INFORMES = [
+  { fecha: "2026-09-27", rival: "Club Seminario", categoria: "Mayores",    archivo: "analisis-club-seminario-mayores-2026-09-27.pdf" },
+  { fecha: "2026-09-26", rival: "Old Christians Azul", categoria: "Reserva", archivo: "analisis-old-christians-azul-reserva-2026-09-26.pdf" },
+  { fecha: "2026-09-26", rival: "Club Jesus Maria", categoria: "Pre Senior", archivo: "analisis-club-jesus-maria-presenior-2026-09-26.pdf" },
+  { fecha: "2026-09-26", rival: "San Juan Bautista", categoria: "Sub 20",     archivo: "analisis-san-juan-bautista-sub20-2026-09-26.pdf" },
   { fecha: "2026-09-20", rival: "Carrasco Polo Club", categoria: "Mayores",    archivo: "analisis-carrasco-polo-mayores-2026-09-20.pdf" },
   { fecha: "2026-09-19", rival: "Old Christians Club",categoria: "Reserva",    archivo: "analisis-old-christians-reserva-2026-09-19.pdf" },
   { fecha: "2026-09-19", rival: "Nacional Universitario", categoria: "Pre Senior", archivo: "analisis-nacional-universitario-presenior-2026-09-19.pdf" },
