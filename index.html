@@ -2145,6 +2145,51 @@ function _shortName(n) {
            .replace(/\bU\b\.?/gi, 'U.').trim();
 }
 
+/* Segunda Rueda (cruces Título/Permanencia): el proxy aún no la trae, se carga a mano. */
+var SEGUNDA_RUEDA = {
+  "Mayor": [
+    {local:"CLUB SEMINARIO",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Dom 27 sep.",hora:"11:15",_ts:"2026-09-27T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"CARRASCO LAWN TENNIS",fecha_str:"Dom 4 oct.",hora:"11:15",_ts:"2026-10-04T11:15:00"},
+    {local:"SANTA ELENA LAGOMAR",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Dom 11 oct.",hora:"",_ts:"2026-10-11T00:00:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"JUAN XXIII",fecha_str:"Dom 18 oct.",hora:"11:15",_ts:"2026-10-18T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"OLD CHRISTIANS CLUB",fecha_str:"Dom 25 oct.",hora:"11:15",_ts:"2026-10-25T11:15:00"},
+    {local:"HEBRAICA UNIVERSITARIO",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Dom 1 nov.",hora:"11:15",_ts:"2026-11-01T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"OLD IVY",fecha_str:"Dom 8 nov.",hora:"11:15",_ts:"2026-11-08T11:15:00"}
+  ],
+  "Reserva": [
+    {local:"OLD CHRISTIANS AZUL",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 26 sep.",hora:"09:00",_ts:"2026-09-26T09:00:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"CARRASCO LAWN TENNIS",fecha_str:"Sáb 3 oct.",hora:"11:15",_ts:"2026-10-03T11:15:00"},
+    {local:"OLD BOYS CLUB",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 10 oct.",hora:"11:15",_ts:"2026-10-10T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"OLD WOODLANDS CLUB",fecha_str:"Sáb 17 oct.",hora:"11:15",_ts:"2026-10-17T11:15:00"},
+    {local:"OLD CHRISTIANS CLUB",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 24 oct.",hora:"11:15",_ts:"2026-10-24T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"CARRASCO POLO CLUB",fecha_str:"Sáb 31 oct.",hora:"11:15",_ts:"2026-10-31T11:15:00"},
+    {local:"NAUTICO CARRASCO Y PUNTA GORDA",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 7 nov.",hora:"09:00",_ts:"2026-11-07T09:00:00"}
+  ],
+  "Pre Senior": [
+    {local:"CLUB JESUS MARIA",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 26 sep.",hora:"09:00",_ts:"2026-09-26T09:00:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"OLD IVY",fecha_str:"Sáb 3 oct.",hora:"11:15",_ts:"2026-10-03T11:15:00"},
+    {local:"ELBIO FERNANDEZ",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 10 oct.",hora:"11:15",_ts:"2026-10-10T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"TENIS EL PINAR",fecha_str:"Sáb 17 oct.",hora:"11:15",_ts:"2026-10-17T11:15:00"},
+    {local:"HEBRAICA UNIVERSITARIO",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 24 oct.",hora:"11:15",_ts:"2026-10-24T11:15:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"UNIVERSITARIO VERONES",fecha_str:"Sáb 31 oct.",hora:"11:15",_ts:"2026-10-31T11:15:00"},
+    {local:"MADRUGADA F.C",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 7 nov.",hora:"09:00",_ts:"2026-11-07T09:00:00"}
+  ],
+  "Sub 20": [
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"SAN JUAN BAUTISTA",fecha_str:"Sáb 26 sep.",hora:"13:30",_ts:"2026-09-26T13:30:00"},
+    {local:"MATURANA UNIVERSITARIO",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 3 oct.",hora:"",_ts:"2026-10-03T00:00:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"CARRASCO LAWN TENNIS",fecha_str:"Sáb 10 oct.",hora:"13:30",_ts:"2026-10-10T13:30:00"},
+    {local:"TENIS EL PINAR",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 17 oct.",hora:"",_ts:"2026-10-17T00:00:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"OLD BOYS CLUB",fecha_str:"Sáb 24 oct.",hora:"13:30",_ts:"2026-10-24T13:30:00"},
+    {local:"NAUTICO CARRASCO Y PUNTA GORDA",visitante:"PLAYA HONDA UNIVERSITARIO",fecha_str:"Sáb 31 oct.",hora:"15:30",_ts:"2026-10-31T15:30:00"},
+    {local:"PLAYA HONDA UNIVERSITARIO",visitante:"SAN PABLO UNIVERSITARIO",fecha_str:"Sáb 7 nov.",hora:"13:30",_ts:"2026-11-07T13:30:00"}
+  ],
+};
+
+function _proximosSegundaRueda(cat) {
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  return (SEGUNDA_RUEDA[cat] || []).filter(function(m){ return new Date(m._ts) >= hoy; });
+}
+
 function renderPartidos(partidos) {
   if (!partidos) return;
   var cats = [
@@ -2173,8 +2218,9 @@ function renderPartidos(partidos) {
       }).join('');
     }
     var prxEl = document.getElementById(c.prxId);
-    if (prxEl && data.proximos && data.proximos.length) {
-      prxEl.innerHTML = data.proximos.map(function(m) {
+    var prxList = (data.proximos && data.proximos.length) ? data.proximos : _proximosSegundaRueda(c.key);
+    if (prxEl && prxList.length) {
+      prxEl.innerHTML = prxList.map(function(m) {
         var esL = m.local===TEAM;
         var locN = esL ? 'Playa Honda' : _shortName(m.local);
         var visN = esL ? _shortName(m.visitante) : 'Playa Honda';
