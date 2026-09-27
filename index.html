@@ -246,7 +246,8 @@
     /* Banda de estadísticas */
     .stats-band{background:#04112a;border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:0;}
     /* Botón flotante newsletter */
-    .fab-newsletter{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dorado-light);color:var(--azul);border:none;border-radius:50px;padding:.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s;z-index:9998;}
+    .fab-newsletter{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dorado-light);color:var(--azul);border:none;border-radius:50px;padding:.65rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:none;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s;z-index:9998;}
+    .fab-newsletter.visible{display:flex;}
     .fab-newsletter:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.6);}
     .fab-install{position:fixed;bottom:4.5rem;right:1.5rem;background:#071428;color:#ffffff;border:1px solid rgba(255,255,255,.25);border-radius:50px;padding:.6rem 1.3rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:none;align-items:center;gap:.45rem;box-shadow:0 4px 22px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s,opacity .3s;z-index:9997;}
     .fab-install:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.6);background:rgba(255,255,255,.1);}
@@ -317,35 +318,34 @@
       .fab-newsletter{bottom:1rem;right:1rem;font-size:.8rem;padding:.55rem 1.1rem;}
     }
   
-    /* Newsletter popup */
+    /* Newsletter — widget anclado abajo a la derecha, visible de forma directa */
     .newsletter-overlay{
       position:fixed;
-      inset:0;
-      background:rgba(2,6,16,.82);
-      backdrop-filter:blur(8px);
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      bottom:1.5rem;
+      right:1.5rem;
       z-index:9999;
       opacity:0;
       visibility:hidden;
-      transition:all .35s ease;
-      padding:1.5rem;
+      transform:translateY(24px) scale(.97);
+      transition:opacity .4s ease,visibility .4s ease,transform .4s ease;
+      pointer-events:none;
     }
     .newsletter-overlay.active{
       opacity:1;
       visibility:visible;
+      transform:translateY(0) scale(1);
+      pointer-events:auto;
     }
     .newsletter-modal{
-      width:100%;
-      max-width:480px;
+      width:330px;
+      max-width:calc(100vw - 3rem);
       background:linear-gradient(180deg,#0a1d4a 0%,#071428 100%);
       border:1px solid rgba(27,58,107,.45);
-      border-radius:18px;
-      padding:2.5rem;
+      border-radius:16px;
+      padding:1.7rem 1.6rem;
       position:relative;
       overflow:hidden;
-      box-shadow:0 25px 80px rgba(0,0,0,.45);
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
     }
     .newsletter-modal::before{
       content:"";
@@ -376,43 +376,43 @@
       letter-spacing:.18em;
       text-transform:uppercase;
       color:var(--dorado);
-      font-size:.72rem;
-      margin-bottom:.8rem;
+      font-size:.66rem;
+      margin-bottom:.5rem;
       z-index:1;
     }
     .newsletter-title{
       position:relative;
       font-family:'Bebas Neue',sans-serif;
-      font-size:3rem;
-      line-height:.95;
+      font-size:1.85rem;
+      line-height:1.05;
       color:var(--blanco);
-      margin-bottom:1rem;
+      margin-bottom:.6rem;
       z-index:1;
     }
     .newsletter-desc{
       position:relative;
       color:var(--gris);
-      line-height:1.6;
-      margin-bottom:1.8rem;
-      font-size:.95rem;
+      line-height:1.5;
+      margin-bottom:1.1rem;
+      font-size:.82rem;
       z-index:1;
     }
     .newsletter-form{
       position:relative;
       display:flex;
       flex-direction:column;
-      gap:.9rem;
+      gap:.7rem;
       z-index:1;
     }
     .newsletter-input{
       width:100%;
       background:#0c1e50;
       border:1px solid rgba(255,255,255,.08);
-      height:54px;
-      padding:0 1rem;
+      height:46px;
+      padding:0 .9rem;
       color:var(--blanco);
-      border-radius:10px;
-      font-size:.95rem;
+      border-radius:9px;
+      font-size:.9rem;
       outline:none;
       transition:.25s;
     }
@@ -421,9 +421,9 @@
       box-shadow:0 0 0 3px rgba(255,255,255,.12);
     }
     .newsletter-btn{
-      height:54px;
+      height:46px;
       border:none;
-      border-radius:10px;
+      border-radius:9px;
       background:var(--dorado);
       color:var(--blanco);
       font-family:'Barlow Condensed',sans-serif;
@@ -439,18 +439,25 @@
     }
     .newsletter-mini{
       position:relative;
-      margin-top:1rem;
-      font-size:.78rem;
+      margin-top:.7rem;
+      font-size:.7rem;
       color:#70798a;
       text-align:center;
       z-index:1;
     }
     @media(max-width:768px){
+      .newsletter-overlay{
+        left:1rem;
+        right:1rem;
+        bottom:1rem;
+      }
       .newsletter-modal{
-        padding:2rem 1.4rem;
+        width:100%;
+        max-width:none;
+        padding:1.5rem 1.3rem;
       }
       .newsletter-title{
-        font-size:2.2rem;
+        font-size:1.6rem;
       }
     }
     /* ── EN VIVO ── */
@@ -2622,19 +2629,25 @@ init();
 /* Newsletter */
 const newsletter = document.getElementById('newsletter');
 const closeNewsletter = document.getElementById('close-newsletter');
+const fabNewsletter = document.getElementById('fab-newsletter');
 
-// Botón flotante abre el modal (el FAB está al final del body, usar delegación)
-document.addEventListener('click', function(e) {
-  if (e.target.closest('#fab-newsletter')) newsletter.classList.add('active');
-});
+// Aparece directo al ingresar (sin necesidad de click), salvo que ya se haya cerrado/suscripto
+if (!localStorage.getItem('newsletterClosed')) {
+  setTimeout(() => newsletter.classList.add('active'), 900);
+} else {
+  fabNewsletter.classList.add('visible');
+}
 
-// Click fuera del modal lo cierra
-newsletter.addEventListener('click', (e) => {
-  if (e.target === newsletter) newsletter.classList.remove('active');
+// El botón flotante reabre el widget si el usuario lo había cerrado
+fabNewsletter.addEventListener('click', () => {
+  newsletter.classList.add('active');
+  fabNewsletter.classList.remove('visible');
 });
 
 closeNewsletter.addEventListener('click', () => {
   newsletter.classList.remove('active');
+  localStorage.setItem('newsletterClosed', 'true');
+  fabNewsletter.classList.add('visible');
 });
 
 document.querySelector('.newsletter-form').addEventListener('submit', async function(e) {
