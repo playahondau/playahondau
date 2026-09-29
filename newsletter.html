@@ -189,7 +189,12 @@ Promise.all([
     });
   });
 
-  var fixture = (apiData.fixture) || [];
+  // Master no está en lud-backend: se carga a mano acá, igual que en index.html. Actualizar cada fecha.
+  var MANUAL_FIXTURE = [
+    { _ts:'2026-10-03T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Médicos',
+      dia_hora:'Sáb 3 oct. · 15:30h', lugar:'Local · Santa Rita' }
+  ];
+  var fixture = MANUAL_FIXTURE.concat((apiData.fixture) || []);
   renderDiario(resultados, fixture);
 })
 .catch(function(){
