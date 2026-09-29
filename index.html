@@ -2468,8 +2468,8 @@ async function init() {
     const latestTs = resultados.length ? new Date(resultados[0]._ts) : null;
     // Fixture manual (categorías que lud-stats no publica, ej. Master). Actualizar cada fecha.
     const MANUAL_FIXTURE = [
-      { _ts:'2026-09-26T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Adios Juventud',
-        dia_hora:'Sáb 26 sep. · 15:30h', lugar:'Local · Santa Rita' }
+      { _ts:'2026-10-03T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Médicos',
+        dia_hora:'Sáb 3 oct. · 15:30h', lugar:'Local · Santa Rita' }
     ];
     fixture = MANUAL_FIXTURE.concat(fixture.filter(f => !MANUAL_FIXTURE.some(m => m.categoria === f.categoria)));
     window._fixtureRows = fixture;
