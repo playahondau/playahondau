@@ -61,6 +61,7 @@ function doGet(e) {
   if (view === 'master') return getMasterStandings();
   if (view === 'players') return getPlayerStats();
   if (view === 'standings') return getStandings();
+  if (view === 'teams') return getTeams();
 
   var LUD_BASE  = 'https://lud-backend-ld7d.onrender.com/api';
   var TEAM_NAME = 'PLAYA HONDA UNIVERSITARIO';
@@ -148,6 +149,31 @@ function doGet(e) {
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
   }
+}
+
+function getTeams() {
+  // Proxy server-to-server: lista de equipos con su escudo (lud-backend bloquea CORS).
+  // Usado por newsletter.html para mostrar el escudo del rival junto al resultado.
+  var url = 'https://lud-backend-ld7d.onrender.com/api/teams/?limit=500';
+  for (var intento = 0; intento < 2; intento++) {
+    try {
+      var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      var data = JSON.parse(resp.getContentText());
+      var arr = Array.isArray(data) ? data : (data.results || []);
+      if (arr.length) {
+        var out = arr
+          .filter(function(t) { return t.logo_url; })
+          .map(function(t) { return { name: t.name, logo_url: t.logo_url }; });
+        var o = ContentService.createTextOutput(JSON.stringify(out));
+        o.setMimeType(ContentService.MimeType.JSON);
+        return o;
+      }
+    } catch (err) {}
+    Utilities.sleep(2500); // Render free tier puede tardar en despertar
+  }
+  var o = ContentService.createTextOutput('[]');
+  o.setMimeType(ContentService.MimeType.JSON);
+  return o;
 }
 
 function getStandings() {
