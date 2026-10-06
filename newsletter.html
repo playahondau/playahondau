@@ -191,10 +191,21 @@ Promise.all([
 
   // Master no está en lud-backend: se carga a mano acá, igual que en index.html. Actualizar cada fecha.
   var MANUAL_FIXTURE = [
-    { _ts:'2026-10-03T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Médicos',
-      dia_hora:'Sáb 3 oct. · 15:30h', lugar:'Local · Santa Rita' }
+    { _ts:'2026-10-10T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'Médicos',
+      dia_hora:'Sáb 10 oct. · 15:30h', lugar:'Local · Santa Rita' }
   ];
   var fixture = MANUAL_FIXTURE.concat((apiData.fixture) || []);
+  // Hora/cancha que lud-backend no tiene cargadas. Actualizar cada fecha.
+  fixture.forEach(function(f) {
+    if (f.categoria === 'Mayor' && /SANTA ELENA/i.test(f.local + f.visitante)) {
+      if (f.dia_hora.indexOf(' · ') === -1) f.dia_hora += ' · 11:15h';
+      if (!f.lugar) f.lugar = 'Arrayanes';
+    }
+  });
+  // Goleadores que faltan en la sheet
+  resultados.forEach(function(rv) {
+    if (rv.categoria === 'Sub 18' && !rv.goleadores && /^4\/10/.test(rv.dia)) rv.goleadores = 'Pedro Mascaró';
+  });
   renderDiario(resultados, fixture);
 })
 .catch(function(){
@@ -317,10 +328,10 @@ function renderDiario(resultados, fixture) {
         '<p class="dr-subtit">'+subtit+'</p>'+
       '</div>'+
       '<div class="dr-promo">'+
-        '<p class="dr-promo-t">Los rivales de este finde y sus datos ya están publicados.</p>'+
+        '<p class="dr-promo-t">Los rivales de este finde y sus datos estarán publicados mañana.</p>'+
         '<p class="dr-promo-p">Análisis del próximo rival: números, formación y jugadores a seguir. Para jugadores y cuerpo técnico.</p>'+
         '<a class="dr-promo-btn" href="analisis.html">Ver Datos de rivales &rarr;</a>'+
-        '<p class="dr-promo-note">&#9989; Los rivales de este finde ya están subidos.</p>'+
+        '<p class="dr-promo-note">&#9203; Mañana estarán publicados los rivales de este finde.</p>'+
       '</div>'+
     '</div>'+
     /* ── Cuerpo: con o sin crónica ── */
