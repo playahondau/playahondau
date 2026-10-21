@@ -1,0 +1,18 @@
+# Playa Honda Universitario
+
+> Club de fútbol uruguayo fundado en 1964. Compite en la Liga Universitaria del Uruguay (LUD) con seis categorías: Mayor, Reserva, Pre Senior, Sub 20, Sub 18 y Master. Campeón de la Divisional A en 2012. Sitio oficial: https://playahondau.com
+
+## Páginas
+- [Inicio](https://playahondau.com/): últimos resultados, fixture, tabla de posiciones (primera y segunda rueda), goleadores, planteles, historial contra cada rival y estadísticas de la temporada 2026.
+- [Finde del Playa](https://playahondau.com/newsletter.html): resumen semanal con los resultados del fin de semana y los próximos partidos de todas las categorías.
+- [Análisis y scouting](https://playahondau.com/analisis.html): informes del próximo rival (goles por franja horaria, goleadores, formaciones, plan de partido) para jugadores y cuerpo técnico.
+- [Álbum](https://playahondau.com/album.html): fotos del club.
+- [Cabezudos](https://playahondau.com/cabezudos.html): juego interactivo con los jugadores.
+
+## Datos
+- Fundación: 1964
+- País: Uruguay (Montevideo)
+- Liga: Liga Universitaria del Uruguay
+- Categorías: Mayor, Reserva, Pre Senior, Sub 20, Sub 18, Master
+- Instagram: https://www.instagram.com/playahondau/
+- Fuente de los datos de partidos: lud-stats (estadísticas oficiales de la Liga Universitaria), actualizados cada fecha.
