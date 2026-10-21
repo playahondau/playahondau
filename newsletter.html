@@ -11,47 +11,48 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{margin:0;background:#fafaf8;font-family:'Hanken Grotesk',Helvetica,sans-serif;color:#1b1d24;}
-a{color:#16307a;}
+body{margin:0;background:#1a3a8f;font-family:'Hanken Grotesk',Helvetica,sans-serif;color:#f4f6fc;}
+a{color:#fff;}
 
 #diario{padding:3rem 1.25rem 4rem;}
 .dr-wrap{max-width:1040px;margin:0 auto;}
 
 /* ── Cabecera ── */
-.dr-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem 1.5rem;padding-bottom:1.75rem;border-bottom:1px solid #d9dbe3;}
+.dr-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem 1.5rem;padding-bottom:1.75rem;border-bottom:1px solid rgba(255,255,255,.22);}
 .dr-top img{width:56px;height:56px;object-fit:contain;display:block;}
 .dr-title{flex:1 1 320px;text-align:center;}
-.dr-name{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(2.4rem,7vw,4rem);line-height:1;letter-spacing:.01em;color:#16307a;}
-.dr-tagline{margin-top:.65rem;font-size:.68rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:#6b7080;}
-.dr-meta{width:56px;flex:0 0 auto;text-align:right;font-size:.68rem;line-height:1.5;color:#6b7080;}
+.dr-name{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(2.4rem,7vw,4rem);line-height:1;letter-spacing:.01em;color:#fff;}
+.dr-tagline{margin-top:.65rem;font-size:.68rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.dr-meta{width:56px;flex:0 0 auto;text-align:right;font-size:.68rem;line-height:1.5;color:rgba(255,255,255,.7);}
 
 /* ── Aviso ── */
-.dr-promo{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5rem 1.5rem;padding:1rem 0;border-bottom:1px solid #d9dbe3;}
-.dr-promo-t{font-size:.88rem;font-weight:300;color:#3a3e4c;}
-.dr-promo-btn{font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:#16307a;border-bottom:1px solid #16307a;padding-bottom:2px;}
-.dr-promo-btn:hover{color:#0b1d52;border-color:#0b1d52;}
+.dr-promo{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5rem 1.5rem;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.22);}
+.dr-promo-t{font-size:.88rem;font-weight:300;color:rgba(255,255,255,.85);}
+.dr-promo-btn{font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:#fff;border-bottom:1px solid #fff;padding-bottom:2px;}
+.dr-promo-btn:hover{color:#cfd9f5;border-color:#cfd9f5;}
 
 /* ── Columnas ── */
 .dr-results-grid{display:flex;flex-wrap:wrap;gap:3rem 4.5rem;padding-top:2.5rem;}
 .dr-results-grid>div{flex:1 1 420px;min-width:0;}
-.dr-sh{margin-bottom:.5rem;font-size:.68rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:#6b7080;}
-.dr-cron{padding-top:2.5rem;max-width:680px;font-family:'Instrument Serif',Georgia,serif;font-size:1.15rem;line-height:1.6;color:#3a3e4c;}
+.dr-sh{margin-bottom:.5rem;font-size:.68rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.dr-cron{padding-top:2.5rem;max-width:680px;font-family:'Instrument Serif',Georgia,serif;font-size:1.15rem;line-height:1.6;color:rgba(255,255,255,.85);}
 
 /* ── Partidos ── */
-.dr-card{padding:1.25rem 0;border-top:1px solid #e6e7ec;}
-.dr-cat{display:flex;justify-content:space-between;gap:.75rem;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#6b7080;}
+.dr-card{padding:1.25rem 0;border-top:1px solid rgba(255,255,255,.14);}
+.dr-cat{display:flex;justify-content:space-between;gap:.75rem;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7);}
 .dr-cat span+span{letter-spacing:.04em;text-transform:none;text-align:right;}
 .dr-line{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.65rem;font-size:1.05rem;font-weight:500;}
 .dr-dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;}
 .dr-score{font-weight:600;font-variant-numeric:tabular-nums;}
-.dr-vs{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:1rem;font-weight:400;color:#6b7080;}
+.dr-vs{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:1rem;font-weight:400;color:rgba(255,255,255,.7);}
 .dr-crest{width:24px;height:24px;object-fit:contain;flex:0 0 auto;}
-.dr-ini{display:inline-flex;align-items:center;justify-content:center;border:1px solid #d9dbe3;border-radius:50%;font-size:.55rem;font-weight:600;color:#6b7080;letter-spacing:0;}
-.dr-sub{margin-top:.5rem;font-size:.82rem;font-weight:300;color:#5a5f70;}
-.dr-win{color:#1d7a46;}.dr-loss{color:#b3261e;}.dr-draw{color:#9a6f00;}
-.dr-dot.dr-win{background:#1d7a46;}.dr-dot.dr-loss{background:#b3261e;}.dr-dot.dr-draw{background:#9a6f00;}
+.dr-crest.rv{background:#fff;border-radius:50%;padding:2px;}
+.dr-ini{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);border-radius:50%;font-size:.55rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:0;}
+.dr-sub{margin-top:.5rem;font-size:.82rem;font-weight:300;color:rgba(255,255,255,.7);}
+.dr-win{color:#7be0a4;}.dr-loss{color:#ff9a93;}.dr-draw{color:#f2c25c;}
+.dr-dot.dr-win{background:#7be0a4;}.dr-dot.dr-loss{background:#ff9a93;}.dr-dot.dr-draw{background:#f2c25c;}
 
-.dr-foot{margin-top:3.5rem;padding-top:1.25rem;border-top:1px solid #d9dbe3;text-align:center;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#6b7080;}
+.dr-foot{margin-top:3.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,.22);text-align:center;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);}
 </style>
 </head>
 
@@ -164,10 +165,14 @@ Promise.all([
 
   // Master no está en lud-backend: se carga a mano acá, igual que en index.html. Actualizar cada fecha.
   var MANUAL_FIXTURE = [
-    { _ts:'2026-10-17T15:30:00', categoria:'Master', local:'Playa Honda', visitante:'City Park Rojo',
-      dia_hora:'Sáb 17 oct. · 15:30h', lugar:'Local · Santa Rita' }
+    { categoria:'Master', local:'Playa Honda', visitante:'Adiós Juventud',
+      dia_hora:'Hoy', lugar:'Local · Santa Rita' },
+    { categoria:'Sub 18', local:'Playa Honda', visitante:'Náutico',
+      dia_hora:'Dom 25 oct. · 15:30h', lugar:'Visita · Náutico' }
   ];
-  var fixture = MANUAL_FIXTURE.concat((apiData.fixture) || []);
+  var fixture = MANUAL_FIXTURE.concat((apiData.fixture || []).filter(function(f){
+    return !MANUAL_FIXTURE.some(function(m){ return m.categoria === f.categoria; });
+  }));
   // Hora/cancha que lud-backend no tiene cargadas. Actualizar cada fecha.
   fixture.forEach(function(f) {
     if (f.categoria === 'Mayor' && /SANTA ELENA/i.test(f.local + f.visitante)) {
@@ -252,8 +257,9 @@ function renderDiario(resultados, fixture) {
 
   function crest(name) {
     if (/playa honda/i.test(name)) return '<img class="dr-crest" src="escudo-transparente.png" alt="">';
+    if (/adi[oó]s juventud/i.test(name)) return '';
     var u = findLogo(name);
-    if (u) return '<img class="dr-crest" src="'+u+'" alt="">';
+    if (u) return '<img class="dr-crest rv" src="'+u+'" alt="">';
     var ini = name.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ ]/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase();}).join('');
     return '<span class="dr-crest dr-ini" aria-hidden="true">'+ini+'</span>';
   }
