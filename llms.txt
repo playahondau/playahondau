@@ -5,7 +5,6 @@
 ## Páginas
 - [Inicio](https://playahondau.com/): últimos resultados, fixture, tabla de posiciones (primera y segunda rueda), goleadores, planteles, historial contra cada rival y estadísticas de la temporada 2026.
 - [Finde del Playa](https://playahondau.com/newsletter.html): resumen semanal con los resultados del fin de semana y los próximos partidos de todas las categorías.
-- [Análisis y scouting](https://playahondau.com/analisis.html): informes del próximo rival (goles por franja horaria, goleadores, formaciones, plan de partido) para jugadores y cuerpo técnico.
 - [Álbum](https://playahondau.com/album.html): fotos del club.
 - [Cabezudos](https://playahondau.com/cabezudos.html): juego interactivo con los jugadores.
 
