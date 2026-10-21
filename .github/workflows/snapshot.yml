@@ -1,0 +1,21 @@
+name: snapshot-temporada
+on:
+  schedule:
+    - cron: '0 11,23 * * *'   # 08:00 y 20:00 hora de Uruguay
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/snapshot.py index.html
+      - name: Commit si cambió
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "data(snapshot): temporada al día"
+          git pull --rebase -q
+          git push
