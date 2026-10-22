@@ -3831,13 +3831,20 @@ var Penales=(function(){
   /* ── sprites jugadores (pateadores) ── */
   var sprites={};
   var BASE='https://playahondau.com/';
-  ['titan','rodo','feli'].forEach(function(p){
-    var img=new Image(); img.src=BASE+p+'-sprite.png'; sprites[p]=img;
-  });
-  /* ── sprite portero (Barcia, de frente) ── */
-  var keeperImg=new Image(); keeperImg.src=BASE+'barcia-sprite.png';
+  var keeperImg=null,spritesLoaded=false;
+  /* se bajan recién al abrir el juego (ahorra ~2,9 MB en la carga inicial) */
+  function loadSprites(){
+    if(spritesLoaded) return; spritesLoaded=true;
+    function redraw(){ try{render();}catch(e){} }
+    ['titan','rodo','feli'].forEach(function(p){
+      var img=new Image(); img.onload=redraw; img.src=BASE+p+'-sprite.webp'; sprites[p]=img;
+    });
+    /* ── sprite portero (Barcia, de frente) ── */
+    keeperImg=new Image(); keeperImg.onload=redraw; keeperImg.src=BASE+'barcia-sprite.webp';
+  }
 
   function setup(){
+    loadSprites();
     var inRealFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
     var modal=document.getElementById('penales-modal');
     var inFakeFs=modal&&modal.classList.contains('fake-fs');
