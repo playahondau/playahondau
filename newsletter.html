@@ -103,7 +103,8 @@ var EXACT_ALIASES = {
   'SAN JUAN':       'SAN JUAN BAUTISTA',
   'OCC':            'OLD CHRISTIANS CLUB',
   'OCC AZUL':       'OLD CHRISTIANS AZUL',
-  'WOODLANDS':      'OLD WOODLANDS CLUB'
+  'WOODLANDS':      'OLD WOODLANDS CLUB',
+  'OWC':            'OLD WOODLANDS CLUB'
 };
 
 function findLogo(rivalName) {
@@ -165,10 +166,10 @@ Promise.all([
 
   // Master no está en lud-backend: se carga a mano acá, igual que en index.html. Actualizar cada fecha.
   var MANUAL_FIXTURE = [
-    { categoria:'Master', local:'Playa Honda', visitante:'Adiós Juventud',
-      dia_hora:'Hoy', lugar:'Local · Santa Rita' },
-    { categoria:'Sub 18', local:'Playa Honda', visitante:'Náutico',
-      dia_hora:'Dom 25 oct. · 15:30h', lugar:'Visita · Náutico' }
+    { categoria:'Master', local:'Playa Honda', visitante:'Taponazo',
+      dia_hora:'Sáb 31 oct. · 16:00h', lugar:'Local · Santa Rita' },
+    { categoria:'Sub 18', local:'Playa Honda', visitante:'Crandon',
+      dia_hora:'Dom 1 nov. · 15:30h', lugar:'Cupra' }
   ];
   var fixture = MANUAL_FIXTURE.concat((apiData.fixture || []).filter(function(f){
     return !MANUAL_FIXTURE.some(function(m){ return m.categoria === f.categoria; });
